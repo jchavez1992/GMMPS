@@ -1,6 +1,6 @@
 # user library
 # USER_LIB = $(shell ./skycatlib.sh)
-USER_LIB = 
+ USER_LIB = /opt/local/libexec/eso/skycat/lib
 
 # Forcing the shell // do we need that? (mischa)
 SHELL = /bin/sh 
@@ -24,8 +24,8 @@ ifndef platform
 endif
 
 # Include and library dirs
-INCLUDE_DIRS := ../include ../gemwm/include/
-LIBRARY_DIRS := ../lib
+INCLUDE_DIRS := ../include ../gemwm/include /opt/local/include
+LIBRARY_DIRS := ../lib /opt/local/lib /opt/local/libexec/eso/rtd/lib
 # uncomment if needed
 #INCLUDE_DIRS += /usr/include/ /usr/local/include/
 #LIBRARY_DIRS += /usr/lib /usr/local/lib
@@ -35,16 +35,16 @@ endif
 LIBRARIES    := m
 
 # For Darwin / uncomment if needed
-#ifeq ($(os),Darwin)
-#  CC=gcc
-#  CXX=g++
+ifeq ($(os),Darwin)
+  CC=gcc-mp-14
+  CXX=g++-mp-14
 #  INCLUDE_DIRS += /usr/X11R6/include/X11
 #  INCLUDE_DIRS += /usr/X11R6/include
 #  INCLUDE_DIRS += /opt/include/X11/
 #  INCLUDE_DIRS += /opt/X11/include
 #  LIBRARY_DIRS += /usr/X11R6/lib
 #  LIBRARY_DIRS += /opt/X11/
-#endif
+endif
 
 # add the include and library (dirs) to the makefile variables
 
@@ -106,7 +106,8 @@ BIN=../bin/
 all : $(CEXEC) $(CPPEXEC) $(CPPEXEC_GEMWM) gmmps_sel throughput
 
 $(CEXEC): $(COBJECTS)
-	$(CC) -o $(BIN)/$@ $@.o ../lib/libcfitsio.a $(LDFLAGS) -lcfitsio
+	$(CC) -o $(BIN)/$@ $@.o $(LDFLAGS) -lcfitsio
+#	$(CC) -o $(BIN)/$@ $@.o ../lib/libcfitsio.a $(LDFLAGS) -lcfitsio
 
 $(CPPEXEC): $(CPPOBJECTS)
 	$(CXX) -o $(BIN)/$@ $@.o $(LDFLAGS)
@@ -118,7 +119,7 @@ $(CPPEXEC_GEMWM): $(CPPOBJECTS_GEMWM) $(HEADERS)
 # It appears that only the -lcat4.1.0 linker flag is necessary; keep the others just in case
 gmmps_sel: gmmps_sel.o
 #	$(CXX) $(LDFLAGS) gmmps_sel.cc gmmps_sel.o -o $(BIN)/gmmps_sel -lcat4.1.0 -lastrotcl2.1.0 -ltclutil2.1.0 -lBLT24 -ltcl8.4 -ltk8.4
-	$(CXX) $(LDFLAGS) gmmps_sel.cc gmmps_sel.o -o $(BIN)/gmmps_sel -lcat4.1.0
+	$(CXX) $(LDFLAGS) gmmps_sel.cc gmmps_sel.o -o $(BIN)/gmmps_sel -lcat4.1.1
 
 throughput:
 	cp $(shell pwd)/create_gemwm_input.sh ../bin/

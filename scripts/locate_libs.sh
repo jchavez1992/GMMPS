@@ -4,6 +4,10 @@
 
 ##################################################
 # Do we have 'locate'? If not, leave
+# ?? Shouldn't we only use this if $OS != Darwin ??
+#    We only use 'locate' if the OS is not Mac.
+#    There may be situation where a mac does not have locate
+#    and this would leave prematurely
 ##################################################
 test=`which locate | awk '($0!="" && $0!~/Command not found/ && $0!~/no locate in/)'`
 if [ "${test}"_A = "_A" ]; then
@@ -17,12 +21,14 @@ OS=$1
 
 if [ $OS = "Darwin" ]; then
     libsuffix=".dylib"
-    mdfind -name libskycat3.1.4.dylib > libsfound_$$
-    mdfind -name libskycat3.1.3.dylib >> libsfound_$$
-    mdfind -name libskycat3.1.2.dylib >> libsfound_$$
+    find /opt -name libskycat3.1\*.dylib > libsfound_$$ #Changed, was 3.1.6
+    find /opt -name libskycat3.1.4.dylib >> libsfound_$$
+    find /opt -name libskycat3.1.3.dylib >> libsfound_$$
+    find /opt -name libskycat3.1.2.dylib >> libsfound_$$
 else
     libsuffix=".so"
-    locate -e -b '\libskycat3.1.4.so' > libsfound_$$
+    locate -e -b '\libskycat3.1.6.so' > libsfound_$$
+    locate -e -b '\libskycat3.1.4.so' >> libsfound_$$
     locate -e -b '\libskycat3.1.3.so' >> libsfound_$$
     locate -e -b '\libskycat3.1.2.so' >> libsfound_$$
 fi
@@ -32,6 +38,7 @@ fi
 ############################################
 numlibs=`wc libsfound_$$ | awk '{print $1}'`
 if [ $numlibs = 0 ]; then
+    rm libs_found_$$
     exit
 fi
 
@@ -51,15 +58,16 @@ do
     path=`dirname ${lib}`
     # Are this and the other required libs compatible with this OS?
     c0=`./scripts/check_os_compatibility.sh $lib`
-    c1=`./scripts/check_os_compatibility.sh $path/libastrotcl2.1.0${libsuffix}`
-    c2=`./scripts/check_os_compatibility.sh $path/libtclutil2.1.0${libsuffix}`
-    c3=`./scripts/check_os_compatibility.sh $path/libcat4.1.0${libsuffix}`
+    #c1=`./scripts/check_os_compatibility.sh $path/libastrotcl2.1.0${libsuffix}`
+    #c2=`./scripts/check_os_compatibility.sh $path/libtclutil2.1.0${libsuffix}`
+    #c3=`./scripts/check_os_compatibility.sh $path/libcat4.1.0${libsuffix}`
     # If successful, return the library path and exit
-    if [ ${c0} == 1 ] && [ ${c1} == 1 ] && [ ${c2} == 1 ] && [ ${c3} == 1 ]; then
-	echo $path
-	rm libsfound_$$
-	exit
+    if [ ${c0} == 1 ]; then # && [ ${c1} == 1 ] && [ ${c2} == 1 ] && [ ${c3} == 1 ]; then
+        echo ${path}
+	      rm libsfound_$$
+	      exit
     fi
 done
 
 rm libsfound_$$
+

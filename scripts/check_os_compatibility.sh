@@ -16,7 +16,7 @@ fi
 arch=`uname`
 archbit=`uname -m`
 
-if [ "${archbit}" = "x86_64" ]; then
+if [ "${archbit}" = "x86_64" ] || [ "${archbit}" = "arm64" ]; then
     archbit=64
 elif [ "${archbit}" = "i686" ] || [ "${archbit}" = "i386" ]; then
     archbit=32

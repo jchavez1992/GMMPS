@@ -1,0 +1,13 @@
+#!/bin/sh
+
+#Taken from this answer on stackoverflow
+#https://stackoverflow.com/a/60906147/1053446
+XCODE_VERSION=`xcodebuild -version | grep '^Xcode\s' | sed -E 's/^Xcode[[:space:]]+([0-9\.]+)/\1/'`
+ACCEPTED_LICENSE_VERSION=`defaults read /Library/Preferences/com.apple.dt.Xcode 2> /dev/null | grep IDEXcodeVersionForAgreedToGMLicense | cut -d '"' -f 2`
+
+if [ "$XCODE_VERSION" = "$ACCEPTED_LICENSE_VERSION" ]
+then
+    exit 0 #success
+else
+    exit 1
+fi
