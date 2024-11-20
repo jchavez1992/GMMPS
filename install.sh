@@ -21,7 +21,7 @@ else
 fi
 
 cd ${GMMPS}
-echo " "
+cho " "
 test -e bin && \rm bin
 test -e lib && \rm lib
 test -d bin.$OS && rm -rf bin.$OS
@@ -81,7 +81,17 @@ echo " "
 tar xfz tarfiles/skycat-3.1.4-1.tar.gz
 cd skycat-3.1.4/
 ./configure --prefix=${GMMPS}
-make all install
+
+#CHANGES
+#make all install
+skycat_deps=("tclutil", "astrotcl", "rtd", "cat", "skycat")
+for dep in "${skycat_deps[@]}"; do
+	cd $dep
+	./configure --prefix=${GMMPS}
+	make install CXX="g++ -Wno-narrowing -fpermissive -std=c++11"
+	cd ..
+done
+
 cd ${GMMPS}
 
 export skycatpath=${GMMPS}/lib
