@@ -1,0 +1,24 @@
+Skycat Tcl/Tk Source Distribution
+---------------------------------
+
+This directory contains the sources for the Tcl/Tk packages required
+to build skycat.  For convenience, a Makefile is provided that will
+configure, build and install all of the packages.
+
+Installation
+------------
+
+Type:
+
+    make prefix=/usr/local
+
+replacing /usr/local with the top level directory where you would like
+Tcl/Tk to be installed.
+
+Note that some of the packages have been patched, so that they build
+on all of the tested systems, however skycat does not depend on any
+particular changes. In particular, BLT did not originally build 
+correctly on MacOSX (The version included here is a slightly modified
+BLT2.4z).
+
+

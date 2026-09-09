@@ -1,0 +1,12 @@
+prefix=/Users/joy.chavez/Desktop/Work/gmmps_add_480/cfitsio
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: cfitsio
+Description: FITS File Subroutine Library
+URL: https://heasarc.gsfc.nasa.gov/fitsio/
+Version: 4.6.3
+Libs: -L${libdir} -lcfitsio
+Libs.private: -lcurl -lz  -lm
+Cflags: -I${includedir}

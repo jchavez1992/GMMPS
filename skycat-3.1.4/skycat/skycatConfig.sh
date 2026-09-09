@@ -1,0 +1,45 @@
+# E.S.O. - VLT project 
+# $Id: skycatConfig.sh.in,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $
+#
+# skycatConfig.sh --
+# 
+# This shell script (for sh) is generated automatically by Skycat's
+# configure script.  It will create shell variables for most of
+# the configuration options discovered by the configure script.
+# This script is intended to be included by the configure scripts
+# for Skycat extensions so that they don't have to figure this all
+# out for themselves.  This file does not duplicate information
+# already provided by tclConfig.sh, so you may need to use that
+# file in addition to this one.
+#
+# The information in this file is specific to a single platform.
+
+# Skycat's version number.
+skycat_VERSION='3.1.4'
+
+# The name of the Skycat library:
+skycat_LIB_FILE=libskycat3.1.4.dylib
+
+# String to pass to linker to pick up the Skycat library from its
+# build directory.
+skycat_BUILD_LIB_SPEC='-L/Users/joy.chavez/Desktop/Work/gmmps_add_480/skycat-3.1.4/skycat -lskycat3.1.4'
+
+# Skycat build directory.
+skycat_BUILD_DIR='/Users/joy.chavez/Desktop/Work/gmmps_add_480/skycat-3.1.4/skycat'
+
+# String to pass to linker to pick up the Skycat library from its
+# installed directory.
+skycat_LIB_SPEC='-L/Users/joy.chavez/Desktop/Work/gmmps_add_480/lib -lskycat3.1.4'
+
+# Location of the top-level source directories from which Skycat
+# was built.  This is the directory that contains generic, unix, etc.
+# If Skycat was compiled in a different place than the directory
+# containing the source files, this points to the location of the sources,
+# not the location where Skycat was compiled.
+skycat_SRC_DIR='/Users/joy.chavez/Desktop/Work/gmmps_add_480/skycat-3.1.4/skycat'
+
+# List of object files used to build the library (for merging packages).
+skycat_PKG_OBJECTS=' ../skycat/SkySearch.o ../skycat/Skycat.o ../skycat/TcsSkySearch.o'
+
+# List of header filesinstalled for this library (for merging packages).
+skycat_PKG_HEADERS='@skycat_PKG_HEADERS@'
