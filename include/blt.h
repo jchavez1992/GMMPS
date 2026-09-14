@@ -46,9 +46,11 @@
 #   define EXTERN extern EXPORT
 #endif
 
+/*
 #ifndef _ANSI_ARGS_
 #   define _ANSI_ARGS_(x)       ()
 #endif
+*/
 
 #include <bltVector.h>
 #include <bltHash.h>
