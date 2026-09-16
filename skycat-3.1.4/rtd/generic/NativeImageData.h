@@ -9,7 +9,9 @@
  * --------------  --------  ----------------------------------------
  * Allan Brighton  20/03/98  Created
  * pbiereic        17/02/03  Native byte order routines revised
+ * Peter W. Draper 14/11/05  Added double support (back from my patches).
  * pbiereic        12/08/07  added data types double and long long int
+ * Peter W. Draper 17/05/12  Merged skycat double version created by pbiereic.
  */
 
 #define ShortImageData NativeShortImageData

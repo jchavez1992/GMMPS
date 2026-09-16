@@ -14,6 +14,14 @@
  * who             when      what
  * --------------  --------  ----------------------------------------
  * Allan Brighton  14/02/00  Created
+ * Peter W. Draper 14/12/05  Remove local knowledge of FitsIO class so 
+ *                           that other ImageIORep implementations can be
+ *                           used.
+ *                 25/04/08  Add growAndShrink().
+ *                 19/01/12  change setCutLevels to define highCut_ and
+ *                           lowCut_ to be the same as the first extension,
+ *                           otherwise we assume primary HDU has same bscale
+ *                           and bzero.
  */
 
 
@@ -27,7 +35,7 @@
 #include "config.h"
 #endif
 #include "define.h"
-#include "Fits_IO.h"
+#include "ImageIO.h"
 #include "error.h"
 #include "CompoundImageData.h"
 
@@ -38,7 +46,7 @@
  * complete size of all of the images.
  *
  * name   -  the name of the image (for logging/debugging
- * imio   -  the object representing the FITS image file
+ * imio   -  the object representing the image file
  * hduList - the list of image HDU indexes to use
  * numHDUs - the number of image HDU indexes in hduList
  * biasInfo - used when calculating bias info
@@ -53,23 +61,18 @@ CompoundImageData::CompoundImageData(const char* name, const ImageIO& imio,
     images_ = new ImageData*[numImages_];
     minX_ = maxX_ = minY_ = maxY_ = 0.;
 
-    // make sure it is a FITS file
-    if (!imio.rep() || strcmp(imio.rep()->classname(), "FitsIO") != 0) {
-        status_ = error("The \"hdu\" subcommand is only supported for FITS files");
-	return;			// error
-    }
-    FitsIO* fits = (FitsIO*)imio.rep();
+    ImageIORep* imioRep = (ImageIORep*)imio.rep();
 
     // create images and note the min/max coordinates
     for(int i = 0; i < numImages_; i++) {
 	// need a (reference counted) copy so we can change the current HDU
-	FitsIO* fitsExt = fits->copy();
-	if ((status_ = fitsExt->setHDU(hduList[i])) != 0) {
-	    delete fitsExt;
+	ImageIORep* imioRepExt = imioRep->copy();
+	if ((status_ = imioRepExt->setHDU(hduList[i])) != 0) {
+	    delete imioRepExt;
 	    return;		// error
 	}
 	
-	images_[i] = ImageData::makeImage(name, fitsExt, biasInfo, verbose);
+	images_[i] = ImageData::makeImage(name, imioRepExt, biasInfo, verbose);
 
 	double x0 = -images_[i]->crpix1_,
 	    y0 = -images_[i]->crpix2_,
@@ -128,7 +131,7 @@ CompoundImageData::~CompoundImageData() {
     for(int i = 0; i < numImages_; i++) {
 	delete images_[i];
     }
-    delete images_;
+    delete[] images_;
 }
 
 
@@ -320,6 +323,18 @@ void CompoundImageData::setCutLevels(double low, double high, int scaled)
 
     for(int i = 0; i < numImages_; i++) {
 	images_[i]->setCutLevels(low, high, scaled);
+    }
+
+    //  Unscaling of cuts uses first extension HDU methods, so match those
+    //  (otherwise we assume primary HDU has same bscale and bzero as first
+    //  extension).
+    if (scaled) {
+	highCut_ = images_[0]->unScaleValue(high);
+	lowCut_ = images_[0]->unScaleValue(low);
+    }
+    else {
+	highCut_ = high;
+	lowCut_ = low;
     }
 }
 
@@ -752,6 +767,20 @@ void CompoundImageData::grow(int x0, int y0, int x1, int y1,
     return;  // see toXImage() above
 }
 
+/*
+ * This method is called to scale image when factor have different signs.
+ * The arguments x0, y0, x1 and y1 are the bounding box of the region
+ * that needs to be copied.
+ *
+ * dest_x and dest_y give the coordinates in the XImage where copying
+ * should start. These are normally either (x0,y0) or (0,0).
+ */
+void CompoundImageData::growAndShrink(int x0, int y0, int x1, int y1, 
+                                      int dest_x, int dest_y)
+{
+    return;  // see toXImage() above
+}
+
 
 
 /*
@@ -875,6 +904,10 @@ void CompoundImageData::initBlankPixel()
     for(int i = 0; i < numImages_; i++) {
 	images_[i]->initBlankPixel();
     }
+
+    /*  Use first image to set Compound values. */
+    blank_ = images_[0]->getBlank();
+    haveBlank_ = images_[0]->haveBlank();
 }
 
 /*
@@ -888,6 +921,7 @@ void CompoundImageData::initShortConversion()
 	scaledLowCut_ = images_[i]->scaledLowCut_;
 	scaledHighCut_ = images_[i]->scaledHighCut_;
     }
+    scaledBlankPixelValue_ = LOOKUP_BLANK;
 }
 
 

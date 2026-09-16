@@ -129,12 +129,12 @@ CFLAGS_OPTIMIZE		= -Os
 #CFLAGS			= $(CFLAGS_DEBUG)
 #CFLAGS			= $(CFLAGS_OPTIMIZE)
 #CFLAGS			= $(CFLAGS_DEBUG) $(CFLAGS_OPTIMIZE)
-CFLAGS			= $(CFLAGS_OPTIMIZE) -w
+CFLAGS			= $(CFLAGS_OPTIMIZE) -O2 -arch arm64
 
 # Flags to pass to the linker
 LDFLAGS_DEBUG		= 
 LDFLAGS_OPTIMIZE	= 
-LDFLAGS			= $(LDFLAGS_OPTIMIZE)  -prebind -headerpad_max_install_names -Wl,-search_paths_first
+LDFLAGS			= $(LDFLAGS_OPTIMIZE) -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first
 
 # A "-I" switch that can be used when compiling to make all of the
 # X11 include files accessible (the configure script will try to

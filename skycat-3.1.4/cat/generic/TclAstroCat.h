@@ -14,6 +14,9 @@
  * who             when       what
  * --------------  --------   ----------------------------------------
  * Allan Brighton  26 Sep 95  Created
+ * Peter W. Draper 18 Mar 09  Added commentsCmd and various commands for 
+ *                            VO support.
+ *                 26 Mar 15  Added xtype support (more VO).
  */
 
 
@@ -75,7 +78,6 @@ public:
     virtual int checkrowCmd(int argc, char* argv[]);
     virtual int closeCmd(int argc, char* argv[]);
     virtual int copyrightCmd(int argc, char* argv[]);
-    virtual int helpCmd(int argc, char* argv[]);
     virtual int dec_colCmd(int argc, char* argv[]);
     virtual int entryCmd(int argc, char* argv[]);
     virtual int feedbackCmd(int argc, char* argv[]);
@@ -85,11 +87,12 @@ public:
     virtual int getpreviewCmd(int argc, char* argv[]);
     virtual int hascolCmd(int argc, char* argv[]);
     virtual int headingsCmd(int argc, char* argv[]);
+    virtual int helpCmd(int argc, char* argv[]);
     virtual int id_colCmd(int argc, char* argv[]);
     virtual int infoCmd(int argc, char* argv[]);
     virtual int is_tcsCmd(int argc, char* argv[]);
-    virtual int iswcsCmd(int argc, char* argv[]);
     virtual int ispixCmd(int argc, char* argv[]);
+    virtual int iswcsCmd(int argc, char* argv[]);
     virtual int loadCmd(int argc, char* argv[]);
     virtual int longnameCmd(int argc, char* argv[]);
     virtual int moreCmd(int argc, char* argv[]);
@@ -108,10 +111,24 @@ public:
     virtual int showcolsCmd(int argc, char* argv[]);
     virtual int sortcolsCmd(int argc, char* argv[]);
     virtual int sortorderCmd(int argc, char* argv[]);
+    virtual int stc_colCmd(int argc, char* argv[]);
     virtual int symbolCmd(int argc, char* argv[]);
     virtual int urlCmd(int argc, char* argv[]);
     virtual int x_colCmd(int argc, char* argv[]);
     virtual int y_colCmd(int argc, char* argv[]);
+
+    // PWD: extras.
+    virtual int systemCmd(int argc, char* argv[]);
+    virtual int epochCmd(int argc, char* argv[]);
+    virtual int equinoxCmd(int argc, char* argv[]);
+    virtual int equinoxPrefixCmd(int argc, char* argv[]);
+    virtual int unitCmd(int argc, char* argv[]);
+    virtual int ucdCmd(int argc, char* argv[]);
+    virtual int utypeCmd(int argc, char* argv[]);
+    virtual int xtypeCmd(int argc, char* argv[]);
+    virtual int datatypeCmd(int argc, char* argv[]);
+
+    virtual int commentsCmd(int argc, char* argv[]);
 };
 
 #endif /* _TclAstroCat_h_ */

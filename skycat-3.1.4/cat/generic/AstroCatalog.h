@@ -15,6 +15,10 @@
  * --------------  --------   ----------------------------------------
  * Allan Brighton  26 Sep 95  Created
  * Peter W. Draper 21 Jan 99  Moved constructor into public interface.
+ *                 20 Mar 09  Added various accessors for meta-data
+ *                            (VO and comments)
+ *                 08 May 09  Added stc_col member
+ *                 26 Mar 15  Added xtype support (more VO).
  */
 
 
@@ -127,6 +131,21 @@ public:
     int x_col() {return entry_->x_col();}
     int y_col() {return entry_->y_col();}
     int is_tcs() {return entry_->is_tcs();}
+    int stc_col() {return entry_->stc_col();}
+
+    //  PWD: more "standard" fields.
+    const char* system() {return entry_->system();}
+    double epoch() {return entry_->epoch();}
+    const char* equinoxprefix() {return entry_->equinoxprefix();}
+    const char* unit() {return entry_->unit();}
+    const char* ucd() {return entry_->ucd();}
+    const char* utype() {return entry_->utype();}
+    const char* xtype() {return entry_->xtype();}
+    const char* datatype() {return entry_->datatype();}
+
+    // return or set comments associated with catalog
+    const char* comments() {return entry_->comments();}
+    void comments(const char* comments) {entry_->comments(comments);}
 
     // return true if the catalog uses world coordinates
     int isWcs() {return entry_->isWcs();}

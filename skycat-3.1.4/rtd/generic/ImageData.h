@@ -28,9 +28,18 @@
  *                           blank pixel (otherwise comes out at
  *                           scaled colour). 
  * pbiereic        22/03/99  Added parameters for bias frame
+ * P.W. Draper     12/07/99  Added haveBlank() and getBlank() members
+ *                           to allow return of blank_ value as a double.
  * pbiereic        25/05/00  Added method 'fillToFit'
  * pbiereic        27/06/01  Added method 'noiseStatistics'
  * pbiereic        10/02/03  Native byte order routines revised
+ * P.W. Draper     16/01/07  Make sure object_ is null terminated.
+ *                 24/04/08  Added growAndShrink().
+ *                 19/06/09  Add setBlank member to handle case when BLANK
+ *                           isn't set, but should be.
+ *                 19 Aug 11  Make log and sqrt scalings use different
+ *                            powers. This differentiates them and makes
+ *                            them more like other display tools.
  */
 
 #include <sys/types.h>
@@ -41,7 +50,11 @@
 #include "ImageIO.h"
 #include "ImageDisplay.h"
 
-typedef unsigned char byte;	// type of XImage data (no longer ...)
+#ifndef isnan
+#define isnan(x) ((x) != (x))
+#endif
+
+typedef unsigned char BYTE;	// type of XImage data (no longer ...)
 struct ImageDataParams;		// forward ref
 struct ImageDataHistogram;      // forward ref
 
@@ -86,7 +99,7 @@ public:
 	LOOKUP_MIN = -32767,	// minimum image value allowed
 	LOOKUP_MAX = 32767,	// maximum image value allowed
 	LOOKUP_OFF = 32768,	// offset from allocated array to zero (0x8000)
-	LOOKUP_BLANK = 32768    // end bin for blank pixel
+	LOOKUP_BLANK = -32768   // end bin for blank pixel
     };
     
 protected:
@@ -98,7 +111,7 @@ protected:
 
     // pointers to the caller's XImage and data, which this class writes to
     ImageDisplay* xImage_;
-    byte* xImageData_;
+    BYTE* xImageData_;
 
     // this represents the contents of the image file or other source
     // (uses reference counting so we can share this with other views)
@@ -108,7 +121,7 @@ protected:
     int width_, height_;
 
     // value in "OBJECT" header field: name of astronomical object
-    char object_[80];
+    char object_[81];
 
     // saved x, y values from last call to updateOffset(x, y)
     double prevX_, prevY_;
@@ -155,6 +168,7 @@ protected:
     int scaledBlankPixelValue_;
     
     int haveBlank_;		   // flag: true if the BLANK keyword was found
+    char blankValue_[32];          // character string with BLANK value
    
     // color cut values
     double highCut_;
@@ -164,8 +178,9 @@ protected:
     // (used in color scaling algorithms to generate lookup table)
     int scaledMinValue_;
     
-    // optional exponent for LOGARITHMIC and SQRT color scale (def: 10.0)
-    double expo_;
+    // optional exponents for LOGARITHMIC and SQRT color scale (def: 6 & 2)
+    double logexpo_;
+    double sqrtexpo_;
 
     // X,Y amount image should be scaled
     int xScale_, yScale_;
@@ -221,14 +236,14 @@ protected:
     virtual void grow(int x0, int y0, int x1, int y1, 
 		      int dest_x, int dest_y) = 0;
 
+
+    virtual void growAndShrink(int x0, int y0, int x1, int y1, 
+                               int dest_x, int dest_y) = 0;
+
     // initialize conversion from base type to short,
     // used by color scaling algorithms as index in lookup table 
     // (defined in a derived class, not needed for byte images)
     virtual void initShortConversion() = 0;
-
-    // If there is a special value for blank pixels, get it and set the
-    // values of haveBlankPixel_ and scaledBlankPixelValue_.
-    virtual void initBlankPixel() = 0;
 
     // scan the image for the min and max values
     virtual void getMinMax() = 0;
@@ -267,6 +282,9 @@ public:
 
     // destructor
     virtual ~ImageData() {}
+
+    // return class name as a string
+    virtual const char* classname() { return "ImageData"; }
 
     // save image to a file
     int write(const char* filename);
@@ -452,8 +470,11 @@ public:
 
     void setBiasInfo(biasINFO* ptr) {biasInfo_ = ptr;}
 
-    void expo(double e) {expo_ = e;}
-    double expo() {return expo_;}
+    void logexpo(double e) {logexpo_ = e;}
+    double logexpo() {return logexpo_;}
+
+    void sqrtexpo(double e) {sqrtexpo_ = e;}
+    double sqrtexpo() {return sqrtexpo_;}
 
     int width() {return width_;}
     int height() {return height_;}
@@ -509,7 +530,10 @@ public:
 
     virtual void name(const char* name) {strncpy(name_, name, sizeof(name_)-1);}
     char* name() {return name_;}
-    virtual void object(const char *object) {strncpy(object_, object, sizeof(object_)-1);}
+    virtual void object(const char *object) {
+        strncpy(object_, object, sizeof(object_));
+        object_[80] = '\0';
+    }
     char* object() {return object_;}
 
     int update_pending() {return update_pending_;}
@@ -519,6 +543,19 @@ public:
     virtual int lookupTable(LookupTable);
 
     void clear() {clear_ = 1; update_pending_++;}
+
+    // return the blank value as a double
+    virtual double getBlank() = 0;
+    virtual int haveBlank() = 0;
+
+    // If there is a special value for blank pixels, get it and set the
+    // values of haveBlankPixel_ and scaledBlankPixelValue_.
+    virtual void initBlankPixel() = 0;
+
+    // set the blank value string
+    void setBlank(const char* value) {
+        strncpy(blankValue_, value, sizeof(blankValue_)-1);
+    }
 };
 
 

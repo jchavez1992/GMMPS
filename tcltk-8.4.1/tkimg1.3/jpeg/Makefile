@@ -207,7 +207,7 @@ CPPFLAGS	=  -DPACKAGE_NAME=\"$(DPACKAGE)\"	\
 
 LIBS		=  -L/usr/X11R6/lib -lX11
 AR		= ar
-CFLAGS		=  ${CFLAGS_DEFAULT} ${CFLAGS_WARNING} ${SHLIB_CFLAGS}
+CFLAGS		= -O2 -arch arm64 ${CFLAGS_DEFAULT} ${CFLAGS_WARNING} ${SHLIB_CFLAGS}
 COMPILE		= $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 #========================================================================

@@ -13,13 +13,19 @@
 # --------   ---------   ----------------------------------------------
 # pbiereic   11/12/08    config -file after SkyCat was fully constructed
 # A.Brighton 11 Oct 95   created
+# P.W.Draper 19 Jan 00   added concat to bindtags, itk ones were
+#                        being lost. Removed extra ] from ]] in title string.
+#            18 Nov 03   Now accepts a list of catalogues to display.
+#            04 Apr 06   Catch {wm deiconify $w_.init} as init window maybe 
+#                        embedded in GAIA
+#
 
 set skycat_usage {
 Usage: skycat ?fitsFile? ?-option value ...?
 
 Options:
  -cat <bool>              - Include ESO/Archive catalog extensions (default).
- -catalog <name>          - Open a window for the given catalog on startup.
+ -catalog \"<cat1> <cat2>\" - Open windows for the given catalogs on startup.
  -colorramp_height <n>    - height of colorramp window (default: 12).
  -float_panel <bool>      - put info panel in a popup window (default: 0).
  -panel_layout <layout>   - panel layout, one of: "saoimage", "reverse", "default" .
@@ -87,7 +93,7 @@ itcl::class skycat::SkyCat {
     
     protected method init {} {
 	global ::skycat_version
-	Rtd::init
+	rtd::Rtd::init
 
 	load_toplevel_geometry
 	wm title $w_ "Skycat - version $skycat_version ($itk_option(-number))"
@@ -115,25 +121,28 @@ itcl::class skycat::SkyCat {
 	    # the logo uses up colors: the update forces the destroy and frees the colors
 	    update 
 	    $itk_component(image) alloccolors 60
-	    wm deiconify $w_
+            # Sometimes $w_.init is an embedded window.
+	    catch {wm deiconify $w_}
 	}
 	
-	if {"$itk_option(-catalog)" != ""} {
-	    # make sure we use full path name for local catalogs
-	    set f $itk_option(-catalog)
-	    if {[file exists $f] && "[string index $f 0]" != "/"} {
-		set itk_option(-catalog) [pwd]/$f
-	    }
-	    # open a window for the given catalog
-	    cat::AstroCat::open_catalog_window $itk_option(-catalog) \
-		[code $image_] ::skycat::SkySearch $itk_option(-debug) $w_
-	}
+        if {"$itk_option(-catalog)" != ""} {
+            # make sure we use full path name for local catalogs
+            # and process option as a list
+            foreach f "$itk_option(-catalog)" {
+               if {[file exists $f] && "[string index $f 0]" != "/"} {
+                   set $f [pwd]/$f
+               }
+               cat::AstroCat::open_catalog_window $f \
+                   [code $image_] ::skycat::SkySearch $itk_option(-debug) $w_
+            }
+        }
 	
 	# check the main window size to make sure it is not too large
 	bind SkyCat::resize <Configure> [code $this resize %w %h]
-	bindtags $w_ SkyCat::resize
+	bindtags $w_ [concat SkyCat::resize [bindtags $w_]]
+	#bindtags $w_ SkyCat::resize
 
-	after 0 [code $image_ config -file $itk_option(-file)]
+        after 0 [code $image_ config -file $itk_option(-file)]
     }
 
 
@@ -171,7 +180,7 @@ itcl::class skycat::SkyCat {
     # time.
 
     protected method save_toplevel_geometry {} {
-	set s [winfo geometry $w_]
+	set s [wm geometry $w_]
 	# check for case where window was not initialized...
 	if {"$s" != "1x1+0+0"} {
 	    if {[catch {set fd [::open $toplevel_geometry_ w]}]} {
@@ -212,7 +221,7 @@ itcl::class skycat::SkyCat {
     protected method add_realtime_menu {} {
 	# add/remove some menus
 	if {$itk_option(-rtd)} {
-	    Rtd::add_realtime_menu
+	    rtd::Rtd::add_realtime_menu
 	} else {
 	    # hide the realtime status
 	    #[[$itk_component(image) component info] component cameraStatus] config \
@@ -254,7 +263,7 @@ itcl::class skycat::SkyCat {
 
     protected method setXdefaults {} {
 	# read rtd defaults
-	Rtd::setXdefaults
+	rtd::Rtd::setXdefaults
 
 	# read cat lib defaults
 	cat::setXdefaults
@@ -317,7 +326,7 @@ itcl::class skycat::SkyCat {
 	# SkyCatCtrl(n) widget (derived from RtdImageCtrl), for displaying
 	# image and control panel
 	itk_component add image {
-	    SkyCatCtrl $image_ \
+	    skycat::SkyCatCtrl $image_ \
 		-usexshm $itk_option(-usexshm) \
 		-shm_header $itk_option(-shm_header) \
 		-shm_data $itk_option(-shm_data) \
@@ -387,7 +396,7 @@ itcl::class skycat::SkyCat {
 		 -width 6i \
 		 -justify center \
 		 -borderwidth 2 -relief groove] \
-	    [ProgressBar $w.progress \
+	    [util::ProgressBar $w.progress \
 		 -from 0 -to 10 -value 0 \
 		 -borderwidth 2 -relief groove] \
 	    -side top -fill x -padx 1m -pady 2m
@@ -579,7 +588,7 @@ itcl::class skycat::SkyCat {
 	foreach w $list {
 	    lappend names "[incr n]  [$w cget -catalog]"
 	}
-	set w [ChoiceDialog .d \
+	set w [util::ChoiceDialog .d \
 		   -text "Please specify which $what to use:" \
 		   -cols 1 \
 		   -messagewidth 3i \

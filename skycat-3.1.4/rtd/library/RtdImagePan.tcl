@@ -10,7 +10,16 @@
 # who             when       what
 # --------------  ---------  ----------------------------------------
 # Allan Brighton  01 Jun 95  Created
+# Peter W. Draper 15 Feb 01  Changed notify_cmd method to deal with
+#                            very narrow images (spectra).
 # pbiereic        14/12/04   Fixed: Panning while image events are received
+# Peter W. Draper 02 Apr 05  Slight correction to logic of above. Make sure
+#                            panning changes are always seen for new images 
+#                            and images with orientation changes (pan with 
+#                            changed=1)
+#                 02 Nov 06  Make the compass a fixed size of the width, not
+#                            some size that depends on the image scale. More
+#                            consistent.
 # pbiereic        30/03/05   Fixed: pan image width for long, narrow spectra
 #                            in method notify_cmd
 
@@ -158,10 +167,12 @@ itcl::class rtd::RtdImagePan {
     # of the target image
     # x1 y1 x2 y2 give the visible portion of the image
     # if "changed" is 1, there is a new image with pos. different dimensions.
+    # PWD: if changed is true always do this, includes cases when orientation
+    # is changed (want to see the compass update).
 
     protected method pan {x1 y1 x2 y2 changed} {
 	set scale [lindex [$image_ scale] 0]
-        if { [info exists coords_] } {
+        if { [info exists coords_]  && ! $changed } {
             if { $x1 == $coords_(pan_x1) && $y1 == $coords_(pan_y1) && \
 		 $x2 == $coords_(pan_x2) && $y2 == $coords_(pan_y2) && \
 		 "$scale" == "$coords_(scale)" && \
@@ -191,24 +202,31 @@ itcl::class rtd::RtdImagePan {
     }
 
     
-    
     # this method is called when the user moves or resizes the panning rect.
     # op is set to "resize" or "move" (resize not currently supported)
+    # PWD: changed to deal with very narrow images (i.e. spectra).
 
     public method notify_cmd {op} {
-	if { [$image_ isclear] || $panImageWidth_ == 0} {
-	    return
-	}
-	lassign [$canvas_ coords $panner_] x1 y1 x2 y2
-	if {"$op" == "move" && $panImageWidth_ > 1 && $panImageHeight_ > 1} {
-	    $target_canvas_ xview moveto [expr {$x1/($panImageWidth_-1)}]
-	    $target_canvas_ yview moveto [expr {$y1/($panImageHeight_-1)}]
-	    $target_image_ pan update
-	    $itk_option(-target_image) maybe_center
-	} 
-	return 0
+       if {$panImageWidth_ == 0 && $panImageHeight_ == 0} {
+          return
+       }
+       lassign [$canvas_ coords $panner_] x1 y1 x2 y2
+       if {"$op" == "move" } {
+          if {$panImageWidth_ > 1} {
+             $target_canvas_ xview moveto [expr $x1/($panImageWidth_-1)]
+          } else {
+             $target_canvas_ xview moveto $x1
+          }
+          if { $panImageHeight_ > 1 } {
+             $target_canvas_ yview moveto [expr $y1/($panImageHeight_-1)]
+          } else {
+             $target_canvas_ yview moveto $y1
+          }
+          $target_image_ pan update
+          $itk_option(-target_image) maybe_center
+       }
+       return 0
     }
-
 
     # draw an ra,dec compass indicating N and E by following lines along ra and dec
     # near the center of the image
@@ -224,7 +242,7 @@ itcl::class rtd::RtdImagePan {
 	set wcsw [expr {[$image_ wcswidth]*60}]
 	set wcsh [expr {[$image_ wcsheight]*60}]
 
-	# set size of compass to percent of the image size in arcsecs
+	# set initial size of compass to percent of the image size in arcsecs
 	set size_ [expr {[min $wcsw $wcsh]/4}]
 	
 	# size in deg
@@ -243,7 +261,7 @@ itcl::class rtd::RtdImagePan {
 	    return
 	} 
 
-	# get end points of compass
+	# get end points of compass so we can determine the directions
 	set ra1 [expr {$ra0+$size_deg/cos(($dec0/180.)*$pi_)}]
 	if {$ra1 < 0} {
 	    set ra1 [expr {360+$ra1}]
@@ -252,12 +270,24 @@ itcl::class rtd::RtdImagePan {
 	set dec1 [expr {$dec0+$size_deg}]
 	if {$dec1 >= 90} {
 	    set dec1 [expr {180-$dec1}]
-	} 
+	}
 
-	# draw the compass
+	# end points in canvas coords
 	$image_ convert coords $ra0 $dec0 $deg_eq cx0 cy0 canvas
 	$image_ convert coords $ra1 $dec0 $deg_eq cx1 cy1 canvas
 	$image_ convert coords $ra0 $dec1 $deg_eq cx2 cy2 canvas
+       
+        # directions
+        set t1 [expr atan2($cy1-$cy0,$cx1-$cx0)]
+        set t2 [expr atan2($cy2-$cy0,$cx2-$cx0)]
+
+        # make sure lengths are 0.25 of the width pixels
+        set w [expr 0.25*$itk_option(-width)]
+        set cx1 [expr $cx0+$w*cos($t1)]
+        set cy1 [expr $cy0+$w*sin($t1)]
+
+        set cx2 [expr $cx0+$w*cos($t2)]
+        set cy2 [expr $cy0+$w*sin($t2)]
 
 	# East line
 	$canvas_ create line $cx0 $cy0 $cx1 $cy1 \
@@ -367,7 +397,7 @@ itcl::class rtd::RtdImagePan {
     protected variable pi_ 3.14159265358979323846
 
     # compass label fonts
-    protected variable compassfont_ *-Courier-Bold-R-Normal-*-100-*
+    protected variable compassfont_ TkTooltipFont
 
     # current pan coords
     protected variable coords_    

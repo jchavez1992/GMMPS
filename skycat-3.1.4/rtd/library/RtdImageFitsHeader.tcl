@@ -10,6 +10,10 @@
 # pbiereic    14/08/01   Created
 # pbiereic    17/02/03   fixed problems with tabnotebook, packing order
 #                        and labels of tabsets
+# pdraper     05/04/06   Treat HISTORY like COMMENT
+# pdraper     20/02/07   Formatting changes: keep empty lines (one anyway) 
+#                        and print blank COMMENT/HISTORY lines with blanks, do
+#                        not fake that they start with COMMENT/HISTORY.
 
 itk::usual RtdImageFitsHeader {}
 
@@ -63,7 +67,7 @@ itcl::class rtd::RtdImageFitsHeader {
     # add the menubar at the top of the window
 
     protected method add_menubar {} {
-	TopLevelWidget::add_menubar
+	util::TopLevelWidget::add_menubar
 
 	# add menubuttons and menus
 
@@ -130,7 +134,7 @@ itcl::class rtd::RtdImageFitsHeader {
 	}
 	
 	itk_component add search {
-	    LabelEntry $itk_component(buttons).search \
+	    util::LabelEntry $itk_component(buttons).search \
 		    -text Search -valuewidth 10 \
 		    -command [code $this search]
 	}
@@ -186,7 +190,7 @@ itcl::class rtd::RtdImageFitsHeader {
 		$w config -table $tbl
                 wm deiconify $w
             } else {
-                TableListPrint $w -table $tbl -printcmd [$tbl cget -printcmd]
+                util::TableListPrint $w -table $tbl -printcmd [$tbl cget -printcmd]
             }
         }
     }
@@ -313,13 +317,21 @@ itcl::class rtd::RtdImageFitsHeader {
 
 	set fits [$image_ hdu fits $hdu]
 	# TableList needs formatting...
+        set lastblank 0
 	foreach line [split $fits "\n"] {
 	    set l [string trim $line]
 	    if {"$l" == "END"} {
 		lappend info [list END {} {}]
 		break
 	    }
-	    if { [lempty $l] } { continue }
+	    if { [lempty $l] } {
+               if { ! $lastblank } {
+                  lappend info [list {} {} {}]
+               }
+               set lastblank 1
+               continue
+            }
+            set lastblank 0
 	    set triple [get_kvc $line]
 	    if { [lempty $triple] } {
 		set triple [list INVALID {} $line]
@@ -336,13 +348,18 @@ itcl::class rtd::RtdImageFitsHeader {
 
     protected method get_kvc { line } {
 	set key [string range $line 0 6]
-	if { [lempty $key] || "$key" == "COMMENT" } {
-	    return [list COMMENT {} [string trim [string range $line 7 end]]]
+        if { [lempty $key] || "$key" == "COMMENT" || "$key" == "HISTORY" } {
+	    return [list $key {} [string trim [string range $line 7 end]]]
 	}
 	lassign [split $line =] l1 l2
-	if { [lempty $l1] } { return "" }
+        if { [lempty $l1] } { return "" }
 	set key [string trim $l1]
-	lassign [split $l2 /] l1 l2
+	lassign [split $l2 /] l1 l2 l3
+        if { [info exists l3] && $l3 !={} } {
+           #  value = 'name/name' /comment?
+           set l1 "$l1/$l2"
+           set l2 "$l3"
+        }
 	set val [string trim $l1]
 	set com [string trim $l2]
 	return [list $key $val $com]
@@ -356,7 +373,7 @@ itcl::class rtd::RtdImageFitsHeader {
     }
     
     # Font to use for labels
-    itk_option define -labelfont labelFont LabelFont -Adobe-helvetica-bold-r-normal--10*
+    itk_option define -labelfont labelFont LabelFont TkDefaultFont
     
     # -- protected vars --
     

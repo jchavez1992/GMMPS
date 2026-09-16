@@ -15,6 +15,8 @@ if test -f $cf ; then
     AC_SUBST(BLT_LIB_DIR)
     AC_SUBST(tclutil_SRC_DIR)
     AC_SUBST(tclutil_PKG_OBJECTS)
+    AC_SUBST(CFITSIO_LIB_SPEC)
+    AC_SUBST(CFITSIO_LIB_DIR)
 else
     AC_MSG_ERROR([$cf doesn't exist])
 fi
@@ -91,7 +93,7 @@ cincludes="${skycat_includes} ${cat_includes} ${rtd_includes} ${astrotcl_include
 
 tclsources=`cd $srcdir; echo library/*.tcl library/*.xpm`
 
-if test $MERGED == yes ; then
+if test $MERGED = "yes" ; then
     echo "Will build merged master skycat library"
     cheaders="${skycat_headers} ${cat_headers} ${rtd_headers} ${astrotcl_headers} ${tclutil_headers}"
     MERGE_OBJECTS="$cat_PKG_OBJECTS $rtd_PKG_OBJECTS $astrotcl_PKG_OBJECTS $tclutil_PKG_OBJECTS"
@@ -103,7 +105,47 @@ fi
 AC_SUBST(MERGE_OBJECTS)
 
 # -----------------------------------------------------------------------
+# 	Check if we need (or can use) the socklen_t type.
+AC_CHECK_TYPES([socklen_t],,,[#include <sys/socket.h>])
+
+# -----------------------------------------------------------------------
 AC_DEFINE(USE_COMPAT_CONST, 1, [For compatibility between tcl8.4 and previous tcl releases])
+
+#------------------------------------------------------------------------
+#  Check if we require additional libraries to support C++ shareable
+#  libraries.
+system=`uname -s`-`uname -r`
+SHLIB_LD_CXX_LIBS=""
+export SHLIB_LD_CXX_LIBS
+case $system in
+   SunOS-5*)
+      SHLIB_LD_CXX_LIBS="-lCrun -lCstd"
+   ;;
+   OSF*)
+      SHLIB_LD_CXX_LIBS="-lcxx -lcxxstd"
+   ;;
+esac
+AC_SUBST(SHLIB_LD_CXX_LIBS)
+
+#-------------------------------------------------------------------------
+#  The cxx C++ compiler under Tru64 UNIX needs the special
+#  CXXFLAGS "-std gnu -D__USE_STD_IOSTREAM=1". These allow the standard 
+#  library streams headers to work and to generate templates that do 
+#  not require special handling throughout skycat directories (normally 
+#  template object files are created in various cxx_repository subdirectories,
+#  this way the object files are kept embedded the usual object files, see 
+#  the cxx man page for details).
+#-------------------------------------------------------------------------
+export CXXFLAGS
+case $system in
+   OSF*) 
+      case "x$CXX" in
+         xcxx*)
+            CXXFLAGS="$CXXFLAGS -g3 -std gnu -D__USE_STD_IOSTREAM=1"
+         ;;
+      esac
+  ;;
+esac
 
 ])
 

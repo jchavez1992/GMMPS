@@ -14,6 +14,13 @@
  * who             when       what
  * --------------  --------   ----------------------------------------
  * Allan Brighton  29 Sep 95  Created
+ * Peter W. Draper 01 Jul 08  Added system, epoch, unit, ucd, utype
+ *                            and datatype support, plus equinox as string. 
+ *                            Needed for VO interop.
+ *                 20 Mar 09  Added hooks for preserving comments extracted
+ *                            from a local catalogue.
+ *                 08 May 09  Added stc_col support.
+ *                 26 Mar 15  Added xtype support (more VO).
  */
 
 
@@ -130,6 +137,15 @@ private:
 	SHOW_COLS,		// list of columns to display (default: all)
 	COPYRIGHT_,		// copyright notice for server
 	HELP_,		        // URL pointing to help page fpr catalog
+        SYSTEM_,                // system of the celestial coordinates (FK5, FK4 etc.)
+	EQUINOX_,               // equinox qualifying string (J or B)
+	EPOCH_,		        // epoch qualifying string (J or B)
+	UNIT_,		        // units for all columns "unit1 \t unit2 \t \t unit4 \t..."
+	UCD_,		        // UCDs for all columns "ucd1 \t ucd2 \t \t ucd4 \t..."
+	UTYPE_,		        // utypes for all columns "utype1 \t utype2 \t \t utype4 \t..."
+	XTYPE_,		        // xtypes for all columns "xtype1 \t xtype2 \t \t xtype4 \t..."
+        DATATYPE_,              // datatypes of columns, if interpreted
+        COMMENTS_,              // comments associated with entry, if any
 
 	NUM_KEY_STRINGS_	// dummy last entry, number of keywords
     };
@@ -143,9 +159,11 @@ private:
     int x_col_;			// instead of RA, can use pixel coords X,Y
     int y_col_;
     int is_tcs_;		// flag: true if using TCS columns
+    int stc_col_;               // column containing STC region
 
     // double keyword values
     double equinox_;		// equinox of wcs coords (default: J2000)
+    double epoch_;              // epoch of wcs coords (default: 2000)
 
     CatalogInfoEntry* link_;	// If the url is a catalog config file or URL
                                 // this points to the first entry in that list.
@@ -182,10 +200,19 @@ public:
     void symbol(const char* s)    {setVal_(SYMBOL_, s);}
     void searchCols(const char* s){setVal_(SEARCH_COLS, s);}
     void sortCols(const char* s)  {setVal_(SORT_COLS, s);}
-    void sortOrder(const char* s)  {setVal_(SORT_ORDER, s);}
+    void sortOrder(const char* s) {setVal_(SORT_ORDER, s);}
     void showCols(const char* s)  {setVal_(SHOW_COLS, s);}
     void copyright(const char* s) {setVal_(COPYRIGHT_, s);}
     void help(const char* s)      {setVal_(HELP_, s);}
+    void system(const char* s)    {setVal_(SYSTEM_, s);}
+    void equinoxprefix(const char* s) {setVal_(EQUINOX_, s);}
+    void epochprefix(const char* s) {setVal_(EPOCH_, s);}
+    void unit(const char* s)      {setVal_(UNIT_, s);}
+    void ucd(const char* s)       {setVal_(UCD_, s);}
+    void utype(const char* s)     {setVal_(UTYPE_, s);}
+    void xtype(const char* s)     {setVal_(XTYPE_, s);}
+    void datatype(const char* s)  {setVal_(DATATYPE_, s);}
+    void comments(const char* s)  {setVal_(COMMENTS_, s);}
 
     // set int keyword values
     void id_col(int i)  {id_col_  = i;}
@@ -194,9 +221,11 @@ public:
     void x_col(int i)   {x_col_   = i;}
     void y_col(int i)   {y_col_   = i;}
     void is_tcs(int i)  {is_tcs_  = i;}
+    void stc_col(int i) {stc_col_ = i;}
 
     // set double keyword values
     void equinox(double d)  {equinox_  = d;}
+    void epoch(double d)  {epoch_  = d;}
 
     // get string keyword values
     const char* servType() const  {return val_[SERVTYPE_];}
@@ -213,6 +242,18 @@ public:
     const char* copyright() const {return val_[COPYRIGHT_];}
     const char* help() const      {return val_[HELP_];}
 
+    const char* system() const    {return val_[SYSTEM_] ? val_[SYSTEM_] : "";}
+    const char* equinoxprefix() const {return val_[EQUINOX_];}
+    const char* epochprefix() const {return val_[EPOCH_];}
+
+    const char* unit() const      {return val_[UNIT_];}
+    const char* ucd() const       {return val_[UCD_];}
+    const char* utype() const     {return val_[UTYPE_];}
+    const char* xtype() const     {return val_[XTYPE_];}
+    const char* datatype() const  {return val_[DATATYPE_];}
+
+    const char* comments() const  {return val_[COMMENTS_];}
+
     // get int keyword values
     int id_col() const;
     int ra_col()  const;
@@ -220,9 +261,11 @@ public:
     int x_col() const;
     int y_col() const;
     int is_tcs() const {return is_tcs_;}
+    int stc_col() const;
 
     // get double keyword values
     double equinox() const {return equinox_;}
+    double epoch() const {return epoch_;}
     
     // return true if the catalog uses word coordinates
     int isWcs() {return ra_col() >= 0 && dec_col() >= 0;}

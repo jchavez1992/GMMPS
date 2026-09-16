@@ -14,6 +14,10 @@
 # Peter W. Draper 14 May 98  Added changes to use Canvas postscript
 #                            printing with a suitably patched Tk.
 #                            Now only get a footer.
+# Peter W. Draper 21 Aug 02  Added swap of width and height values
+#                            when toggling between portrait and landscape
+#                 05 Aug 09  Tweak footer positions for new fonts.
+ 
 
 itk::usual RtdImagePrint {}
 
@@ -69,19 +73,22 @@ itcl::class rtd::RtdImagePrint {
 		 -variable $w_.color \
 		 -value mono] \
 	    -side left -fill x -expand 1
-	::set $w_.color gray
+	::set $w_.color color
 
 	# rotate options 
 	pack [frame $w_.rotate -borderwidth 5] \
 	    -side top -fill x -expand 1 -in $w_.options
 	pack [radiobutton $w_.rotate.yes -text "Landscape" \
 		  -variable $w_.rotate \
-		  -value yes] \
+		  -value yes \
+                  -command [code $this toggle_rotate_] ] \
 	    [radiobutton $w_.rotate.no -text "Portrait" \
 		 -variable $w_.rotate \
-		 -value no] \
+		 -value no \
+                 -command [code $this toggle_rotate_] ] \
 	    -side left -fill x -expand 1
 	::set $w_.rotate no
+        set last_rotate_ no
 
         #  Capture whole of displayed canvas.
         pack [frame $w_.whole -borderwidth 5] \
@@ -101,15 +108,15 @@ itcl::class rtd::RtdImagePrint {
 	    -command [code $this toggle_fit_pagesize]
 	checkbutton $w_.pagesize.footer -text "Footer text" \
 	    -variable $w_.footer
-	LabelEntry $w_.pagesize.width \
+	util::LabelEntry $w_.pagesize.width \
 	    -text "Page width " \
 	    -value $itk_option(-pagewidth) \
 	    -valuewidth 6
-	LabelEntry $w_.pagesize.height \
+	util::LabelEntry $w_.pagesize.height \
 	    -text "Page height" \
 	    -value $itk_option(-pageheight) \
 	    -valuewidth 6
-	blt::table $w_.pagesize \
+	blt::blttable $w_.pagesize \
 	    $w_.pagesize.fit      1,0 -anchor w \
 	    $w_.pagesize.footer   1,1 -anchor e \
 	    $w_.pagesize.width    2,0 -anchor w \
@@ -158,7 +165,7 @@ itcl::class rtd::RtdImagePrint {
     }
 
     
-    # called when the "Fit on page" button is pressed
+    # called when the "Encapsulate" button is pressed
 
     protected method toggle_fit_pagesize {} {
 	global ::$w_.fit_to_page
@@ -171,12 +178,24 @@ itcl::class rtd::RtdImagePrint {
 	}
     }
 
+    # switch the "width" and "height" when changing between landscape
+    # and portrait mode
+    protected method toggle_rotate_ {} {
+        global ::$w_.rotate
+       if { $last_rotate_ == [set $w_.rotate] } { 
+           return
+        }       
+       set width [$w_.pagesize.width get]
+       $w_.pagesize.width configure -value [$w_.pagesize.height get]
+       $w_.pagesize.height configure -value $width
+       set last_rotate_ [set $w_.rotate]
+    }
 
     # print the contents of the canvas to the open filedescriptor
 
     protected method print {fd} {
 	global ::$w_.color ::$w_.rotate $w_.colormap ::$w_.footer
-	global ::$w_.fit_to_page
+	global ::$w_.fit_to_page ::$w_.whole
 
 	set cmd [list $canvas_ postscript \
 		     -colormode [set $w_.color] \
@@ -195,7 +214,7 @@ itcl::class rtd::RtdImagePrint {
 	    # of the displayed rtd image if available. If not then
 	    # use a bounding box that encompasses all the displayed items.
 
-	    if { ! $itk_option(-whole_canvas) } {
+           if { ! [set $w_.whole] } {
 
 		#  The origin of the image is always 0,0 for a canvas
 		#  print to work.
@@ -204,7 +223,6 @@ itcl::class rtd::RtdImagePrint {
 		set x1 [min [winfo width $canvas_] [$image_ dispwidth]]
 		set y1 [min [winfo height $canvas_] [$image_ dispheight]]
 	    } else {
-
 		#  Use whole printing surface.
 		set x0 [min 0 [$canvas_ canvasx 0]]
 		set y0 [min 0 [$canvas_ canvasy 0]]
@@ -214,7 +232,7 @@ itcl::class rtd::RtdImagePrint {
 	}
 
 	#  Set the background (use a filled rectangle to simulate this).
-	if { $itk_option(-whole_canvas) } {
+       if { [set $w_.whole] } {
 	    set_background
 	}
 
@@ -262,7 +280,7 @@ itcl::class rtd::RtdImagePrint {
 	}
 
 	#  Remove background.
-	if { $itk_option(-whole_canvas) } {
+       if { [set $w_.whole] } {
 	    remove_background
 	}
     }
@@ -281,7 +299,7 @@ itcl::class rtd::RtdImagePrint {
 	    -tags print
 
 	set hx0 $x0
-	set hy0 [expr {$y1+20}]
+	set hy0 [expr {$y1+30}]
 	set hx1 $x1
 	set hy1 [expr {$y1+40}]
 	
@@ -404,8 +422,7 @@ itcl::class rtd::RtdImagePrint {
     itk_option define -bot_right bot_right Bot_right {}
     
     # footer fonts
-    itk_option define -footer_font footer_font Footer_font \
-	{-*-courier-bold-r-*-*-10-100-*-*-*-*-*-*}
+    itk_option define -footer_font footer_font Footer_font TkFixedFont
 
     # upper left X coordinate of area of canvas to print (default bbox all)
     itk_option define -x0 x0 X0 {} {set x0 $itk_option(-x0)}
@@ -434,4 +451,6 @@ itcl::class rtd::RtdImagePrint {
     # canvas widget
     protected variable canvas_
 
+    # last/initial rotate value
+    protected variable last_rotate_ no
 }

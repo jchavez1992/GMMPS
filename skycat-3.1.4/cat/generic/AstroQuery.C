@@ -17,6 +17,7 @@ static const char* const rcsId="@(#) $Id: AstroQuery.C,v 1.1.1.1 2009/03/31 14:1
 #include <cstdlib>
 #include <cerrno>
 #include <cstring>
+#include <sys/types.h>
 #include "error.h"
 #include "util.h"
 #include "AstroQuery.h"
@@ -78,16 +79,18 @@ AstroQuery::~AstroQuery()
 {
     if (id_)
 	free(id_);
-    if (colNames_)
-	delete(colNames_);
-    if (sortCols_)
-	delete sortCols_;
-    if (searchCols_)
-	delete searchCols_ ;
-    if (minValues_)
-	delete minValues_;
-    if (maxValues_)
-	delete maxValues_;
+// PWD: let these leak. In fact these can be new or malloc memory
+//      depending on various freeflag values... Need to track which.
+//     if (colNames_)
+// 	delete[] colNames_;
+//     if (sortCols_)
+// 	delete[] sortCols_;
+//     if (searchCols_)
+// 	delete[] searchCols_ ;
+//     if (minValues_)
+// 	delete[] minValues_;
+//     if (maxValues_)
+// 	delete[] maxValues_;
 
 }
 

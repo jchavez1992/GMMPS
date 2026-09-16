@@ -26,8 +26,8 @@ AC_DEFUN(TCLUTIL_PATH_BLT, [
        [AC_HELP_STRING([--with-blt=DIR],[link with BLT library installed in DIR])],
        BLT_LIB_DIR=$withval)
 
-    BLT_LIBNAME=libBLT24${SHLIB_SUFFIX}
-    BLT_LIBFLAG=-lBLT24
+    BLT_LIBNAME=libBLT25${SHLIB_SUFFIX}
+    BLT_LIBFLAG="-lBLT25"
 
     if test -z "$BLT_LIB_DIR" ; then
 	# If --with-blt=dir was not specified, try the Tcl lib dir and the exec-prefix/lib dir
@@ -98,7 +98,8 @@ AC_CHECK_SIZEOF(long, 4)
 
 AC_MSG_CHECKING("do we have union semun defined")
 AC_TRY_COMPILE(
-[#include <sys/ipc.h>
+[#include <sys/types.h>
+#include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
 ], [
@@ -121,6 +122,11 @@ AC_EGREP_HEADER([int.*munmap.*\(], [sys/mman.h],
 AC_CHECK_HEADERS(sys/filio.h)
 AC_CHECK_HEADERS(sys/statvfs.h)
 
+# -----------------------------------------------------------------------
+# 	Check if we need (or can use) the socklen_t type.
+# -----------------------------------------------------------------------
+AC_CHECK_TYPES([socklen_t],,,[#include <sys/socket.h>])
+
 #------------------------------------------------------------------------
 #AC_LANG(C++)
 AC_MSG_CHECKING([fd_set])
@@ -134,4 +140,41 @@ if test $test_ok = yes; then
 fi
 AC_MSG_RESULT($test_ok)
 
-])
+
+#------------------------------------------------------------------------
+#  Check if we require additional libraries to support C++ shareable
+#  libraries.
+system=`uname -s`-`uname -r`
+SHLIB_LD_CXX_LIBS=""
+export SHLIB_LD_CXX_LIBS
+case $system in
+   SunOS-5*)
+      SHLIB_LD_CXX_LIBS="-lCrun -lCstd"
+   ;;
+   OSF*)
+      SHLIB_LD_CXX_LIBS="-lcxx -lcxxstd"
+   ;;
+esac
+AC_SUBST(SHLIB_LD_CXX_LIBS)
+
+#-------------------------------------------------------------------------
+#  The cxx C++ compiler under Tru64 UNIX needs the special
+#  CXXFLAGS "-std gnu -D__USE_STD_IOSTREAM=1". These allow the standard 
+#  library streams headers to work and to generate templates that do 
+#  not require special handling throughout skycat directories (normally 
+#  template object files are created in various cxx_repository subdirectories,
+#  this way the object files are kept embedded the usual object files, see 
+#  the cxx man page for details).
+#-------------------------------------------------------------------------
+export CXXFLAGS
+case $system in
+   OSF*) 
+      case "x$CXX" in
+         xcxx*)
+            CXXFLAGS="$CXXFLAGS -g3 -std gnu -D__USE_STD_IOSTREAM=1"
+         ;;
+      esac
+  ;;
+esac
+]) #  End of macro
+

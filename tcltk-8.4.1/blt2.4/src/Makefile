@@ -10,7 +10,7 @@
 BLT_LIBRARY =	/Users/joy.chavez/Desktop/Work/gmmps_add_480/lib/blt2.4
 TCLLIBPATH   =	/Users/joy.chavez/Desktop/Work/gmmps_add_480/tcltk-8.4.1/tcl8.4.11/unix/tcl8.4
 CC =		gcc
-CFLAGS =	-O6 
+CFLAGS =	-O2 -arch arm64 
 DEFINES =	
 EXTRA_CFLAGS =	-Wall
 LDFLAGS =	 

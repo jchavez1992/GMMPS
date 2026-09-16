@@ -22,11 +22,25 @@
  *                           ImageIORep.
  *                           Added WCS class, for optional World Coords
  *                           support.
+ * Peter W. Draper 04/02/00  Changed constness of write so that
+ *                           non-const member can be used within this
+ *                           member. 
+ *                 30/05/01  Added DOUBLE_IMAGE enumeration.
+ *                           Added copy() and setHDU pure virtual members
+ *                           to support CompoundImageData  not having access
+ *                           to the FitsIO class. The actual effect
+ *                           of the setHDU member is left to the
+ *                           implementation (this switches HDU for FitsIO).
+ * Peter W. Draper 08/01/07  Comment out isclear() methods. Not used and
+ *                           no longer reflect how a blank image is detected
+ *                           (if resurrected need to add and then check for
+ *                           RTD_BLANK value in OBJECT card to match behaviour
+ *                           in RTD, or add a member for blankness).
  * pbiereic        12/08/07  added support for data types double and long long int
  */
 
-
 #include <iostream>
+#include <cstdlib>
 #include <cmath>
 #include <cstdlib>
 #include "WCSRep.h"
@@ -112,7 +126,7 @@ public:
     virtual int getFitsHeader(ostream& os) const = 0;
 
     // write the data to an image file 
-    virtual int write(const char *filename) const = 0;
+    virtual int write(const char *filename) = 0;
 
     // apply bzero and bscale to the value
     double scaleValue(double d) const {return bzero_+d*bscale_;}
@@ -154,7 +168,15 @@ public:
 
     // Return true if no image is loaded (a 2x2 pixel or smaller
     // image is considered blank).
-    virtual int isclear() const {return width_ <= 2 && height_ <= 2;}
+    // PWD: unsafe function. This is not true.
+    //virtual int isclear() const {return width_ <= 2 && height_ <= 2;}
+
+    // create a copy, as lightweight as possible.
+    virtual ImageIORep *copy() = 0;
+
+    // switch to another component of the implementation.
+    virtual int setHDU(int num) = 0;
+
 };
 
 
@@ -304,7 +326,8 @@ public:
     int status() const {return rep_ ? rep_->status() : 1;}
 
     // Return true if no image is loaded.
-    int isclear() const {return rep_->isclear();}
+    // PWD: see ImageIORep.
+    //int isclear() const {return rep_->isclear();}
 
     // return a pointer to the internal class
     ImageIORep* rep() const {return rep_;}

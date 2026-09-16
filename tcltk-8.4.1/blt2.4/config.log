@@ -30,8 +30,8 @@ Kernel configured for up to 8 processors.
 Processor type: arm64e (ARM64E)
 Processors active: 0 1 2 3 4 5 6 7
 Primary memory available: 16.00 gigabytes
-Default processor set: 632 tasks, 2934 threads, 8 processors
-Load average: 3.73, Mach factor: 4.25
+Default processor set: 604 tasks, 3015 threads, 8 processors
+Load average: 10.23, Mach factor: 2.42
 /bin/machine           = unknown
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
@@ -64,7 +64,6 @@ configure:1486: result: arm-apple-darwin23.6.0
 configure:1494: checking target system type
 configure:1508: result: arm-apple-darwin23.6.0
 configure:1654: checking for gcc
-configure:1670: found /usr/bin/gcc
 configure:1680: result: gcc
 configure:1924: checking for C compiler version
 configure:1927: gcc --version </dev/null >&5
@@ -84,7 +83,7 @@ clang: error: argument to '-V' is missing (expected 1 value)
 clang: error: no input files
 configure:1940: $? = 1
 configure:1963: checking for C compiler default output file name
-configure:1966: gcc    conftest.c  >&5
+configure:1966: gcc -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:1969: $? = 0
 configure:2015: result: a.out
 configure:2020: checking whether the C compiler works
@@ -94,15 +93,15 @@ configure:2046: result: yes
 configure:2053: checking whether we are cross compiling
 configure:2055: result: no
 configure:2058: checking for suffix of executables
-configure:2060: gcc -o conftest    conftest.c  >&5
+configure:2060: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:2063: $? = 0
 configure:2088: result: 
 configure:2094: checking for suffix of object files
-configure:2115: gcc -c   conftest.c >&5
+configure:2115: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:2118: $? = 0
 configure:2140: result: o
 configure:2144: checking whether we are using the GNU C compiler
-configure:2168: gcc -c   conftest.c >&5
+configure:2168: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:2174: $? = 0
 configure:2178: test -z 
 			 || test ! -s conftest.err
@@ -120,7 +119,7 @@ configure:2243: test -s conftest.o
 configure:2246: $? = 0
 configure:2257: result: yes
 configure:2274: checking for gcc option to accept ANSI C
-configure:2344: gcc  -c -g -O2  conftest.c >&5
+configure:2344: gcc  -c -O2 -arch arm64  conftest.c >&5
 conftest.c:16:14: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C2x [-Wdeprecated-non-prototype]
    16 | static char *e (p, i)
       |              ^
@@ -132,7 +131,7 @@ configure:2357: $? = 0
 configure:2360: test -s conftest.o
 configure:2363: $? = 0
 configure:2381: result: none needed
-configure:2399: gcc -c -g -O2  conftest.c >&5
+configure:2399: gcc -c -O2 -arch arm64  conftest.c >&5
 conftest.c:2:3: error: unknown type name 'choke'
     2 |   choke me
       |   ^
@@ -187,7 +186,7 @@ configure: failed program was:
 | /* end confdefs.h.  */
 | #include <ac_nonexistent.h>
 configure:2873: checking default compiler flags
-configure:2884: result: -O6
+configure:2884: result: -O2 -arch arm64
 configure:2933: checking for gawk
 configure:2962: result: no
 configure:2933: checking for mawk
@@ -205,9 +204,7 @@ configure:3116: result: ranlib
 configure:3128: checking whether ln -s works
 configure:3132: result: yes
 configure:3146: checking for main in -lsocket
-configure:3170: gcc -o conftest -O6   conftest.c -lsocket   >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3170: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lsocket   >&5
 ld: library 'socket' not found
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 configure:3176: $? = 1
@@ -231,9 +228,7 @@ configure: failed program was:
 | }
 configure:3202: result: no
 configure:3214: checking for main in -lnsl
-configure:3238: gcc -o conftest -O6   conftest.c -lnsl   >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3238: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lnsl   >&5
 ld: library 'nsl' not found
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 configure:3244: $? = 1
@@ -257,9 +252,7 @@ configure: failed program was:
 | }
 configure:3270: result: no
 configure:3282: checking for main in -lm
-configure:3306: gcc -o conftest -O6   conftest.c -lm   >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3306: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm   >&5
 configure:3312: $? = 0
 configure:3316: test -z 
 			 || test ! -s conftest.err
@@ -268,9 +261,7 @@ configure:3322: test -s conftest
 configure:3325: $? = 0
 configure:3338: result: yes
 configure:3355: checking for ANSI C header files
-configure:3380: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3380: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3386: $? = 0
 configure:3390: test -z 
 			 || test ! -s conftest.err
@@ -279,9 +270,7 @@ configure:3396: test -s conftest.o
 configure:3399: $? = 0
 configure:3511: result: no
 configure:3521: checking for sys/wait.h that is POSIX.1 compatible
-configure:3552: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3552: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3558: $? = 0
 configure:3562: test -z 
 			 || test ! -s conftest.err
@@ -290,9 +279,7 @@ configure:3568: test -s conftest.o
 configure:3571: $? = 0
 configure:3582: result: yes
 configure:3592: checking whether time.h and sys/time.h may both be included
-configure:3617: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3617: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3623: $? = 0
 configure:3627: test -z 
 			 || test ! -s conftest.err
@@ -301,9 +288,7 @@ configure:3633: test -s conftest.o
 configure:3636: $? = 0
 configure:3647: result: yes
 configure:3672: checking for sys/types.h
-configure:3688: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3688: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3694: $? = 0
 configure:3698: test -z 
 			 || test ! -s conftest.err
@@ -312,9 +297,7 @@ configure:3704: test -s conftest.o
 configure:3707: $? = 0
 configure:3718: result: yes
 configure:3672: checking for sys/stat.h
-configure:3688: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3688: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3694: $? = 0
 configure:3698: test -z 
 			 || test ! -s conftest.err
@@ -323,9 +306,7 @@ configure:3704: test -s conftest.o
 configure:3707: $? = 0
 configure:3718: result: yes
 configure:3672: checking for stdlib.h
-configure:3688: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3688: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3694: $? = 0
 configure:3698: test -z 
 			 || test ! -s conftest.err
@@ -334,9 +315,7 @@ configure:3704: test -s conftest.o
 configure:3707: $? = 0
 configure:3718: result: yes
 configure:3672: checking for string.h
-configure:3688: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3688: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3694: $? = 0
 configure:3698: test -z 
 			 || test ! -s conftest.err
@@ -345,9 +324,7 @@ configure:3704: test -s conftest.o
 configure:3707: $? = 0
 configure:3718: result: yes
 configure:3672: checking for memory.h
-configure:3688: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3688: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3694: $? = 0
 configure:3698: test -z 
 			 || test ! -s conftest.err
@@ -356,9 +333,7 @@ configure:3704: test -s conftest.o
 configure:3707: $? = 0
 configure:3718: result: yes
 configure:3672: checking for strings.h
-configure:3688: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3688: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3694: $? = 0
 configure:3698: test -z 
 			 || test ! -s conftest.err
@@ -367,9 +342,7 @@ configure:3704: test -s conftest.o
 configure:3707: $? = 0
 configure:3718: result: yes
 configure:3672: checking for inttypes.h
-configure:3688: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3688: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3694: $? = 0
 configure:3698: test -z 
 			 || test ! -s conftest.err
@@ -378,9 +351,7 @@ configure:3704: test -s conftest.o
 configure:3707: $? = 0
 configure:3718: result: yes
 configure:3672: checking for stdint.h
-configure:3688: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3688: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3694: $? = 0
 configure:3698: test -z 
 			 || test ! -s conftest.err
@@ -389,9 +360,7 @@ configure:3704: test -s conftest.o
 configure:3707: $? = 0
 configure:3718: result: yes
 configure:3672: checking for unistd.h
-configure:3688: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3688: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3694: $? = 0
 configure:3698: test -z 
 			 || test ! -s conftest.err
@@ -402,9 +371,7 @@ configure:3718: result: yes
 configure:3735: checking for inttypes.h
 configure:3740: result: yes
 configure:3902: checking limits.h usability
-configure:3914: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3914: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3920: $? = 0
 configure:3924: test -z 
 			 || test ! -s conftest.err
@@ -419,9 +386,7 @@ configure:3983: result: yes
 configure:4018: checking for limits.h
 configure:4025: result: yes
 configure:3902: checking sys/param.h usability
-configure:3914: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:3914: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3920: $? = 0
 configure:3924: test -z 
 			 || test ! -s conftest.err
@@ -438,9 +403,7 @@ configure:4025: result: yes
 configure:4044: checking for string.h
 configure:4049: result: yes
 configure:4053: checking ctype.h usability
-configure:4065: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:4065: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:4071: $? = 0
 configure:4075: test -z 
 			 || test ! -s conftest.err
@@ -455,9 +418,7 @@ configure:4134: result: yes
 configure:4169: checking for ctype.h
 configure:4176: result: yes
 configure:4206: checking errno.h usability
-configure:4218: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:4218: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:4224: $? = 0
 configure:4228: test -z 
 			 || test ! -s conftest.err
@@ -472,9 +433,7 @@ configure:4287: result: yes
 configure:4322: checking for errno.h
 configure:4329: result: yes
 configure:4206: checking float.h usability
-configure:4218: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:4218: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:4224: $? = 0
 configure:4228: test -z 
 			 || test ! -s conftest.err
@@ -489,9 +448,7 @@ configure:4287: result: yes
 configure:4322: checking for float.h
 configure:4329: result: yes
 configure:4206: checking math.h usability
-configure:4218: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:4218: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:4224: $? = 0
 configure:4228: test -z 
 			 || test ! -s conftest.err
@@ -506,12 +463,11 @@ configure:4287: result: yes
 configure:4322: checking for math.h
 configure:4329: result: yes
 configure:4206: checking ieeefp.h usability
-configure:4218: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
+configure:4218: gcc -c -O2 -arch arm64  conftest.c >&5
 conftest.c:63:10: fatal error: 'ieeefp.h' file not found
    63 | #include <ieeefp.h>
       |          ^~~~~~~~~~
-1 warning and 1 error generated.
+1 error generated.
 configure:4224: $? = 1
 configure: failed program was:
 | /* confdefs.h.  */
@@ -619,9 +575,7 @@ configure:4287: result: no
 configure:4322: checking for ieeefp.h
 configure:4329: result: no
 configure:4358: checking sys/time.h usability
-configure:4370: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:4370: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:4376: $? = 0
 configure:4380: test -z 
 			 || test ! -s conftest.err
@@ -636,12 +590,11 @@ configure:4439: result: yes
 configure:4474: checking for sys/time.h
 configure:4481: result: yes
 configure:4358: checking waitflags.h usability
-configure:4370: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
+configure:4370: gcc -c -O2 -arch arm64  conftest.c >&5
 conftest.c:64:10: fatal error: 'waitflags.h' file not found
    64 | #include <waitflags.h>
       |          ^~~~~~~~~~~~~
-1 warning and 1 error generated.
+1 error generated.
 configure:4376: $? = 1
 configure: failed program was:
 | /* confdefs.h.  */
@@ -753,12 +706,11 @@ configure:4481: result: no
 configure:4349: checking for sys/wait.h
 configure:4354: result: yes
 configure:4509: checking malloc.h usability
-configure:4521: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
+configure:4521: gcc -c -O2 -arch arm64  conftest.c >&5
 conftest.c:65:10: fatal error: 'malloc.h' file not found
    65 | #include <malloc.h>
       |          ^~~~~~~~~~
-1 warning and 1 error generated.
+1 error generated.
 configure:4527: $? = 1
 configure: failed program was:
 | /* confdefs.h.  */
@@ -872,9 +824,7 @@ configure:4632: result: no
 configure:4500: checking for memory.h
 configure:4505: result: yes
 configure:4659: checking setjmp.h usability
-configure:4671: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:4671: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:4677: $? = 0
 configure:4681: test -z 
 			 || test ! -s conftest.err
@@ -893,9 +843,7 @@ configure:4969: result: yes
 configure:4964: checking for unistd.h
 configure:4969: result: yes
 configure:5115: checking for size_t
-configure:5139: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:5139: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:5145: $? = 0
 configure:5149: test -z 
 			 || test ! -s conftest.err
@@ -904,9 +852,7 @@ configure:5155: test -s conftest.o
 configure:5158: $? = 0
 configure:5169: result: yes
 configure:5181: checking for pid_t
-configure:5205: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:5205: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:5211: $? = 0
 configure:5215: test -z 
 			 || test ! -s conftest.err
@@ -915,9 +861,7 @@ configure:5221: test -s conftest.o
 configure:5224: $? = 0
 configure:5235: result: yes
 configure:5248: checking whether union wait is defined correctly
-configure:5280: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:5280: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:5286: $? = 0
 configure:5290: test -z 
 			 || test ! -s conftest.err
@@ -926,21 +870,18 @@ configure:5296: test -s conftest.o
 configure:5299: $? = 0
 configure:5318: result: yes
 configure:5328: checking whether byte ordering is bigendian
-configure:5355: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:5355: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:5361: $? = 0
 configure:5365: test -z 
 			 || test ! -s conftest.err
 configure:5368: $? = 0
 configure:5371: test -s conftest.o
 configure:5374: $? = 0
-configure:5398: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
+configure:5398: gcc -c -O2 -arch arm64  conftest.c >&5
 conftest.c:43:2: error: use of undeclared identifier 'not'
    43 |  not big endian
       |  ^
-1 warning and 1 error generated.
+1 error generated.
 configure:5404: $? = 1
 configure: failed program was:
 | /* confdefs.h.  */
@@ -993,9 +934,7 @@ configure: failed program was:
 | }
 configure:5539: result: no
 configure:5558: checking for int
-configure:5582: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:5582: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:5588: $? = 0
 configure:5592: test -z 
 			 || test ! -s conftest.err
@@ -1004,17 +943,13 @@ configure:5598: test -s conftest.o
 configure:5601: $? = 0
 configure:5612: result: yes
 configure:5615: checking size of int
-configure:5934: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:5934: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 configure:5937: $? = 0
 configure:5939: ./conftest
 configure:5942: $? = 0
 configure:5965: result: 4
 configure:5972: checking for long
-configure:5996: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:5996: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:6002: $? = 0
 configure:6006: test -z 
 			 || test ! -s conftest.err
@@ -1023,17 +958,13 @@ configure:6012: test -s conftest.o
 configure:6015: $? = 0
 configure:6026: result: yes
 configure:6029: checking size of long
-configure:6348: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:6348: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 configure:6351: $? = 0
 configure:6353: ./conftest
 configure:6356: $? = 0
 configure:6379: result: 8
 configure:6386: checking for long long
-configure:6410: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:6410: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:6416: $? = 0
 configure:6420: test -z 
 			 || test ! -s conftest.err
@@ -1042,17 +973,13 @@ configure:6426: test -s conftest.o
 configure:6429: $? = 0
 configure:6440: result: yes
 configure:6443: checking size of long long
-configure:6762: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:6762: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 configure:6765: $? = 0
 configure:6767: ./conftest
 configure:6770: $? = 0
 configure:6793: result: 8
 configure:6800: checking for void *
-configure:6824: gcc -c -O6  conftest.c >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:6824: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:6830: $? = 0
 configure:6834: test -z 
 			 || test ! -s conftest.err
@@ -1061,21 +988,18 @@ configure:6840: test -s conftest.o
 configure:6843: $? = 0
 configure:6854: result: yes
 configure:6857: checking size of void *
-configure:7176: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:7176: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 configure:7179: $? = 0
 configure:7181: ./conftest
 configure:7184: $? = 0
 configure:7207: result: 8
 configure:7240: checking for strdup
-configure:7297: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
+configure:7297: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 conftest.c:64:6: warning: incompatible redeclaration of library function 'strdup' [-Wincompatible-library-redeclaration]
    64 | char strdup ();
       |      ^
 conftest.c:64:6: note: 'strdup' is a builtin with type 'char *(const char *)'
-2 warnings generated.
+1 warning generated.
 configure:7303: $? = 0
 configure:7307: test -z 
 			 || test ! -s conftest.err
@@ -1084,13 +1008,12 @@ configure:7313: test -s conftest
 configure:7316: $? = 0
 configure:7328: result: yes
 configure:7240: checking for strcasecmp
-configure:7297: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
+configure:7297: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 conftest.c:65:6: warning: incompatible redeclaration of library function 'strcasecmp' [-Wincompatible-library-redeclaration]
    65 | char strcasecmp ();
       |      ^
 conftest.c:65:6: note: 'strcasecmp' is a builtin with type 'int (const char *, const char *)'
-2 warnings generated.
+1 warning generated.
 configure:7303: $? = 0
 configure:7307: test -z 
 			 || test ! -s conftest.err
@@ -1099,13 +1022,12 @@ configure:7313: test -s conftest
 configure:7316: $? = 0
 configure:7328: result: yes
 configure:7240: checking for strncasecmp
-configure:7297: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
+configure:7297: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 conftest.c:66:6: warning: incompatible redeclaration of library function 'strncasecmp' [-Wincompatible-library-redeclaration]
    66 | char strncasecmp ();
       |      ^
 conftest.c:66:6: note: 'strncasecmp' is a builtin with type 'int (const char *, const char *, unsigned long)'
-2 warnings generated.
+1 warning generated.
 configure:7303: $? = 0
 configure:7307: test -z 
 			 || test ! -s conftest.err
@@ -1114,9 +1036,7 @@ configure:7313: test -s conftest
 configure:7316: $? = 0
 configure:7328: result: yes
 configure:7240: checking for drand48
-configure:7297: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:7297: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 configure:7303: $? = 0
 configure:7307: test -z 
 			 || test ! -s conftest.err
@@ -1125,9 +1045,7 @@ configure:7313: test -s conftest
 configure:7316: $? = 0
 configure:7328: result: yes
 configure:7240: checking for srand48
-configure:7297: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:7297: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 configure:7303: $? = 0
 configure:7307: test -z 
 			 || test ! -s conftest.err
@@ -1136,17 +1054,16 @@ configure:7313: test -s conftest
 configure:7316: $? = 0
 configure:7328: result: yes
 configure:7240: checking for finite
-configure:7297: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
+configure:7297: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 conftest.c:69:6: warning: incompatible redeclaration of library function 'finite' [-Wincompatible-library-redeclaration]
    69 | char finite ();
       |      ^
 conftest.c:69:6: note: 'finite' is a builtin with type 'int (double)'
-2 warnings generated.
+1 warning generated.
 Undefined symbols for architecture arm64:
   "_finite", referenced from:
-      _main in conftest-7deb3f.o
-      _f in conftest-7deb3f.o
+      _main in conftest-338370.o
+      _f in conftest-338370.o
 ld: symbol(s) not found for architecture arm64
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 configure:7303: $? = 1
@@ -1241,9 +1158,7 @@ configure: failed program was:
 | }
 configure:7328: result: no
 configure:7240: checking for isnan
-configure:7297: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:7297: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 configure:7303: $? = 0
 configure:7307: test -z 
 			 || test ! -s conftest.err
@@ -1252,9 +1167,7 @@ configure:7313: test -s conftest
 configure:7316: $? = 0
 configure:7328: result: yes
 configure:7340: checking for isfinite
-configure:7366: gcc -o conftest -O6   conftest.c -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:7366: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lm  >&5
 configure:7372: $? = 0
 configure:7376: test -z 
 			 || test ! -s conftest.err
@@ -1329,12 +1242,11 @@ configure: failed program was:
 | #define NEED_DECL_J1 1
 | /* end confdefs.h.  */
 | #include <X11/Intrinsic.h>
-configure:7754: gcc -o conftest -O6   conftest.c -lXt -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
+configure:7754: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lXt -lm  >&5
 conftest.c:51:10: fatal error: 'X11/Intrinsic.h' file not found
    51 | #include <X11/Intrinsic.h>
       |          ^~~~~~~~~~~~~~~~~
-1 warning and 1 error generated.
+1 error generated.
 configure:7760: $? = 1
 configure: failed program was:
 | /* confdefs.h.  */
@@ -1401,9 +1313,7 @@ configure:7917: result: /Users/joy.chavez/Desktop/Work/gmmps_add_480/lib/tclConf
 configure:7931: checking for tkConfig.sh
 configure:8016: result: /Users/joy.chavez/Desktop/Work/gmmps_add_480/lib/tkConfig.sh
 configure:8381: checking for XExtendedMaxRequestSize
-configure:8438: gcc -o conftest -O6   conftest.c  -L/Users/joy.chavez/Desktop/Work/gmmps_add_480/tcltk-8.4.1/tk8.4.11/unix -ltk8.4 -L/Users/joy.chavez/Desktop/Work/gmmps_add_480/tcltk-8.4.1/tcl8.4.11/unix -ltcl8.4 -L/usr/X11/lib -lX11 -lm  >&5
-warning: optimization level '-O6' is not supported; using '-O3' instead
-1 warning generated.
+configure:8438: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c  -L/Users/joy.chavez/Desktop/Work/gmmps_add_480/tcltk-8.4.1/tk8.4.11/unix -ltk8.4 -L/Users/joy.chavez/Desktop/Work/gmmps_add_480/tcltk-8.4.1/tcl8.4.11/unix -ltcl8.4 -L/usr/X11/lib -lX11 -lm  >&5
 configure:8444: $? = 0
 configure:8448: test -z 
 			 || test ! -s conftest.err
@@ -1454,16 +1364,16 @@ ac_cv_build=arm-apple-darwin23.6.0
 ac_cv_build_alias=arm-apple-darwin23.6.0
 ac_cv_c_bigendian=no
 ac_cv_c_compiler_gnu=yes
-ac_cv_env_CC_set=
-ac_cv_env_CC_value=
-ac_cv_env_CFLAGS_set=
-ac_cv_env_CFLAGS_value=
+ac_cv_env_CC_set=set
+ac_cv_env_CC_value=gcc
+ac_cv_env_CFLAGS_set=set
+ac_cv_env_CFLAGS_value='-O2 -arch arm64'
 ac_cv_env_CPPFLAGS_set=
 ac_cv_env_CPPFLAGS_value=
 ac_cv_env_CPP_set=
 ac_cv_env_CPP_value=
-ac_cv_env_LDFLAGS_set=
-ac_cv_env_LDFLAGS_value=
+ac_cv_env_LDFLAGS_set=set
+ac_cv_env_LDFLAGS_value='-arch arm64'
 ac_cv_env_build_alias_set=
 ac_cv_env_build_alias_value=
 ac_cv_env_host_alias_set=
@@ -1536,7 +1446,7 @@ blt_cv_need_decl_j1=yes
 blt_cv_need_decl_srand48=yes
 blt_cv_need_decl_strdup=yes
 blt_cv_prog_cc=gcc
-blt_cv_prog_cflags=-O6
+blt_cv_prog_cflags='-O2 -arch arm64'
 blt_cv_struct_wait_works=yes
 blt_cv_tcl_h_version='"8.4"'
 blt_cv_tk_h_version='"8.4"'
@@ -1553,7 +1463,7 @@ BLT_MAJOR_VERSION='2'
 BLT_MINOR_VERSION='4'
 BLT_VERSION='2.4'
 CC='gcc'
-CFLAGS='-O6'
+CFLAGS='-O2 -arch arm64'
 CPP='gcc -E'
 CPPFLAGS=''
 DEFINES=''
@@ -1587,7 +1497,7 @@ RANLIB='ranlib'
 SHELL='/bin/sh'
 SHLIB_CFLAGS='-fno-common'
 SHLIB_LD='cc -dynamiclib ${LDFLAGS} -Wl,-single_module'
-SHLIB_LD_FLAGS=' -prebind -headerpad_max_install_names -Wl,-search_paths_first'
+SHLIB_LD_FLAGS='-arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first'
 SHLIB_LIB_SPECS=''
 SHLIB_SUFFIX='.dylib'
 SHLIB_TARGET='build_shared'

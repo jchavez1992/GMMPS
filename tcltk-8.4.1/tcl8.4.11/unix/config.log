@@ -30,8 +30,8 @@ Kernel configured for up to 8 processors.
 Processor type: arm64e (ARM64E)
 Processors active: 0 1 2 3 4 5 6 7
 Primary memory available: 16.00 gigabytes
-Default processor set: 632 tasks, 2973 threads, 8 processors
-Load average: 2.21, Mach factor: 5.78
+Default processor set: 596 tasks, 2998 threads, 8 processors
+Load average: 1.47, Mach factor: 6.51
 /bin/machine           = unknown
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
@@ -64,7 +64,6 @@ configure:2704: result: no
 configure:2718: checking whether to add a package name suffix for the manpages
 configure:2730: result: no
 configure:2809: checking for gcc
-configure:2830: found /usr/bin/gcc
 configure:2842: result: gcc
 configure:3201: checking for C compiler version
 configure:3210: gcc --version >&5
@@ -92,27 +91,27 @@ clang: error: unknown argument '-version'; did you mean '--version'?
 clang: error: no input files
 configure:3221: $? = 1
 configure:3241: checking whether the C compiler works
-configure:3263: gcc    conftest.c  >&5
+configure:3263: gcc -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:3267: $? = 0
 configure:3318: result: yes
 configure:3322: checking for C compiler default output file name
 configure:3324: result: a.out
 configure:3330: checking for suffix of executables
-configure:3337: gcc -o conftest    conftest.c  >&5
+configure:3337: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:3341: $? = 0
 configure:3365: result: 
 configure:3389: checking whether we are cross compiling
-configure:3397: gcc -o conftest    conftest.c  >&5
+configure:3397: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:3401: $? = 0
 configure:3408: ./conftest
 configure:3412: $? = 0
 configure:3427: result: no
 configure:3433: checking for suffix of object files
-configure:3456: gcc -c   conftest.c >&5
+configure:3456: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3460: $? = 0
 configure:3484: result: o
 configure:3488: checking whether the compiler supports GNU C
-configure:3508: gcc -c   conftest.c >&5
+configure:3508: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3508: $? = 0
 configure:3520: result: yes
 configure:3531: checking whether gcc accepts -g
@@ -120,57 +119,57 @@ configure:3552: gcc -c -g  conftest.c >&5
 configure:3552: $? = 0
 configure:3599: result: yes
 configure:3619: checking for gcc option to enable C11 features
-configure:3634: gcc  -c   conftest.c >&5
+configure:3634: gcc  -c -O2 -arch arm64  conftest.c >&5
 configure:3634: $? = 0
 configure:3653: result: none needed
 configure:3778: checking for building with threads
 configure:4213: result: no (default)
 configure:4226: checking if the compiler understands -pipe
-configure:4241: gcc -pipe -c   conftest.c >&5
+configure:4241: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4241: $? = 0
 configure:4243: result: yes
 configure:4263: checking for stdio.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4263: checking for stdlib.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4263: checking for string.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4263: checking for inttypes.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4263: checking for stdint.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4263: checking for strings.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4263: checking for sys/stat.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4263: checking for sys/types.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4263: checking for unistd.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4263: checking for sys/time.h
-configure:4263: gcc -pipe -c   conftest.c >&5
+configure:4263: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4263: $? = 0
 configure:4263: result: yes
 configure:4296: checking for sin
-configure:4296: gcc -pipe -o conftest    conftest.c  >&5
+configure:4296: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 conftest.c:36:6: warning: incompatible redeclaration of library function 'sin' [-Wincompatible-library-redeclaration]
    36 | char sin (void);
       |      ^
@@ -179,7 +178,7 @@ conftest.c:36:6: note: 'sin' is a builtin with type 'double (double)'
 configure:4296: $? = 0
 configure:4296: result: yes
 configure:4305: checking for main in -lieee
-configure:4325: gcc -pipe -o conftest    conftest.c -lieee   >&5
+configure:4325: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lieee   >&5
 ld: library 'ieee' not found
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 configure:4325: $? = 1
@@ -214,7 +213,7 @@ configure: failed program was:
 | }
 configure:4337: result: no
 configure:4350: checking for main in -linet
-configure:4370: gcc -pipe -o conftest    conftest.c -linet   >&5
+configure:4370: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c -linet   >&5
 ld: library 'inet' not found
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 configure:4370: $? = 1
@@ -249,7 +248,7 @@ configure: failed program was:
 | }
 configure:4382: result: no
 configure:4389: checking for net/errno.h
-configure:4389: gcc -pipe -c   conftest.c >&5
+configure:4389: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:48:10: fatal error: 'net/errno.h' file not found
    48 | #include <net/errno.h>
       |          ^~~~~~~~~~~~~
@@ -306,11 +305,11 @@ configure: failed program was:
 | #include <net/errno.h>
 configure:4389: result: no
 configure:4416: checking for connect
-configure:4416: gcc -pipe -o conftest    conftest.c  >&5
+configure:4416: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:4416: $? = 0
 configure:4416: result: yes
 configure:4499: checking for gethostbyname
-configure:4499: gcc -pipe -o conftest    conftest.c  >&5
+configure:4499: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:4499: $? = 0
 configure:4499: result: yes
 configure:4568: checking how to build libraries
@@ -387,49 +386,49 @@ configure:5028: result: no
 configure:5035: checking system version (for dynamic loading)
 configure:5055: result: Darwin-23.6.0
 configure:5063: checking for dlopen in -ldl
-configure:5092: gcc -pipe -o conftest    conftest.c -ldl   >&5
+configure:5092: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c -ldl   >&5
 configure:5092: $? = 0
 configure:5104: result: yes
 configure:5140: checking for ar
 configure:5161: found /opt/local/bin/ar
 configure:5173: result: ar
 configure:5912: checking if ld accepts -single_module flag
-configure:5932: gcc -pipe -o conftest    -dynamiclib -Wl,-single_module conftest.c  >&5
+configure:5932: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -dynamiclib -Wl,-single_module conftest.c  >&5
 ld: warning: -single_module is obsolete
 configure:5932: $? = 0
 configure:5944: result: yes
 configure:5954: checking if ld accepts -search_paths_first flag
-configure:5974: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  >&5
+configure:5974: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  >&5
 ld: warning: -prebind is obsolete
 configure:5974: $? = 0
 configure:5986: result: yes
 configure:5996: checking whether to use CoreFoundation
 configure:6007: result: yes
 configure:6010: checking for CoreFoundation.framework
-configure:6030: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:6030: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:6030: $? = 0
 configure:6042: result: yes
 configure:6050: checking for libkern/OSAtomic.h
-configure:6050: gcc -pipe -c   conftest.c >&5
+configure:6050: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:6050: $? = 0
 configure:6050: result: yes
 configure:6057: checking for OSSpinLockLock
-configure:6057: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:6057: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:6057: $? = 0
 configure:6057: result: yes
 configure:6074: checking for realpath
-configure:6074: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:6074: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:6074: $? = 0
 configure:6074: result: yes
 configure:6667: checking for build with symbols
 configure:6683: result: no
 configure:6727: checking for required early compiler flags
-configure:6746: gcc -pipe -c   conftest.c >&5
+configure:6746: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:6746: $? = 0
-configure:6797: gcc -pipe -c   conftest.c >&5
+configure:6797: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:31:15: error: variable has incomplete type 'struct stat64'
    31 | struct stat64 buf; int i = stat64("/", &buf);
       |               ^
@@ -480,7 +479,7 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:6813: gcc -pipe -c   conftest.c >&5
+configure:6813: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:32:15: error: variable has incomplete type 'struct stat64'
    32 | struct stat64 buf; int i = stat64("/", &buf);
       |               ^
@@ -534,7 +533,7 @@ configure: failed program was:
 | }
 configure:6833: result: none
 configure:6841: checking for 64-bit integer type
-configure:6861: gcc -pipe -c   conftest.c >&5
+configure:6861: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:31:1: error: use of undeclared identifier '__int64'
    31 | __int64 value = (__int64) 0;
       | ^
@@ -575,7 +574,7 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:6885: gcc -pipe -c   conftest.c >&5
+configure:6885: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:32:26: error: duplicate case value '1'
    32 |             case 1: case (sizeof(long long)==sizeof(long)): ;
       |                          ^
@@ -623,11 +622,11 @@ configure: failed program was:
 | }
 configure:6896: result: using long
 configure:7041: checking whether byte ordering is bigendian
-configure:7057: gcc -pipe -c   conftest.c >&5
+configure:7057: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:7057: $? = 0
-configure:7103: gcc -pipe -c   conftest.c >&5
+configure:7103: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:7103: $? = 0
-configure:7122: gcc -pipe -c   conftest.c >&5
+configure:7122: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:35:4: error: use of undeclared identifier 'not'
    35 |                  not big endian
       |                  ^
@@ -676,17 +675,17 @@ configure: failed program was:
 | }
 configure:7263: result: no
 configure:7291: checking for getcwd
-configure:7291: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7291: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7291: $? = 0
 configure:7291: result: yes
 configure:7306: checking for opendir
-configure:7306: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7306: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7306: $? = 0
 configure:7306: result: yes
 configure:7320: checking for strstr
-configure:7320: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7320: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:46:6: warning: incompatible redeclaration of library function 'strstr' [-Wincompatible-library-redeclaration]
    46 | char strstr (void);
       |      ^
@@ -696,7 +695,7 @@ ld: warning: -prebind is obsolete
 configure:7320: $? = 0
 configure:7320: result: yes
 configure:7336: checking for strtol
-configure:7336: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7336: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:47:6: warning: incompatible redeclaration of library function 'strtol' [-Wincompatible-library-redeclaration]
    47 | char strtol (void);
       |      ^
@@ -706,7 +705,7 @@ ld: warning: -prebind is obsolete
 configure:7336: $? = 0
 configure:7336: result: yes
 configure:7350: checking for strtoll
-configure:7350: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7350: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:48:6: warning: incompatible redeclaration of library function 'strtoll' [-Wincompatible-library-redeclaration]
    48 | char strtoll (void);
       |      ^
@@ -716,7 +715,7 @@ ld: warning: -prebind is obsolete
 configure:7350: $? = 0
 configure:7350: result: yes
 configure:7364: checking for strtoull
-configure:7364: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7364: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:49:6: warning: incompatible redeclaration of library function 'strtoull' [-Wincompatible-library-redeclaration]
    49 | char strtoull (void);
       |      ^
@@ -726,17 +725,17 @@ ld: warning: -prebind is obsolete
 configure:7364: $? = 0
 configure:7364: result: yes
 configure:7378: checking for tmpnam
-configure:7378: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7378: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7378: $? = 0
 configure:7378: result: yes
 configure:7392: checking for waitpid
-configure:7392: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7392: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7392: $? = 0
 configure:7392: result: yes
 configure:7407: checking for strerror
-configure:7407: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7407: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:52:6: warning: incompatible redeclaration of library function 'strerror' [-Wincompatible-library-redeclaration]
    52 | char strerror (void);
       |      ^
@@ -746,37 +745,37 @@ ld: warning: -prebind is obsolete
 configure:7407: $? = 0
 configure:7407: result: yes
 configure:7417: checking for getwd
-configure:7417: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7417: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7417: $? = 0
 configure:7417: result: yes
 configure:7427: checking for wait3
-configure:7427: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7427: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7427: $? = 0
 configure:7427: result: yes
 configure:7437: checking for uname
-configure:7437: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7437: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7437: $? = 0
 configure:7437: result: yes
 configure:7447: checking for realpath
 configure:7447: result: yes
 configure:7468: checking dirent.h
-configure:7504: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7504: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7504: $? = 0
 configure:7522: result: no
 configure:7524: checking for errno.h
-configure:7524: gcc -pipe -c   conftest.c >&5
+configure:7524: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:7524: $? = 0
 configure:7524: result: yes
 configure:7534: checking for float.h
-configure:7534: gcc -pipe -c   conftest.c >&5
+configure:7534: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:7534: $? = 0
 configure:7534: result: yes
 configure:7544: checking for values.h
-configure:7544: gcc -pipe -c   conftest.c >&5
+configure:7544: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:64:10: fatal error: 'values.h' file not found
    64 | #include <values.h>
       |          ^~~~~~~~~~
@@ -849,7 +848,7 @@ configure: failed program was:
 | #include <values.h>
 configure:7544: result: no
 configure:7554: checking for limits.h
-configure:7554: gcc -pipe -c   conftest.c >&5
+configure:7554: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:7554: $? = 0
 configure:7554: result: yes
 configure:7565: checking for stdlib.h
@@ -857,21 +856,21 @@ configure:7565: result: yes
 configure:7623: checking for string.h
 configure:7623: result: yes
 configure:7671: checking for sys/wait.h
-configure:7671: gcc -pipe -c   conftest.c >&5
+configure:7671: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:7671: $? = 0
 configure:7671: result: yes
 configure:7681: checking for dlfcn.h
-configure:7681: gcc -pipe -c   conftest.c >&5
+configure:7681: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:7681: $? = 0
 configure:7681: result: yes
 configure:7694: checking for unistd.h
 configure:7694: result: yes
 configure:7700: checking for sys/param.h
-configure:7700: gcc -pipe -c   conftest.c >&5
+configure:7700: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:7700: $? = 0
 configure:7700: result: yes
 configure:7717: checking for sys/modem.h
-configure:7717: gcc -pipe -c   conftest.c >&5
+configure:7717: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:68:10: fatal error: 'sys/modem.h' file not found
    68 | #include <sys/modem.h>
       |          ^~~~~~~~~~~~~
@@ -948,7 +947,7 @@ configure: failed program was:
 | #include <sys/modem.h>
 configure:7717: result: no
 configure:7724: checking termios vs. termio vs. sgtty
-configure:7750: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7750: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7750: $? = 0
 configure:7750: ./conftest
@@ -1006,7 +1005,7 @@ configure: failed program was:
 |     }
 |     return 1;
 | }
-configure:7781: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7781: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:41:10: fatal error: 'termio.h' file not found
    41 | #include <termio.h>
       |          ^~~~~~~~~~
@@ -1064,7 +1063,7 @@ configure: failed program was:
 |     }
 |     return 1;
 | }
-configure:7814: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7814: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7814: $? = 0
 configure:7814: ./conftest
@@ -1122,7 +1121,7 @@ configure: failed program was:
 |     }
 |     return 1;
 | }
-configure:7849: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7849: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7849: $? = 0
 configure:7849: ./conftest
@@ -1182,7 +1181,7 @@ configure: failed program was:
 |     }
 |     return 1;
 | }
-configure:7883: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7883: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:41:10: fatal error: 'termio.h' file not found
    41 | #include <termio.h>
       |          ^~~~~~~~~~
@@ -1242,7 +1241,7 @@ configure: failed program was:
 |     }
 |     return 1;
 |     }
-configure:7918: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:7918: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:7918: $? = 0
 configure:7918: ./conftest
@@ -1304,15 +1303,15 @@ configure: failed program was:
 | }
 configure:7942: result: none
 configure:7956: checking for fd_set in sys/types
-configure:7973: gcc -pipe -c   conftest.c >&5
+configure:7973: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:7973: $? = 0
 configure:7984: result: yes
 configure:8030: checking whether struct tm is in sys/time.h or time.h
-configure:8051: gcc -pipe -c   conftest.c >&5
+configure:8051: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:8051: $? = 0
 configure:8061: result: time.h
 configure:8069: checking for gcc -pipe options needed to detect all undeclared functions
-configure:8091: gcc -pipe -c    conftest.c >&5
+configure:8091: gcc -pipe -c -O2 -arch arm64   conftest.c >&5
 conftest.c:44:8: error: call to undeclared library function 'strchr' with type 'char *(const char *, int)'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
    44 | (void) strchr;
       |        ^
@@ -1367,27 +1366,27 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:8118: gcc -pipe -c    conftest.c >&5
+configure:8118: gcc -pipe -c -O2 -arch arm64   conftest.c >&5
 configure:8118: $? = 0
 configure:8138: result: none needed
 configure:8153: checking for sys/time.h
 configure:8153: result: yes
 configure:8169: checking for struct tm.tm_zone
-configure:8169: gcc -pipe -c   conftest.c >&5
+configure:8169: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:8169: $? = 0
 configure:8169: result: yes
 configure:8239: checking for gmtime_r
-configure:8239: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8239: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:8239: $? = 0
 configure:8239: result: yes
 configure:8245: checking for localtime_r
-configure:8245: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8245: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:8245: $? = 0
 configure:8245: result: yes
 configure:8253: checking tm_tzadj in struct tm
-configure:8270: gcc -pipe -c   conftest.c >&5
+configure:8270: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:50:18: error: no member named 'tm_tzadj' in 'struct tm'
    50 | struct tm tm; tm.tm_tzadj;
       |               ~~ ^
@@ -1449,7 +1448,7 @@ configure: failed program was:
 | }
 configure:8281: result: no
 configure:8288: checking tm_gmtoff in struct tm
-configure:8305: gcc -pipe -c   conftest.c >&5
+configure:8305: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:50:18: warning: expression result unused [-Wunused-value]
    50 | struct tm tm; tm.tm_gmtoff;
       |               ~~ ^~~~~~~~~
@@ -1457,7 +1456,7 @@ conftest.c:50:18: warning: expression result unused [-Wunused-value]
 configure:8305: $? = 0
 configure:8316: result: yes
 configure:8327: checking long timezone variable
-configure:8346: gcc -pipe -c   conftest.c >&5
+configure:8346: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:53:6: error: call to undeclared library function 'exit' with type 'void (int) __attribute__((noreturn))'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
    53 |             exit (0);
       |             ^
@@ -1523,7 +1522,7 @@ configure: failed program was:
 | }
 configure:8357: result: no
 configure:8366: checking time_t timezone variable
-configure:8385: gcc -pipe -c   conftest.c >&5
+configure:8385: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:53:3: error: call to undeclared library function 'exit' with type 'void (int) __attribute__((noreturn))'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
    53 |                 exit (0);
       |                 ^
@@ -1589,23 +1588,23 @@ configure: failed program was:
 | }
 configure:8396: result: no
 configure:8409: checking for struct stat.st_blksize
-configure:8409: gcc -pipe -c   conftest.c >&5
+configure:8409: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:8409: $? = 0
 configure:8409: result: yes
 configure:8421: checking for fstatfs
-configure:8421: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8421: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:8421: $? = 0
 configure:8421: result: yes
 configure:8436: checking for working memcmp
-configure:8481: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8481: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:8481: $? = 0
 configure:8481: ./conftest
 configure:8481: $? = 0
 configure:8495: result: yes
 configure:8510: checking for memmove
-configure:8510: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8510: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:65:6: warning: incompatible redeclaration of library function 'memmove' [-Wincompatible-library-redeclaration]
    65 | char memmove (void);
       |      ^
@@ -1615,7 +1614,7 @@ ld: warning: -prebind is obsolete
 configure:8510: $? = 0
 configure:8510: result: yes
 configure:8527: checking proper strstr implementation
-configure:8543: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8543: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:50:16: warning: incompatible redeclaration of library function 'strstr' [-Wincompatible-library-redeclaration]
    50 |     extern int strstr();
       |                ^
@@ -1688,7 +1687,7 @@ configure: failed program was:
 | 
 configure:8559: result: broken, using substitute
 configure:8571: checking for strtoul
-configure:8571: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8571: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:65:6: warning: incompatible redeclaration of library function 'strtoul' [-Wincompatible-library-redeclaration]
    65 | char strtoul (void);
       |      ^
@@ -1697,7 +1696,7 @@ conftest.c:65:6: note: 'strtoul' is a builtin with type 'unsigned long (const ch
 ld: warning: -prebind is obsolete
 configure:8571: $? = 0
 configure:8571: result: yes
-configure:8600: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8600: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:50:12: warning: incompatible redeclaration of library function 'strtoul' [-Wincompatible-library-redeclaration]
    50 | extern int strtoul();
       |            ^
@@ -1775,7 +1774,7 @@ configure: failed program was:
 |     exit(0);
 | }
 configure:8622: checking for strtod
-configure:8622: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8622: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:65:6: warning: incompatible redeclaration of library function 'strtod' [-Wincompatible-library-redeclaration]
    65 | char strtod (void);
       |      ^
@@ -1784,7 +1783,7 @@ conftest.c:65:6: note: 'strtod' is a builtin with type 'double (const char *, ch
 ld: warning: -prebind is obsolete
 configure:8622: $? = 0
 configure:8622: result: yes
-configure:8651: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8651: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:58:2: error: call to undeclared library function 'exit' with type 'void (int) __attribute__((noreturn))'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
    58 |         exit(1);
       |         ^
@@ -1855,9 +1854,9 @@ configure: failed program was:
 |     exit(0);
 | }
 configure:8682: checking for mode_t
-configure:8682: gcc -pipe -c   conftest.c >&5
+configure:8682: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:8682: $? = 0
-configure:8682: gcc -pipe -c   conftest.c >&5
+configure:8682: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:80:21: error: expected expression
    80 | if (sizeof ((mode_t)))
       |                     ^
@@ -1950,9 +1949,9 @@ configure: failed program was:
 | }
 configure:8682: result: yes
 configure:8694: checking for pid_t
-configure:8694: gcc -pipe -c   conftest.c >&5
+configure:8694: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:8694: $? = 0
-configure:8694: gcc -pipe -c   conftest.c >&5
+configure:8694: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:81:20: error: expected expression
    81 | if (sizeof ((pid_t)))
       |                    ^
@@ -2046,9 +2045,9 @@ configure: failed program was:
 | }
 configure:8694: result: yes
 configure:8732: checking for size_t
-configure:8732: gcc -pipe -c   conftest.c >&5
+configure:8732: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:8732: $? = 0
-configure:8732: gcc -pipe -c   conftest.c >&5
+configure:8732: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:80:21: error: expected expression
    80 | if (sizeof ((size_t)))
       |                     ^
@@ -2141,9 +2140,9 @@ configure: failed program was:
 | }
 configure:8732: result: yes
 configure:8743: checking for uid_t
-configure:8743: gcc -pipe -c   conftest.c >&5
+configure:8743: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:8743: $? = 0
-configure:8743: gcc -pipe -c   conftest.c >&5
+configure:8743: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:80:20: error: expected expression
    80 | if (sizeof ((uid_t)))
       |                    ^
@@ -2236,9 +2235,9 @@ configure: failed program was:
 | }
 configure:8743: result: yes
 configure:8754: checking for gid_t
-configure:8754: gcc -pipe -c   conftest.c >&5
+configure:8754: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:8754: $? = 0
-configure:8754: gcc -pipe -c   conftest.c >&5
+configure:8754: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:80:20: error: expected expression
    80 | if (sizeof ((gid_t)))
       |                    ^
@@ -2335,12 +2334,12 @@ configure:8796: result: yes
 configure:8810: checking for opendir
 configure:8810: result: yes
 configure:8829: checking union wait
-configure:8851: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8851: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:8851: $? = 0
 configure:8863: result: yes
 configure:8876: checking for strncasecmp
-configure:8876: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:8876: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:65:6: warning: incompatible redeclaration of library function 'strncasecmp' [-Wincompatible-library-redeclaration]
    65 | char strncasecmp (void);
       |      ^
@@ -2350,11 +2349,11 @@ ld: warning: -prebind is obsolete
 configure:8876: $? = 0
 configure:8876: result: yes
 configure:9006: checking for BSDgettimeofday
-configure:9006: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:9006: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 Undefined symbols for architecture arm64:
   "_BSDgettimeofday", referenced from:
-      _main in conftest-57b76e.o
+      _main in conftest-c3f75d.o
 ld: symbol(s) not found for architecture arm64
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 configure:9006: $? = 1
@@ -2440,22 +2439,22 @@ configure: failed program was:
 | }
 configure:9006: result: no
 configure:9013: checking for gettimeofday
-configure:9013: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:9013: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 ld: warning: -prebind is obsolete
 configure:9013: $? = 0
 configure:9013: result: yes
 configure:9027: checking for gettimeofday declaration
 configure:9051: result: present
 configure:9064: checking whether char is unsigned
-configure:9084: gcc -pipe -c   conftest.c >&5
+configure:9084: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:9084: $? = 0
 configure:9094: result: no
 configure:9101: checking signed char declarations
-configure:9121: gcc -pipe -c   conftest.c >&5
+configure:9121: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:9121: $? = 0
 configure:9132: result: yes
 configure:9143: checking for a putenv() that copies the buffer
-configure:9175: gcc -pipe -o conftest    -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
+configure:9175: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first conftest.c  -framework CoreFoundation >&5
 conftest.c:53:6: error: second parameter of 'main' (argument array) must be of type 'char **'
    53 |         int main (int argc, char *argv)
       |             ^
@@ -2549,19 +2548,19 @@ configure: failed program was:
 | 
 configure:9191: result: yes
 configure:9216: checking for langinfo.h
-configure:9216: gcc -pipe -c   conftest.c >&5
+configure:9216: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:9216: $? = 0
 configure:9216: result: yes
 configure:9227: checking whether to use nl_langinfo
-configure:9241: gcc -pipe -c   conftest.c >&5
+configure:9241: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:9241: $? = 0
 configure:9257: result: yes
 configure:9269: checking for sys/ioctl.h
-configure:9269: gcc -pipe -c   conftest.c >&5
+configure:9269: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:9269: $? = 0
 configure:9269: result: yes
 configure:9276: checking for sys/filio.h
-configure:9276: gcc -pipe -c   conftest.c >&5
+configure:9276: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:9276: $? = 0
 configure:9276: result: yes
 configure:9283: checking FIONBIO vs. O_NONBLOCK for nonblocking I/O
@@ -2598,16 +2597,16 @@ ac_cv_c_bigendian=no
 ac_cv_c_char_unsigned=no
 ac_cv_c_compiler_gnu=yes
 ac_cv_c_undeclared_builtin_options='none needed'
-ac_cv_env_CC_set=
-ac_cv_env_CC_value=
-ac_cv_env_CFLAGS_set=
-ac_cv_env_CFLAGS_value=
+ac_cv_env_CC_set=set
+ac_cv_env_CC_value=gcc
+ac_cv_env_CFLAGS_set=set
+ac_cv_env_CFLAGS_value='-O2 -arch arm64'
 ac_cv_env_CPPFLAGS_set=
 ac_cv_env_CPPFLAGS_value=
 ac_cv_env_CPP_set=
 ac_cv_env_CPP_value=
-ac_cv_env_LDFLAGS_set=
-ac_cv_env_LDFLAGS_value=
+ac_cv_env_LDFLAGS_set=set
+ac_cv_env_LDFLAGS_value='-arch arm64'
 ac_cv_env_LIBS_set=
 ac_cv_env_LIBS_value=
 ac_cv_env_build_alias_set=
@@ -2716,7 +2715,7 @@ CC_SEARCH_FLAGS=''
 CFG_TCL_EXPORT_FILE_SUFFIX=''
 CFG_TCL_SHARED_LIB_SUFFIX='${VERSION}${DBGX}.dylib'
 CFG_TCL_UNSHARED_LIB_SUFFIX='${VERSION}${DBGX}.a'
-CFLAGS=''
+CFLAGS='-O2 -arch arm64'
 CFLAGS_DEBUG='-g'
 CFLAGS_DEFAULT='$(CFLAGS_OPTIMIZE)'
 CFLAGS_OPTIMIZE='-Os'
@@ -2737,7 +2736,7 @@ EXTRA_INSTALL_BINARIES=''
 HTML_DIR='$(DISTDIR)/html'
 INSTALL_LIB='$(INSTALL_LIBRARY) $(LIB_FILE) $(LIB_INSTALL_DIR)/$(LIB_FILE)'
 INSTALL_STUB_LIB='$(INSTALL_LIBRARY) $(STUB_LIB_FILE) $(LIB_INSTALL_DIR)/$(STUB_LIB_FILE) ; (cd $(LIB_INSTALL_DIR) ; $(RANLIB) $(STUB_LIB_FILE))'
-LDFLAGS=' -prebind -headerpad_max_install_names -Wl,-search_paths_first'
+LDFLAGS='-arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first'
 LDFLAGS_DEBUG=''
 LDFLAGS_DEFAULT='$(LDFLAGS_OPTIMIZE)'
 LDFLAGS_OPTIMIZE=''

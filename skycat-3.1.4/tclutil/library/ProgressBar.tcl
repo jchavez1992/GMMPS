@@ -8,7 +8,11 @@
 # who             when       what
 # --------------  ---------  ----------------------------------------
 # Allan Brighton  23 Jan 96  Created
-#
+# Peter W. Draper 05 Jan 06  Tk now uses "readonly" state (disabled greys out
+#                            text, making it illegible).
+#                 05 Sep 08  Fix a bug in cancelling the look busy timers.
+#                            Trap after to handle mid-event creation errors.
+#                 18 Sep 08  Catch after on do_something.
 
 itk::usual ProgressBar {}
 
@@ -26,9 +30,9 @@ itcl::class util::ProgressBar {
 
 	# entry widget used to display the progress message
 	itk_component add entry {
-	    entry $w_.entry -relief flat -state disabled -highlightthickness 0
+	    entry $w_.entry -relief flat -state readonly -highlightthickness 0
 	} {
-	    keep -font
+	    keep -font -background -readonlybackground
 	}
 	pack $itk_component(entry) -side left -fill x -expand 1 -padx 1m
 	    
@@ -91,7 +95,9 @@ itcl::class util::ProgressBar {
 	    $itk_component(scale) config \
 		-sliderlength 0 \
 		-troughcolor $itk_option(-busycolor)
-	    after cancel [code $this do_something]
+            if { $last_id_ != {} } {
+                catch {after cancel $last_id_}
+            }
 	}
     }
 
@@ -108,8 +114,10 @@ itcl::class util::ProgressBar {
 	    incr itk_option(-value) $inc_
 	    $itk_component(scale) set $itk_option(-value)
 	    update
-	    after $itk_option(-speed) [code $this do_something]
-	}
+            catch {
+                after $itk_option(-speed) [code catch "$this do_something"]
+            }
+        }
     }
 
     
@@ -120,7 +128,7 @@ itcl::class util::ProgressBar {
 	$itk_component(entry) config -state normal
 	$itk_component(entry) delete 0 end
 	$itk_component(entry) insert 0 $itk_option(-text)
-	$itk_component(entry) config -state disabled
+	$itk_component(entry) config -state readonly
     }
     
     # set the value of the bar between from and to
@@ -168,5 +176,8 @@ itcl::class util::ProgressBar {
     
     # controls direction for busy animation
     protected variable inc_ 1
+ 
+    # id of last after command
+    protected variable last_id_ {}
 }
 

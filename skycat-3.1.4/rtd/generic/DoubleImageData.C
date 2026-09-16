@@ -7,7 +7,12 @@
  * 
  * who             when      what
  * --------------  --------  ----------------------------------------
+ * Peter W. Draper 30/05/01  Created.
+ *                 29/10/07  Add colorScale so that a bin for NaN pixels
+ *                           is always available (shared with blank).
+ * Peter W. Draper 23/06/09  Added parseBlank to get blank value in this type.
  * pbiereic        12/08/07  Created
+ * Peter W. Draper 17/05/12  Merged skycat version created by pbiereic.
  */
 
 #include <cstdlib>
@@ -19,52 +24,54 @@
 #include "DoubleImageData.h"
 #include "define.h"
 
-
 /* 
- * convert the given double to short by adding the bias,
- * scaling, rounding if necessary and checking the range
+ * Convert the given double to short by adding the bias, scaling,
+ * rounding if necessary and checking the range.
  */
-short DoubleImageData::scaleToShort(double d) 
+short DoubleImageData::scaleToShort( double d )
 {
-    if (isnan(d))
+    if ( isnan(d) ) {
 	return LOOKUP_BLANK;
+    }
 
-    //  Blank pixel value is is special lookup table position.
+    //  Blank pixel value is is special lookup table position. Note
+    //  Starlink uses a special value for floating point too (not a NaN).
     if ( haveBlank_ ) {
         if ( blank_ == d ) {
             return LOOKUP_BLANK;
-	}
+        }
     }
 
     short s;
     d = (d + bias_) * scale_;
     if (d < 0.0 ) {
-	if((d -= 0.5) < LOOKUP_MIN)
+	if( ( d -= 0.5 ) < LOOKUP_MIN ) {
 	    s = LOOKUP_MIN;
-	else
+	} else {
 	    s = (short)d;
-    } 
-    else {
-	if((d += 0.5) > LOOKUP_MAX)
+        }
+    } else {
+	if( ( d += 0.5 ) > LOOKUP_MAX) {
 	    s = LOOKUP_MAX;
-	else
+        } else {
 	    s = (short)d;
+        }
     }
     return s;
 }
 
-
 /*
- * initialize conversion from base type double to short 
- * and scale the low and high cut levels to short range
+ * Initialize conversion from base type float to short
+ * and scale the low and high cut levels to short range.
  *
- * Method: 2 member variables, bias_ and scale_, are set here and 
- * used later to convert the double raw image data to short, which is
- * then used as an index in the lookup table: 
+ * Method: 2 member variables, bias_ and scale_, are set here and
+ * used later to convert the float raw image data to short, which is
+ * then used as an index in the lookup table:
  */
-void DoubleImageData::initShortConversion() 
+void DoubleImageData::initShortConversion()
 {
     bias_ = -((lowCut_ + highCut_) * 0.5);
+
     if( (highCut_ - lowCut_) > 0.0 ) {
 	scale_ = LOOKUP_WIDTH / (highCut_ - lowCut_);
     } 
@@ -74,10 +81,33 @@ void DoubleImageData::initShortConversion()
 
     scaledLowCut_ = scaleToShort(lowCut_);
     scaledHighCut_ = scaleToShort(highCut_);
-    if (haveBlank_)
-	scaledBlankPixelValue_ = LOOKUP_BLANK;
+    scaledBlankPixelValue_ = LOOKUP_BLANK;
 }
 
+/*
+ * Define a scaledBlankPixelValue_ so that we have a blank bin for NaN's
+ * not just blanks (both use same color).
+ */
+void DoubleImageData::colorScale(int ncolors, unsigned long* colors)
+{
+    ImageData::colorScale(ncolors, colors);
+
+    // Always set value for blank pixel in case we have NaNs, not just
+    // when blank is set.
+    lookup_.setPixelColor( scaledBlankPixelValue_, color0_ );
+}
+
+/*
+ * Set the blank value from a given string. Return 1 if successful.
+ */
+int DoubleImageData::parseBlank(const char* value) {
+    double d;
+    int n = sscanf(value, "%lf", &d);
+    if ( n > 0 ) {
+        blank_ = (double) d;
+    }
+    return n;
+}
 
 /*
  * Include some standard methods as (cpp macro) templates:

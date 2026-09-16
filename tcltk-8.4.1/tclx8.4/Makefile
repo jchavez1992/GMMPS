@@ -114,7 +114,7 @@ CFLAGS_DEFAULT	= -Os
 CFLAGS_WARNING	= -Wall -Wno-implicit-int
 CLEANFILES	= pkgIndex.tcl
 EXEEXT		= 
-LDFLAGS_DEFAULT	=  -prebind -Wl,-search_paths_first
+LDFLAGS_DEFAULT	= -arch arm64 -prebind -Wl,-search_paths_first
 MAKE_LIB	= ${SHLIB_LD} -o $@ $(PKG_OBJECTS) ${SHLIB_LD_LIBS} 
 MAKE_SHARED_LIB	= ${SHLIB_LD} -o $@ $(PKG_OBJECTS) ${SHLIB_LD_LIBS}
 MAKE_STATIC_LIB	= ${STLIB_LD} $@ $(PKG_OBJECTS)
@@ -168,7 +168,7 @@ CONFIG_CLEAN_FILES = Makefile
 CPPFLAGS	= 
 LIBS		=  
 AR		= ar
-CFLAGS		=  ${CFLAGS_DEFAULT} ${CFLAGS_WARNING} ${SHLIB_CFLAGS}
+CFLAGS		= -O2 -arch arm64 ${CFLAGS_DEFAULT} ${CFLAGS_WARNING} ${SHLIB_CFLAGS}
 COMPILE		= $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 #========================================================================

@@ -9,9 +9,9 @@
  * who             when       what
  * --------------  --------   ----------------------------------------
  * Allan Brighton  08 Jan 96  Created
+ * Peter W. Draper 17 Mar 09  Add changes to support access to the table comments
  */
 static const char* const rcsId="@(#) $Id: TabTable.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
-
 
 using namespace std;
 #include <cstdio>
@@ -45,6 +45,8 @@ TabTable::TabTable(char sep)
       buf_(NULL),
       table_(NULL),
       index_(NULL),
+      comments_(NULL),
+      numComments_(0),
       sep_(sep),
       status_(0)
 {
@@ -79,6 +81,8 @@ TabTable::TabTable(const char* buf, int maxRows, char sep)
       buf_(NULL),
       table_(NULL),
       index_(NULL),
+      comments_(NULL),
+      numComments_(0),
       sep_(sep),
       status_(0)
 {
@@ -99,6 +103,8 @@ TabTable::TabTable(int numCols, char** colNames, const char* buf,
       buf_(NULL),
       table_(NULL),
       index_(NULL),
+      comments_(NULL),
+      numComments_(0),
       sep_(sep),
       status_(0)
 {
@@ -161,6 +167,7 @@ int TabTable::init(int numCols, char** colNames, const char* buf,
     numRows_ = getNumLines(buf_, maxRows);
     numCols_ = numCols;
     colNames_ = cnames;
+    numComments_ = 0;
 
     // fill the table rows from the buffer
     return fillTable(buf_);
@@ -173,24 +180,30 @@ int TabTable::init(int numCols, char** colNames, const char* buf,
 int TabTable::clear()
 {
     if (table_) {
-	delete table_;
+	delete[] table_;
 	table_ = NULL;
     }
     if (index_) {
-	delete index_;
+	delete[] index_;
 	index_ = NULL;
     }
+    if (comments_) {
+        delete[] comments_;
+        comments_ = NULL;
+    }
     if (colNames_) {
-	delete colNames_;
+	delete[] colNames_;
 	colNames_ = NULL;
     }
     numCols_ = 0;
     numRows_ = 0;
+    numComments_ = 0;
 
     if (buf_) {
 	free(buf_);
 	buf_ = NULL;
     }
+
     return 0;
 }
 
@@ -217,6 +230,8 @@ static char* trim(char* s)
  * to point to the start of the data rows.
  * If maxRows is nonzero, the input is truncated to that many rows.
  * Returns 0 if OK.
+ *
+ * As part of routine locate and record any header comments.
  */
 int TabTable::scanTable(int maxRows, char*& start)
 {
@@ -234,8 +249,33 @@ int TabTable::scanTable(int maxRows, char*& start)
 	    break;
 	} 
 	prev_line = line;
+
+        //  If a comment line count it.
+        if (*line == '#') {
+            numComments_++;
+        }
 	*p = '\0';
     }
+
+    //  Now gather the comments.
+    if ( numComments_ > 0 ) {
+        comments_ = new char*[numComments_];
+
+        //  Back to head of buf_. Note lines are now NULL terminated.
+        char *cline = buf_;
+        int i = 0;
+        for (p = strchr(cline, '\0'); p; p = strchr(cline = p+1, '\0')) {
+            if (*cline == '-') {
+                //  No more comments.
+                break;
+            } 
+            if (*cline == '#') {
+                comments_[i++] = cline;
+                //cout << cline << endl;
+            }
+        }
+    }
+
     if (! head) {
 	// status_ = error("bad tab table format, no '---' line found");
 	// allow missing headers
@@ -539,7 +579,7 @@ int TabTable::insert(const char* filename, int col)
     for (row = 0; row < numRows_; row++)
 	if (!insertedRow[row])
 	    printRow(os, row);
-    delete insertedRow;
+    delete[] insertedRow;
         
     // make a backup file and rename the tmpfile to the original
     char bakfile[2048];
@@ -1272,3 +1312,14 @@ TGET(double)
 TGET(float)
 TGET(char)
 
+/*
+ * Get a comment (see numComments() for how many are available).
+ */
+int TabTable::getComment(int n, char*& value) const
+{
+    if ( n >= numComments_ ) {
+	return 1;
+    }
+    value = comments_[n];
+    return 0;
+}

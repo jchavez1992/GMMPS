@@ -23,6 +23,8 @@
 # pbiereic        16/08/01   Added method 'reopen' to update FITS HDU's
 #                            Adapted for new widget RtdImageFitsHeader for viewing
 #                            FITS HDU headers.
+# P.W.Draper      05/12/06   Allow autoscale of image whose dimensions are 1.
+#                 27/11/07   Autoscale for all items on canvas, not just image.
 
 itk::usual RtdImageCtrl {}
 
@@ -72,7 +74,7 @@ itcl::class rtd::RtdImageCtrl {
     # the options have been evaluated
 
     protected method init {} {
-	RtdImage::init
+	rtd::RtdImage::init
 	
 	feedback "control panel..."
 	make_control_panel
@@ -127,7 +129,7 @@ itcl::class rtd::RtdImageCtrl {
 	    # The RTD control panel, may be put in a frame or optionally 
 	    # in a popup window
 	    itk_component add panel {
-		set panel [TopLevelWidget $w_.panel]
+		set panel [util::TopLevelWidget $w_.panel]
 	    }
 	    wm withdraw $panel
 
@@ -314,7 +316,7 @@ itcl::class rtd::RtdImageCtrl {
 
 	# LabelEntry for grid size
 	itk_component add gridsize  {
-	    LabelEntry $gridf.gridsize \
+	    util::LabelEntry $gridf.gridsize \
 		-value 60 \
 		-relief sunken \
 		-anchor w \
@@ -426,7 +428,7 @@ itcl::class rtd::RtdImageCtrl {
     # (1 is no scale, -2 = 50%, 2 = 200% etc...)
     
     public method scale {x y} {
-	RtdImage::scale $x $y
+	rtd::RtdImage::scale $x $y
 	if {[info exists itk_component(zoom)]} {
 	    $itk_component(zoom) scale
 	}
@@ -446,7 +448,7 @@ itcl::class rtd::RtdImageCtrl {
     # (for real-time updates, see camera command)
 
     protected method new_image_cmd {} {
-	RtdImage::new_image_cmd
+	rtd::RtdImage::new_image_cmd
 
         # display HDU list, if there are multiple HDUs
         update_fits_hdus
@@ -661,7 +663,7 @@ itcl::class rtd::RtdImageCtrl {
     # access it (extend parent class version)
 
     public method clear {} {
-	RtdImage::clear
+	rtd::RtdImage::clear
 	$itk_component(info) config -state disabled
 	if {[winfo exists $w_.cut]} {
 	    destroy $w_.cut
@@ -686,7 +688,7 @@ itcl::class rtd::RtdImageCtrl {
     # reopen file and update HDU's
 
     public method reopen {} {
-        RtdImage::reopen
+        rtd::RtdImage::reopen
         update_fits_hdus
    }
     
@@ -742,7 +744,7 @@ itcl::class rtd::RtdImageCtrl {
     # 'autoscale' is set
 
     public method maybe_center {} {
-        RtdImage::maybe_center
+        rtd::RtdImage::maybe_center
         maybe_autoscale
     }
     
@@ -750,7 +752,7 @@ itcl::class rtd::RtdImageCtrl {
     # 'autoscale' is set
 
     public method rotate {bool} {
-        RtdImage::rotate $bool
+        rtd::RtdImage::rotate $bool
         maybe_autoscale
     }
 
@@ -799,12 +801,16 @@ itcl::class rtd::RtdImageCtrl {
     # The arguments are the dimensions of the image canvas.
 
     protected method fill_to_fit {cw ch} {
-	set w [$image_ width]
-	set h [$image_ height]
-	if {$w <= 2 || $h <=2} {
-	    return
-	}
-	set factor [expr {min($cw/$w, $ch/$h)}]
+
+        #  Fit to all items on the canvas, not just the image.
+        lassign [$canvas_ bbox all] x0 y0 x1 y1
+        $image_ convert coords $x0 $y0 canvas x0 y0 image
+        $image_ convert coords $x1 $y1 canvas x1 y1 image
+
+        set w [expr int(abs($x1-$x0))]
+        set h [expr int(abs($y1-$y0))]
+
+        set factor [expr {min(150,min($cw/$w, $ch/$h))}]
 	if {$factor == 0} {
 	    set factor [expr {-max(($w-1)/$cw+1, ($h-1)/$ch+1)}]
 	    if {$factor >= -1} {

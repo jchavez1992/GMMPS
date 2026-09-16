@@ -83,7 +83,7 @@ itcl::class cat::CatalogInfo {
     # add the menu bar
 
     protected method add_menubar {} {
-	TopLevelWidget::add_menubar
+	util::TopLevelWidget::add_menubar
 	set m [add_menubutton File "Display File menu"]
 	set file_menu_ $m
 	
@@ -492,7 +492,7 @@ itcl::class cat::CatalogInfo {
     # add a short help window and set the help texts
     
     protected method make_short_help {} {
-	TopLevelWidget::make_short_help
+	util::TopLevelWidget::make_short_help
 
 	add_short_help $tree_ \
 	    "Catalog list: {bitmap b1} = open and display catalog server contents, \
@@ -643,10 +643,10 @@ itcl::class cat::CatalogInfo {
     itk_option define -classname classname Classname ""
 
     # font to use for labels
-    itk_option define -labelfont labelFont LabelFont -Adobe-helvetica-bold-r-normal-*-12*
+    itk_option define -labelfont labelFont LabelFont TkDefaultFont
 
     # font to use for values
-    itk_option define -valuefont valueFont ValueFont -adobe-courier-medium-r-*-*-*-120-*-*-*-*-*-*
+    itk_option define -valuefont valueFont ValueFont TkFixedFont
 
     # set the width for  displaying labels
     itk_option define -labelwidth labelWidth LabelWidth 10

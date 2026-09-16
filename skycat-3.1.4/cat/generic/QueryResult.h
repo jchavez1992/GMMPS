@@ -11,9 +11,11 @@
  *
  * See the man page for a complete description.
  *
- * who             when       what
- * --------------  --------   ----------------------------------------
- * Allan Brighton  7 Nov 95  Created
+ * who              when       what
+ * --------------   --------   ----------------------------------------
+ * Allan Brighton   7 Nov 95  Created
+ * Peter W. Draper 13 Jan 09  Added getEntry method.
+ *                  8 May 09  Added stc_col support.
  */
 
 
@@ -100,12 +102,16 @@ public:
     virtual int x_col() const             {return entry_->x_col();}
     virtual int y_col() const             {return entry_->y_col();}
     virtual double equinox() const        {return entry_->equinox();}
+    virtual int stc_col() const           {return entry_->stc_col();}
     
     // return true if the catalog uses world coords
     virtual int isWcs() const             {return entry_->isWcs();}
 
     // return true if the catalog uses image pixel coords
     virtual int isPix() const             {return entry_->isPix();}
+
+    // get the CatalogInfoEntry instance.
+    CatalogInfoEntry * getInfo()          {return entry_;}
 };
 
 

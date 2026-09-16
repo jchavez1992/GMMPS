@@ -13,6 +13,8 @@
 # P.Biereichel    22/03/99   Added code for bias subtraction
 # P.Biereichel    09/08/99   Added camera status
 # pbiereic        19/03/03   Always update lcut/hcut (method updateValues)
+# Peter W. Draper 20/07/09   Use unicode values for greek alpha and delta.
+#                            Switch to modern fonts.
 
 itk::usual RtdImagePanel {}
 
@@ -54,7 +56,7 @@ itcl::class rtd::RtdImagePanel {
     # do the widget layout, aligning the items in rows and colums
 
     protected method make_layout {} {
-	blt::table $w_
+	blt::blttable $w_
 	add_short_help $w_ {Image information area}
 
 	# frame at the lower right of the panel that optionally
@@ -100,9 +102,9 @@ itcl::class rtd::RtdImagePanel {
 		    -relief groove
 	    } 
 	    if { "$itk_option(-panel_orient)" == "vertical" } {
-		blt::table $w_ $itk_component(object)  [incr row],0 -fill x -anchor e
+		blt::blttable $w_ $itk_component(object)  [incr row],0 -fill x -anchor e
 	    } else {
-		blt::table $w_ $itk_component(object)  [incr row],0 -fill x -anchor e -columnspan 3
+		blt::blttable $w_ $itk_component(object)  [incr row],0 -fill x -anchor e -columnspan 3
 	    }
 
 	    add_short_help $itk_component(object) \
@@ -149,12 +151,12 @@ itcl::class rtd::RtdImagePanel {
 		    -anchor e
 	    } 
 	    if { "$itk_option(-panel_orient)" == "vertical" } {
-		blt::table $w_ \
+		blt::blttable $w_ \
 			$itk_component(x)       [incr row],0 -fill x -anchor w \
 			$itk_component(y)       [incr row],0 -fill x -anchor w \
 			$itk_component(value)   [incr row],0 -fill x -anchor w
 	    } else {
-		blt::table $w_ \
+		blt::blttable $w_ \
 			$itk_component(x)       [incr row],0 -fill x -anchor w \
 			$itk_component(y)       $row,1 -fill x -anchor w \
 			$itk_component(value)   $row,2 -fill x -anchor w
@@ -178,7 +180,7 @@ itcl::class rtd::RtdImagePanel {
 	    # LabelValue(n) widget for RA coordinate
 	    itk_component add ra {
 		util::LabelValue $w_.ra \
-		    -text "a:" \
+                    -text "\u03b1:" \
 		    -textvariable ${var}(RA) \
 		    -labelfont $itk_option(-wcsfont) \
 		    -valuefont $itk_option(-valuefont) \
@@ -190,7 +192,7 @@ itcl::class rtd::RtdImagePanel {
 	    # LabelValue(n) widget for DEC coordinate
 	    itk_component add dec {
 		util::LabelValue $w_.dec \
-		    -text "d:" \
+                    -text "\u03b4:" \
 		    -textvariable ${var}(DEC) \
 		    -labelfont $itk_option(-wcsfont) \
 		    -valuefont $itk_option(-valuefont) \
@@ -212,12 +214,12 @@ itcl::class rtd::RtdImagePanel {
 		    -anchor e
 	    } 
 	    if { "$itk_option(-panel_orient)" == "vertical" } {
-		blt::table $w_ \
+		blt::blttable $w_ \
 		    $itk_component(ra)      [incr row],0 -fill x -anchor w \
 		    $itk_component(dec)     [incr row],0 -fill x -anchor w \
 		    $itk_component(equinox) [incr row],0 -fill x -anchor w
 	    } else {
-		blt::table $w_ \
+		blt::blttable $w_ \
 		    $itk_component(ra)      [incr row],0 -fill x -anchor w \
 		    $itk_component(dec)     $row,1 -fill x -anchor w \
 		    $itk_component(equinox) $row,2 -fill x -anchor w
@@ -269,12 +271,12 @@ itcl::class rtd::RtdImagePanel {
 		    -anchor e
 	    } 
 	    if { "$itk_option(-panel_orient)" == "vertical" } {
-		blt::table $w_ \
+		blt::blttable $w_ \
 			$itk_component(min)     [incr row],0 -fill x -anchor w \
 			$itk_component(max)     [incr row],0 -fill x -anchor w \
 			$itk_component(bitpix)  [incr row],0 -fill x -anchor w
 	    } else {
-		blt::table $w_ \
+		blt::blttable $w_ \
 			$itk_component(min)     [incr row],0 -fill x -anchor w \
 			$itk_component(max)     $row,1 -fill x -anchor w \
 			$itk_component(bitpix)  $row,2 -fill x -anchor w
@@ -289,7 +291,7 @@ itcl::class rtd::RtdImagePanel {
 	if {$itk_option(-showcut)} {
 	    # LabelEntry(n) widget for the low cut level
 	    itk_component add low {
-		LabelEntry $w_.low \
+		util::LabelEntry $w_.low \
 		    -text "Low:" \
 		    -command [code $this set_cut_levels] \
 		    -labelfont $itk_option(-labelfont) \
@@ -304,7 +306,7 @@ itcl::class rtd::RtdImagePanel {
 	    }
 	    # LabelEntry(n) widget for the high cut level
 	    itk_component add high {
-		LabelEntry $w_.high \
+		util::LabelEntry $w_.high \
 		    -text "High:" \
 		    -command [code $this set_cut_levels] \
 		    -labelfont $itk_option(-labelfont) \
@@ -318,12 +320,12 @@ itcl::class rtd::RtdImagePanel {
 		keep -state
 	    }
 	    if { "$itk_option(-panel_orient)" == "vertical" } {
-		blt::table $w_ \
+		blt::blttable $w_ \
 			$itk_component(low)     [incr row],0 -fill x -anchor w \
 			$itk_component(high)    [incr row],0 -fill x -anchor w \
 			$itk_component(lrframe) [incr row],0 -fill x -anchor w
 	    } else {
-		blt::table $w_ \
+		blt::blttable $w_ \
 			$itk_component(low)     [incr row],0 -fill x -anchor w \
 			$itk_component(high)    $row,1 -fill x -anchor w \
 			$itk_component(lrframe) $row,2 -fill x -anchor w
@@ -353,7 +355,7 @@ itcl::class rtd::RtdImagePanel {
 	    } {
 		keep -state
 	    }
-	    blt::table $w_ \
+	    blt::blttable $w_ \
 		$itk_component(trans)   [incr row],0 -fill x -anchor w -columnspan 2
 	}
 
@@ -362,14 +364,14 @@ itcl::class rtd::RtdImagePanel {
 	    canvas $w_.status -height 0 -width 0
 	}
 	if { "$itk_option(-panel_orient)" == "vertical" } {
-	    blt::table $w_ \
+	    blt::blttable $w_ \
 		    $itk_component(cameraStatus)  [incr row],0 -fill both -anchor nw
 	} else {
-	    blt::table $w_ \
+	    blt::blttable $w_ \
 		    $itk_component(cameraStatus)  $row,2 -fill both -anchor nw
 	}
 
-	blt::table configure $w_ c2 -padx 1m
+	blt::blttable configure $w_ c2 -padx 1m
     }
     
     public method camSts { args } {
@@ -546,13 +548,13 @@ itcl::class rtd::RtdImagePanel {
     
     
     # Font to use for labels
-    itk_option define -labelfont labelFont LabelFont -Adobe-helvetica-bold-r-normal--12*
+    itk_option define -labelfont labelFont LabelFont TkDefaultFont
 
     # Font to use for values.
-    itk_option define -valuefont valueFont ValueFont -Adobe-helvetica-medium-r-normal--12*
+    itk_option define -valuefont valueFont ValueFont TkDefaultFont
 
     # Font to use for RA,DEC (a, b) labels (symbol).
-    itk_option define -wcsfont wcsFont WcsFont -*-symbol-*-*-*-*-14-*-*-*-*-*-*-*
+    itk_option define -wcsfont wcsFont WcsFont TkDefaultFont
 
     # set the width for displaying labels
     itk_option define -labelwidth labelWidth LabelWidth 6

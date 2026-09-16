@@ -63,6 +63,7 @@ int TcsQueryResult::clear()
 	delete [] objects_;
 	objects_ = NULL;
     }
+    return 0;
 }
 
 

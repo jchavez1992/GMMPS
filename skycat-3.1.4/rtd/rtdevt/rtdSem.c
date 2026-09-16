@@ -283,6 +283,9 @@
 */
 
 #include <string.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include "rtdSem.h"
 #include "rtdImageEvent.h"
 #ifdef HAVE_CONFIG_H

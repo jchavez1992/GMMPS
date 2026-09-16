@@ -42,7 +42,7 @@ itcl::class rtd::RtdImagePerf {
 	set var $target_image_
 	global ::$var
 
-	LabelValue2 $w \
+	util::LabelValue2 $w \
 		-text $label \
 		-labelfont $itk_option(-labelfont) \
 		-valuefont $itk_option(-valuefont) \
@@ -81,7 +81,7 @@ itcl::class rtd::RtdImagePerf {
 		"Total time spent per image event (msec)"
 
 	itk_component add count {
-	    LabelValue $w.count \
+	    util::LabelValue $w.count \
 		    -textvariable ${var}(PERF_COUNT) \
 		    -text "Image counter:\t\t" \
 		    -labelfont $itk_option(-labelfont) \
@@ -206,10 +206,10 @@ itcl::class rtd::RtdImagePerf {
     }
 
     # font used for labels
-    itk_option define -labelfont labelFont LabelFont -Adobe-helvetica-bold-r-normal-*-12*
+    itk_option define -labelfont labelFont LabelFont TkDefaultFont
 
     # font used for values
-    itk_option define -valuefont valueFont ValueFont -Adobe-helvetica-medium-r-normal-*-12*
+    itk_option define -valuefont valueFont ValueFont TkDefaultFont
 
     # set the width for  displaying labels
     itk_option define -labelwidth labelWidth LabelWidth 21

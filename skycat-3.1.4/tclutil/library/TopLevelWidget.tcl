@@ -19,8 +19,20 @@
 #                            accelerator code work.
 # pbiereic        26/08/99   added option 'wait' to method 'start' which
 #                            returns to interactive mode when wait=0
+# P.W. Draper     28 Apr 00  short_help method scoped to public from
+#                            protected, this is needed so that canvas
+#                            items can trigger short_help changes.
 # pbiereic        21/10/02   Made menubar and help-area a bit smaller to
 #                            have more space for the future toolbar.
+#                 23 Apr 02  Modified busy as this always caused the 
+#                            top-level window to get the focus on
+#                            exit, even when it didn't have the focus
+#                            to start with (causing unintended grab).
+# P.W.Draper      09 May 07  Make HelpWin class a public common variable
+#                            so it can be changed (not possible to sub-
+#                            class and override).
+#                 23 Jan 08  Make focus control is busy method optional.
+
 
 itk::usual TopLevelWidget {}
 
@@ -238,12 +250,17 @@ itcl::class util::TopLevelWidget {
 	    
     # run the given tcl command in the scope of this class
     # while displaying the (blt) busy cursor in the toplevel
-    # window
+    # window, if defocus is false don't handle focussing.
 
-    public method busy {cmd} {
+    public method busy {cmd {defocus 1}} {
 	global ::errorInfo ::errorCode
 	if {[incr busy_count_] == 1} {
-	    catch {focus .}
+            #  First busy level so record current focus and move it out
+            #  of the window.
+            if { $defocus } {
+               set oldfocus [focus -displayof $w_]
+	       catch {focus .}
+            }
 	    blt::busy hold $w_
 	    update idletasks
 	}
@@ -253,11 +270,22 @@ itcl::class util::TopLevelWidget {
 	    set info $errorInfo
 	} 
 
-	if {[incr busy_count_ -1] == 0} {
-	    update idletasks
-	    blt::busy release $w_
-	    catch {focus [focus -lastfor $w_]}
-	}
+        # if exiting busy loop, then restore old focus if possible,
+        # otherwise look for last focus, which isn't a top-level window
+        # (doing this can cause unexpected grabs).
+        if {[incr busy_count_ -1] == 0} {
+            blt::busy release $w_
+            if { $defocus } {
+               if { $oldfocus != "" && [winfo exists $oldfocus]} {
+                  set lastfocus $oldfocus
+               } else {
+                  set lastfocus [focus -lastfor $w_]
+               }
+               if { $lastfocus != $w_ } {
+                  catch {focus $lastfocus}
+              }
+            }
+        }
 
 	if {$code} {
 	    uplevel [list error $msg $info $code]
@@ -376,8 +404,8 @@ itcl::class util::TopLevelWidget {
 
     public method show_help {file} {
 	if { $file != {} } {
-	    if { ! [winfo exists $help_window_] } {
-		set help_window_ [util::HelpWin \#auto -file $file]
+            if { ! [winfo exists $help_window_] } {
+                set help_window_ [eval $help_window_class \#auto -file "$file"]
 	    }
 	    $help_window_ display
 	}
@@ -425,7 +453,7 @@ itcl::class util::TopLevelWidget {
 		-wrap none \
                 -takefocus 0 \
 		-relief groove \
-		-font -Adobe-helvetica-medium-r-normal--14* 
+		-font TkTooltipFont
 	} {
 	    rename -font -helpfont helpFont HelpFont
 	}
@@ -520,7 +548,7 @@ itcl::class util::TopLevelWidget {
     #
     # The optional mf arg is the "%m" value for the Enter/Leave event.
 
-    protected method short_help {msg {mf ""}} {
+    public method short_help {msg {mf ""}} {
 	if {[info exists itk_component(short_help)]} {
 	    if {"$mf" == "NotifyGrab" || "$mf" == "NotifyUngrab"} {
 		return
@@ -780,6 +808,9 @@ itcl::class util::TopLevelWidget {
     protected variable popup_windows_ {}
 
     # -- common variables (once per class) --
+
+    # the class used to instantiate a help window
+    public common help_window_class util::HelpWin
 
     # optional tcl command to eval for each TopLevelWidget created
     protected common command_ {}

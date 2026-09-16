@@ -17,7 +17,7 @@
 
 
 #include <cstdio>
-#include <string.h>
+#include <cstring>
 #include "WorldOrImageCoords.h"
 
 

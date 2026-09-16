@@ -10,12 +10,12 @@ version =	24
 # ------------------------------------------------------------------------
 
 CC =		gcc
-CFLAGS =	-O6 
+CFLAGS =	-O2 -arch arm64 
 EXTRA_CFLAGS =	-Wall -fno-common
 #DEFINES =	
 DEFINES =	
 DEF_BLTINIT =	-DBLT_LIBRARY=\"$(scriptdir)\"
-SHLIB_LD_FLAGS =  -prebind -headerpad_max_install_names -Wl,-search_paths_first 
+SHLIB_LD_FLAGS = -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first 
 SHLIB_TCL_ONLY_LIB_SPECS =  
 SHLIB_LIB_SPECS =  
 SHLIB_LD =	cc -dynamiclib ${LDFLAGS} -Wl,-single_module

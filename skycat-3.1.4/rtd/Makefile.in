@@ -132,7 +132,7 @@ RANLIB		= @RANLIB@
 RANLIB_STUB	= @RANLIB_STUB@
 SHLIB_CFLAGS	= @SHLIB_CFLAGS@
 SHLIB_LD	= @SHLIB_LD@
-SHLIB_LD_LIBS	= @SHLIB_LD_LIBS@
+SHLIB_LD_LIBS	= @PKG_LIBS@ @SHLIB_LD_LIBS@ @SHLIB_LD_CXX_LIBS@
 STLIB_LD	= @STLIB_LD@
 #TCL_DEFS	= @TCL_DEFS@
 TCL_BIN_DIR	= @TCL_BIN_DIR@
@@ -168,8 +168,8 @@ TCLSH	= $(TCLSH_ENV) $(TCLSH_PROG)
 
 SHARED_BUILD	= @SHARED_BUILD@
 
-INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@
-#INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@ @TK_INCLUDES@ @TK_XINCLUDES@
+#INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@
+INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@ @TK_INCLUDES@ @TK_XINCLUDES@
 
 PKG_CFLAGS	= @PKG_CFLAGS@ 
 
@@ -188,8 +188,9 @@ CPPFLAGS	= @CPPFLAGS@
 LIBS		= @PKG_LIBS@ @LIBS@
 AR		= @AR@
 CFLAGS		= @CFLAGS@
+CXXFLAGS        = @CXXFLAGS@
 COMPILE		= $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CXXCOMPILE	= $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CXXCOMPILE	= $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) $(CXXFLAGS)
 
 #========================================================================
 # Start of user-definable TARGETS section
@@ -219,6 +220,10 @@ libraries:
 tclIndex:
 	(cd $(srcdir)/library; $(TCLSH_PROG) mkIndex.tcl)
 
+#  Scripts created by configure depend on their .in files and config.status
+#  (since they are cleaned).
+rtd: rtd.in config.status
+	./config.status
 
 #========================================================================
 # Your doc target should differentiate from doc builds (by the developer)
@@ -410,7 +415,7 @@ install-bin-binaries: binaries
 	  fi; \
 	done
 
-.SUFFIXES: .c .$(OBJEXT)
+.SUFFIXES: .c .$(OBJEXT) .C
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -438,9 +443,9 @@ uninstall-binaries:
 # rtdevt targets for real-time image servers and clients
 #========================================================================
 $(RTDEVT_LIB): $(RTDEVT_OBJ)
-	$(RM) $@
+	- $(RM) $@
 	$(AR) r $@ $(RTDEVT_OBJ)
-	$(RANLIB) $@
+	$(RANLIB_STUB) $@
 
 $(RTD_SERVER): $(RTD_SERVER_OBJS)
 	$(CXXCOMPILE) -o $@ $(RTD_SERVER_OBJS) $(RTDEVT_LIB) @LIBS@
@@ -455,9 +460,9 @@ rtdCubeDisplay: rtdCubeDisplay.o
 # RTD Remote access C library
 #========================================================================
 $(RTD_REMOTE_LIB): $(RTD_REMOTE_OBJ)
-	$(RM) $@
+	- $(RM) $@
 	$(AR) r $@ $(RTD_REMOTE_OBJ)
-	$(RANLIB) $@
+	$(RANLIB_STUB) $@
 
 #========================================================================
 # C++ Test cases
@@ -472,7 +477,7 @@ trtdRemote: trtdRemote.o
 
 tRtd: tRtd.o tRtdEvt.o tRtdEvtData.o
 	$(CXXCOMPILE) -o $@ $@.o tRtdEvt.o tRtdEvtData.o \
-	@rtd_BUILD_LIB_SPEC@ @TK_LIB_SPEC@ @TCL_LIB_SPEC@ ${LIBS}
+	@rtd_BUILD_LIB_SPEC@  ${LDFLAGS_DEFAULT} @PKG_LIBS@ @TK_LIB_SPEC@ @TCL_LIB_SPEC@ @LIBS@
 
 #========================================================================
 # Run Tcl test cases

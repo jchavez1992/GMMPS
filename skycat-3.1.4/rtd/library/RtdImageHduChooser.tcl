@@ -9,6 +9,7 @@
 # who             when       what
 # --------------  ---------  ----------------------------------------
 # Allan Brighton  09/11/98   Created
+# Peter W. Draper 08/12/00   Slight corrections for missing CRPIX values.
 # pbiereic        14/08/01   Added default method display_fits_table()
 #                            for binary tables.
 #                            Display HDU images only on request (for
@@ -16,6 +17,10 @@
 # pbiereic        11/10/08   Break image display loop after failure.
 # pbiereic        26/11/08   Using 'view update' for HDU images display.
 #                            Using a toplevel window for the HDU images display.
+# Peter W. Draper 20/01/14   Don't floor crpix based row calculations by
+#                            implicit integer division, leave that for round().
+#                            "Fix" idx calculation that was giving invalid
+#                            index. Use blt::blttable not blt::table.
 
 itk::usual RtdImageHduChooser {}
 
@@ -219,7 +224,13 @@ itcl::class rtd::RtdImageHduChooser {
 		    set naxis2 $NAXIS2
 		} else {
 		    if {$naxis1 != $NAXIS1 || $naxis2 != $NAXIS2} {
-			set use_crpix 0
+                       #  PWD: allow for slight rounding error or trim of a
+                       #  small number of pixels, let's say 10.
+                       set dx [expr abs($naxis1 - $NAXIS1)]
+                       set dy [expr abs($naxis2 - $NAXIS2)]
+                       if { $dx > 10 || $dy > 10 } {
+                          set use_crpix 0
+                       }
 		    }
 		    if {$CRPIX1 > $max_crpix1} {
 			set max_crpix1 $CRPIX1
@@ -246,8 +257,17 @@ itcl::class rtd::RtdImageHduChooser {
 		set crpix2 $ext_($i,CRPIX2)
 		set naxis1 $ext_($i,NAXIS1)
 		set naxis2 $ext_($i,NAXIS2)
-		set row [expr {round(double($max_crpix2 - $crpix2)/$naxis2)}]
-		set col [expr {round(double($max_crpix1 - $crpix1)/$naxis1)}]
+                set row -1
+                set col -1
+
+                #  PWD: round after eval not during division, no point
+                #  otherwise. Images with padding (bias strips) are
+                #  larger than crpix separations.
+                catch {
+   		   set row [expr round(($max_crpix2 - $crpix2)/double($naxis2))]
+                   set col [expr round(($max_crpix1 - $crpix1)/double($naxis1))]
+                }
+
 		if {$row<0 || $col<0 || [info exists check($row,$col)]} {
 		    # put in sequential order
 		    set use_crpix 0
@@ -282,12 +302,17 @@ itcl::class rtd::RtdImageHduChooser {
 	    }
 	}
 
+        # PWD: XXX commented out for now. Problem when loading cubes
+        # as this causes the cube to load, which displays an NDF (as the
+        # slice) that destroys this object (to make way for the NDF
+        # chooser) before the latter lines are executed.
+
 	# Select the HDU being displayed, if any
-        if {$first_image == -1} {
-            select_image_hdu [$image_ hdu]
-        } else {
-            select_image_hdu $first_image
-        }
+        #if {$first_image == -1} {
+        #    select_image_hdu [$image_ hdu]
+        #} else {
+        #    select_image_hdu $first_image
+        #}
 
         if { $num_images_ > 1 } {
             $itk_component(show) config -state normal
@@ -362,7 +387,7 @@ itcl::class rtd::RtdImageHduChooser {
 
 	for {set i 0} {$i < $num_images_} {incr i} {
 	    set f [frame $itk_component(imagetab).f$i -borderwidth 1 -relief raised]
-	    set im [RtdImage $f.im \
+	    set im [rtd::RtdImage $f.im \
 			-graphics 0 \
 			-displaymode 0 \
 			-usexshm 0 \
@@ -455,13 +480,17 @@ itcl::class rtd::RtdImageHduChooser {
 	
 
 	# position the images in the table
-	catch {blt::table forget $itk_component(imagetab)}
+	catch {blt::blttable forget $itk_component(imagetab)}
 
 	set hdu [$image_ hdu]
 	set idx [expr {$hdu -1}]
 	if { $ext_(0,HDU) == 2 } {
 	    set idx [expr {$idx -1}]
+           if { $idx < 0 } {
+              set idx 0
 	}
+	}
+
 	set naxis1 $ext_($idx,NAXIS1)
 	if { $hdu > 0 && [$image_ width] != $naxis1 } {
 	    set hdu -1
@@ -470,7 +499,7 @@ itcl::class rtd::RtdImageHduChooser {
 	for {set i 0} {$i < $num_images_} {incr i} {
 	    set row [expr {$max_row_-$ext_($i,row)}]
 	    set col $ext_($i,col)
-	    blt::table $itk_component(imagetab) ${row},${col} $itk_component(imagetab).f$i -fill both
+	    blt::blttable $itk_component(imagetab) ${row},${col} $itk_component(imagetab).f$i -fill both
 	    if {"$ext_($i,HDU)" == $hdu} {
 		$wdg_($i,frame) configure -relief sunken -bg red
 	    }

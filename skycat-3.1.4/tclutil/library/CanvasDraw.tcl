@@ -322,7 +322,7 @@ itcl::class util::CanvasDraw {
 			   -command [code $this set_drawing_mode $drawing_mode]]
 	    }
 	    add_short_help $b "set the drawing mode to $drawing_mode"
-	    blt::table $itk_component(drawmodes) $b $row,$col \
+	    blt::blttable $itk_component(drawmodes) $b $row,$col \
 		-fill x -ipadx 1m -ipady 1m
 	    if {$col < $maxcol} {
 		incr col
@@ -1889,7 +1889,7 @@ itcl::class util::CanvasDraw {
     itk_option define -outlinecolor outlineColor OutlineColor {grey90} 
 
     # default text item font
-    itk_option define -textfont textFont TextFont {-*-courier-bold-r-*-*-*-120-*-*-*-*-*-*}
+    itk_option define -textfont textFont TextFont TkFixedFont
 
     # default list of fonts for font menu
     itk_option define -fonts fonts Fonts {

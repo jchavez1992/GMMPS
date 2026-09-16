@@ -102,12 +102,12 @@ CFLAGS_OPTIMIZE		= -Os
 #CFLAGS			= $(CFLAGS_DEBUG)
 #CFLAGS			= $(CFLAGS_OPTIMIZE)
 #CFLAGS			= $(CFLAGS_DEBUG) $(CFLAGS_OPTIMIZE)
-CFLAGS			= $(CFLAGS_OPTIMIZE)  -DTCL_DBGX=$(TCL_DBGX)
+CFLAGS			= $(CFLAGS_OPTIMIZE) -O2 -arch arm64 -DTCL_DBGX=$(TCL_DBGX)
 
 # Flags to pass to the linker
 LDFLAGS_DEBUG		= 
 LDFLAGS_OPTIMIZE	= 
-LDFLAGS			= $(LDFLAGS_OPTIMIZE)  -prebind -headerpad_max_install_names -Wl,-search_paths_first
+LDFLAGS			= $(LDFLAGS_OPTIMIZE) -arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first
 
 # To disable ANSI-C procedure prototypes reverse the comment characters
 # on the following lines:

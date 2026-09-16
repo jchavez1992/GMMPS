@@ -9,11 +9,17 @@
  * who             when       what
  * --------------  --------   ----------------------------------------
  * Allan Brighton  26 Sep 95  Created
+ * Peter W. Draper 01 May 03  Added "ws" and "hs" to get width and
+ *                            height in arcsecs (2MASS image servers)
+ * Peter W. Draper 10 Dec 03  Moved "delete cat" in nameToWorldCoords
+ *                            so that it is performed after the last
+ *                            reference to "cat" (->equinox()). 
+ *                            Started crashing query subprocess.
+ *                 27 Aug 08  Allow image/fits as a content type.
  */
 static const char* const rcsId="@(#) $Id: AstroCatalog.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdlib>
@@ -29,6 +35,8 @@ using namespace std;
 #include "Mem.h"
 #include "AstroCatalog.h"
 #include "LocalCatalog.h"
+
+using namespace std;
 
 
 /*
@@ -394,9 +402,12 @@ int AstroCatalog::getImage(const AstroQuery& q)
  */
 int AstroCatalog::getImage(const char* url)
 {
-    char* ctype = (char *)"";
-    if (getPreview(url, ctype) == 0 && strcmp(ctype, "image/x-fits") == 0)
+        char* ctype = (char *)"";
+    if (getPreview(url, ctype) == 0 && 
+        ( strcmp(ctype, "image/x-fits") == 0 || 
+          strcmp(ctype, "image/fits" ) == 0 ) )
 	return 0;		// ok
+
     return 1;			// error
 }
 
@@ -422,6 +433,8 @@ int AstroCatalog::getImage(const char* url)
  *
  *   %w, %h           - width and height of area in arcmin (area query)
  *
+ *   %ws, %hs         - width and height of area in arcsec (area query)
+ *
  *   %r1, %r2         - min and max radius (for circular query)
  *
  *   %m1, %m2         - min and max magnitude
@@ -446,7 +459,7 @@ int AstroCatalog::genHttpQuery(char* buf, int bufsz, const AstroQuery& q, const 
     if (q.pos().status() != 0)
 	return ERROR;
 
-    ostringstream os;
+    std::ostringstream os;
     int i;
     int url_has_id = 0, 
 	url_has_radec = 0, 
@@ -517,6 +530,16 @@ int AstroCatalog::genHttpQuery(char* buf, int bufsz, const AstroQuery& q, const 
 		// so we can determine if that was all...
 		if (q.maxRows() > 0)
 		    os << q.maxRows()+1;
+		url++;
+	    }
+	    else if (strncmp(url, "ws", 2) == 0) {
+		if (q.width() != 0.0 || q.height() != 0.0)
+		    os << q.width() * 60.0;
+		url++;
+	    }
+	    else if (strncmp(url, "hs", 2) == 0) {
+		if (q.width() != 0.0 || q.height() != 0.0)
+		    os << q.height() * 60.0;
 		url++;
 	    }
 	    else if (strncmp(url, "w", 1) == 0) {
@@ -895,7 +918,7 @@ int AstroCatalog::getPreview(const char* url, char*& ctype)
     newTempFile();
 
     // open the tmp file
-    ofstream f(tmpfile_);
+    std::ofstream f(tmpfile_);
     if (!f) 
 	return sys_error("could not open file for writing: ", tmpfile_);
 	
@@ -913,7 +936,7 @@ int AstroCatalog::getPreview(const char* url, char*& ctype)
     
     if (strcmp(ctype, "text/html") == 0) {
 	// most likely an HTML formatted server error message
-	ifstream is(tmpfile_);
+	std::ifstream is(tmpfile_);
 	unlink(tmpfile_);
 	return http_.html_error(is);
     }
@@ -959,7 +982,9 @@ int AstroCatalog::getPreview(const char* url, char*& ctype)
     }
 
     // pure FITS or starbase table ?
-    if (strcmp(t, "x-fits") == 0 
+    if (strcmp(t, "x-fits") == 0
+        || strcmp(t, "fits" ) == 0
+        || strcmp(t, "fits") == 0 
 	|| strcmp(t, "x-starbase") == 0 
 	|| strcmp(t, "plain") == 0 
 	|| strcmp(t, "tab-separated-values") == 0) { 

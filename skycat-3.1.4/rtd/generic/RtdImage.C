@@ -67,7 +67,12 @@
  *                           Added wcsFlags and wcsdeltset command.
  * pbiereic        13/11/99  More accurate X, Y coords from RtdImage::statisticsCmd()
  * pbiereic        28/04/00  RtdImage::loadFile() opens the file with reading only
+ * Peter W. Draper 10/05/00  Always update colormap, some private maps
+ *                           are used when screen visual differs to
+ *                           requested one and would not otherwise be
+ *                           installed. 
  * pbiereic        26/05/00  Added options fillWidth / fillHeight
+ * Peter W. Draper 30/05/01  Added "double" as a valid data type.
  * pbiereic        01/03/01  o Added option 'debug'
  *                           o Added static class for performance tests (removed old code)
  *                           o Added method updateRequests() which updates X events
@@ -82,9 +87,29 @@
  *                           (X shm areas are not freed, so don't use them in this case)
  * pbiereic        17/02/03  Byte order for shm data is determined by the application
  *                           (flag shmEndian in the image event info structure).
+ * Peter W. Draper 28/04/03  Added PIXTAB_MINX, MAXX, MINY and MAXY to report
+ *                           the positions that the minimum and maximum values
+ *                           are found in a table of values.
+ * Peter W. Draper 21/10/03  Modified processMotionEvent to pass through
+ *                           long thin images of 2 pixels or less in
+ *                           either height or width. A blank image is
+ *                           2x2, not nx2 or 2xn.
+ *                 19/12/05  Undo change that removed LockMask in motionNotify.
+ *                           I think that's a handy feature.
+ *                 08/01/07  Change isclear to check for RTD_BLANK as the 
+ *                           OBJECT value, don't use the size at all. 
+ *                           Change processMotionEvent to work for images
+ *                           of all sizes (including blank ones). One
+ *                           pixel images are possible in cube sections.
  *
  * Allan Brighton  16/12/05  Added local Tk_CanvasWindowCoordsNoClip method (moved from tclutil)
  * Allan Brighton  28/12/05  Replaced init script
+ * Peter W. Draper 16/10/08  Record if user set the levels in setCutLevels
+ *                           even if they are not changed. That's makes more
+ *                           sense to the user.
+ *                 05/08/09  Add optionModified member to test if a
+ *                           configuration option is given. This functionality
+ *                           is lost in Tk 8.5.
  */
 static const char* const rcsId="@(#) $Id: RtdImage.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
@@ -121,6 +146,9 @@ extern "C" int gethostname(char *name, unsigned int namelen);
 #endif /* NEED_GETHOSTNAME_PROTO */
 #endif
 
+// local extension to enable postscript printing for images
+extern "C" void TkCanvasPsImage_Init();
+
 // generated code for bitmaps used in tcl scripts
 void defineRtdBitmaps(Tcl_Interp*);
 
@@ -154,7 +182,6 @@ static Tk_ConfigSpec configSpecs_[] = {
     {TK_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
 
-
 /*
  * Initialize the image control structure with pointers to the handler
  * functions
@@ -166,12 +193,7 @@ static Tk_ImageType rtdImageType = {
     TkImage::DisplayImage,      /* displayProc */
     TkImage::FreeImage,         /* freeProc */
     TkImage::DeleteImage,       /* deleteProc */
-
-#if TCL_MAJOR_VERSION >= 8 && TCL_MINOR_VERSION >= 3
-    // XXX RtdImage::Postscript,        /* postscriptProc */
-    (Tk_ImagePostscriptProc *) NULL,    /* postscriptProc */
-#endif
-
+    (Tk_ImagePostscriptProc *) NULL,      /* postscriptProc, use generic */
     (Tk_ImageType *) NULL       /* nextPtr */
 };
 
@@ -306,6 +328,9 @@ extern "C"
 int Rtd_Init(Tcl_Interp* interp)  
 {
     // Initialize the local packages that rtd depends on
+
+    // PWD: enable postscript printing for images (local ext)
+    TkCanvasPsImage_Init();
 
     // initialize the tclutil package 
     if (Tclutil_Init(interp) == TCL_ERROR) {
@@ -640,7 +665,7 @@ RtdImage::~RtdImage()
     }
 
     if (pixTab_) {
-	delete pixTab_;
+	delete[] pixTab_;
 	pixTab_ = NULL;
     }
 
@@ -673,7 +698,7 @@ int RtdImage::initColors(Tcl_Interp* interp)
 
     //  PWD: use "." here as "default" returns screen visual, not the
     //  "-visual" command-line option. Making this function static has 
-    //  somw drawbacks (the tkwin was previously the parent of the image?).
+    //  some drawbacks (the tkwin was previously the parent of the image?).
     Visual* visual = Tk_GetVisual(interp, tkwin, ".", &depth, &colormap);
     if (! visual)
 	return TCL_ERROR;
@@ -687,9 +712,14 @@ int RtdImage::initColors(Tcl_Interp* interp)
 	if (colors_->usePrivateCmap() || colors_->allocate(max_colors)) {
 	    return TCL_ERROR;
 	}
-	return colors_->setColormap(tkwin);
     }
-    return TCL_OK;
+
+    //  PWD: always set the colormap. This can be "private" when the
+    //  default visual doesn't match the one requested, in which case
+    //  we still need to set the colormap (I noticed this using a
+    //  default truecolor visual when attempting to get a pseudocolor
+    //  visual).
+    return colors_->setColormap(tkwin);
 }
 
 /*
@@ -915,9 +945,11 @@ void RtdImage::updateRequests()
 
 // Fix for Tk clipping coordinates to short range: See CanvasWindowCoordsNoClip() below.
 #ifdef HAVE_TKCANVAS_H
+#define MODULE_SCOPE extern
 #include "tkCanvas.h"
 #else
 // The structure we need hasn't changed for a long time, so just include a local copy.
+#define MODULE_SCOPE extern "C"
 #include "tkCanvas.h-tk8.4.11"
 #define HAVE_TKCANVAS_H 
 #endif
@@ -1081,7 +1113,7 @@ int RtdImage::configureImage(int argc, char* argv[], int flags)
     // the option is specified. We use the OFFSET macro defined above
     // as an efficient way to compare options)
     for (Tk_ConfigSpec* p=configSpecs_; p->type != TK_CONFIG_END; p++) {
-	if (p->specFlags & TK_CONFIG_OPTION_SPECIFIED) {
+        if ( optionModified(argc, argv, p->argvName) ) {
 	    switch(p->offset) {
 
 	    case RTD_OPTION(usexshm):
@@ -1165,6 +1197,19 @@ int RtdImage::configureImage(int argc, char* argv[], int flags)
     return status;
 }
 
+/*
+ *  test: if an option has been modified during the configureImage
+ *  because it is present in the given argv list.
+ */
+int RtdImage::optionModified( int argc, char *argv[], const char* option )
+{
+    for ( int i = 0; i < argc; i +=2 ) {
+        if ( strcmp( argv[i], option ) == 0 ) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 /* 
  * util: return true if this is an embedded rapid frame
@@ -1198,17 +1243,17 @@ int RtdImage::setCutLevels(double min, double max, int scaled, int user)
     if (!user && !autoSetCutLevels_)
 	return TCL_OK;
 
+    // assume the user has set the cut levels, so we wont change them
+    // if a new image is loaded...
+    if (user)
+	autoSetCutLevels_ = 0;
+
     // check if there is a change from the previous cut levels
     if (scaled && min == image_->lowCut() && max == image_->highCut())
 	return TCL_OK; // no change
 
     image_->setCutLevels(min, max, scaled);
     image_->colorScale(colors_->colorCount(), colors_->pixelval());
-
-    // assume the user has set the cut levels, so we wont change them
-    // if a new image is loaded...
-    if (user)
-	autoSetCutLevels_ = 0;
 
     // make sure the new lookup table is propagated
     LookupTable lookup = image_->lookupTable();
@@ -1267,8 +1312,6 @@ int RtdImage::setScale(int xScale, int yScale)
 
     // also scale any views that don't have a fixed scale
     return updateViews(2);
-
-    return TCL_OK;
 }
 
 
@@ -1774,8 +1817,8 @@ void RtdImage::eventProc(ClientData clientData, XEvent* eventPtr)
  */
 void RtdImage::motionNotify(XEvent* eventPtr)
 {
-    // (eventually) update zoom window, if shift button not pressed
-    if ((eventPtr->xmotion.state & ShiftMask) != ShiftMask) {
+    // (eventuallY) update zoom window, if shift button not pressed
+    if ((eventPtr->xmotion.state & ( ShiftMask | LockMask ) )  == 0) {
 
         if (saveMotion_) {
             motionX_ = eventPtr->xmotion.x;
@@ -1784,7 +1827,7 @@ void RtdImage::motionNotify(XEvent* eventPtr)
         motionState_ = eventPtr->xmotion.state;
 
         if (!motionPending_) {
-            if ((motionState_ & ShiftMask != ShiftMask) && zoomSpeed_ >= 0) {
+            if (motionState_ == 0 && zoomSpeed_ >= 0) {
                 // speed up zoom if no keys or mouse buttons are pressed
                 processMotionEvent();
             }
@@ -1836,7 +1879,7 @@ void RtdImage::motionProc(ClientData clientData)
  */
 void RtdImage::processMotionEvent()
 {
-    if (image_ && xImage_ && xImage_->data() && image_->width() > 2 && image_->height() > 2) {
+    if (image_ && xImage_ && xImage_->data() ) {
 	double x = motionX_, y = motionY_;
 
 	screenToImageCoords(x, y, 0);
@@ -1879,7 +1922,8 @@ void RtdImage::processMotionEvent()
 	    double d;
 	    double sum=0.0, sumsq=0.0, minv, maxv, rms, ave;
 	    int npix=0;
-	    image_->getValues(x, y, rx, ry, pixTab_, pixTabRows_, pixTabCols_);
+            int maxx = 0, maxy = 0, minx = 0, miny = 0;
+ 	    image_->getValues(x, y, rx, ry, pixTab_, pixTabRows_, pixTabCols_);
 	    for(int j = 0; j <= pixTabRows_; j++) {
 		for(int i = 0; i <= pixTabCols_; i++) {
 		    sprintf(indexStr, "%d,%d", j, i);
@@ -1891,14 +1935,22 @@ void RtdImage::processMotionEvent()
 			    if (npix == 0) {
 				minv = d;
 				maxv = d;
+                                maxx = minx = j;
+                                maxy = miny = i;
 			    }
 			    npix++;
 			    sum += d;
 			    sumsq += d * d;
-			    if (d < minv)
+			    if (d < minv) {
 				minv = d;
-			    if (d > maxv)
+                                minx = j;
+                                miny = i;
+                            }
+			    if (d > maxv) {
 				maxv = d;
+                                maxx = j;
+                                maxy = i;
+                            }
 			}
 			else
 			    sprintf(valueStr, "%.1f", d); // x,y index
@@ -1919,12 +1971,26 @@ void RtdImage::processMotionEvent()
 		Tcl_SetVar2(interp_, var, "PIXTAB_MAX", valueStr, TCL_GLOBAL_ONLY);
 		sprintf(valueStr, "%d", npix);	  // npix
 		Tcl_SetVar2(interp_, var, "PIXTAB_N", valueStr, TCL_GLOBAL_ONLY);
+
+		sprintf(valueStr, "%d", maxx);	  // maxx
+		Tcl_SetVar2(interp_, var, "PIXTAB_MAXX", valueStr, TCL_GLOBAL_ONLY);
+		sprintf(valueStr, "%d", maxy);	  // maxy
+		Tcl_SetVar2(interp_, var, "PIXTAB_MAXY", valueStr, TCL_GLOBAL_ONLY);
+
+		sprintf(valueStr, "%d", minx);	  // minx
+		Tcl_SetVar2(interp_, var, "PIXTAB_MINX", valueStr, TCL_GLOBAL_ONLY);
+		sprintf(valueStr, "%d", miny);	  // miny
+		Tcl_SetVar2(interp_, var, "PIXTAB_MINY", valueStr, TCL_GLOBAL_ONLY);
 	    }
 	    else {
 		Tcl_SetVar2(interp_, var, "PIXTAB_AVE", "\0", TCL_GLOBAL_ONLY);
 		Tcl_SetVar2(interp_, var, "PIXTAB_MIN", "\0", TCL_GLOBAL_ONLY);
 		Tcl_SetVar2(interp_, var, "PIXTAB_MAX", "\0", TCL_GLOBAL_ONLY);
 		Tcl_SetVar2(interp_, var, "PIXTAB_N", "\0", TCL_GLOBAL_ONLY);
+		Tcl_SetVar2(interp_, var, "PIXTAB_MAXX", "\0", TCL_GLOBAL_ONLY);
+		Tcl_SetVar2(interp_, var, "PIXTAB_MAXY", "\0", TCL_GLOBAL_ONLY);
+		Tcl_SetVar2(interp_, var, "PIXTAB_MINX", "\0", TCL_GLOBAL_ONLY);
+		Tcl_SetVar2(interp_, var, "PIXTAB_MINY", "\0", TCL_GLOBAL_ONLY);
 	    }
 	    if (npix > 1) {
 		rms = sqrt((sumsq - ((sum * sum) / npix)) / (npix -1));
@@ -2060,10 +2126,18 @@ ImageData* RtdImage::makeImage(ImageIO imio)
 
 /*
  * Return true if no image is loaded.
+ * 
+ * PWD: don't use image size (of 2x2), use OBJECT "RTD_BLANK" value instead.
  */
 int RtdImage::isclear()
 {
-    return (!image_ || (image_->width() <= 2 && image_->height() <= 2));
+    if ( image_ ) {
+        const char *object = image_->object();
+        if ( ! object || object && strcmp( "RTD_BLANK", object ) != 0  ) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 /*

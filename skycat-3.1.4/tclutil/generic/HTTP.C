@@ -11,12 +11,21 @@
  * --------------  --------   ----------------------------------------
  * Allan Brighton  26 Sep 95  Created
  * Peter W. Draper 16 Jun 98  Added support for web proxy servers.
+ *                 06 Aug 01  Added "Host:" header for interception
+ *                            proxy support.
+ *                 21 Jan 03  Changed to work with UNIX permissions
+ *                            after gcc3 looses a non-standard
+ *                            ofstream constructor. 
  * pbiereic        17/02/03   Added 'using namespace std'. Removed ::std specs.
+ * Peter W. Draper 06 Apr 09  Increase size of host buffers to 64 from 32.
+ *                 26 Mar 15  Increase size of URL related buffers from 1024
+ *                            to 4096. CADC includes an encrypted key in URL.
+ *                 18 Dec 17  Change use of endl in HTTP headers to \r\n.
+ *                            This is correct and required after security
+ *                            updates to apache servers (HttpProtocolOptions).
  */
 static const char* const rcsId="@(#) $Id: HTTP.C,v 1.2 2010/07/21 19:42:46 cguirao Exp $";
 
-
-using namespace std;
 #include <cstdio>
 #include <cctype>
 #include <cstdlib>
@@ -40,6 +49,8 @@ using namespace std;
 #include "base64.h"
 #include "HTTP.h"
 
+using namespace std;
+
 
 #ifdef NEED_SOCKET_PROTO
 // some protos missing in SunOS
@@ -52,6 +63,9 @@ extern "C" {
 */
 #endif /* NEED_SOCKET_PROTO */
 
+
+//  Size of buffers to handle URLs and responses.
+const int bufsize_ = 4096;
 
 // this flag is made static to make it easy to turn on and off.
 // If true, allow a URL to be a command to exec
@@ -106,8 +120,10 @@ HTTP::~HTTP()
 {
     if (fd_ >= 0) 
 	close(fd_);
-    if (resultGC_) 
-	delete resultGC_;
+    if (resultGC_) {
+	free( resultGC_ );
+        resultGC_ = NULL;
+    }
     reset();
 }
 
@@ -118,7 +134,7 @@ HTTP::~HTTP()
  */
 int HTTP::html_error(istream& is)
 {
-    char buf[1024*2];
+    char buf[bufsize_*2];
     is.read(buf, sizeof(buf));
     int n = is.gcount();
     if (n > 0) {
@@ -449,7 +465,7 @@ void HTTP::authorize(const char* username, const char* passwd,
 	free(auth_info_);
 	auth_info_ = NULL;
     }
-    char auth_info[1024];
+    char auth_info[bufsize_];
     sprintf(auth_info, "%s:%s", username, passwd);
     auth_info_ = encode_base64(auth_info);  // encoded result is allocated
     
@@ -471,7 +487,7 @@ void HTTP::authFile(const char* s)
     }
 
     // replace '~' in auth_file_ if needed
-    char filename[1024];
+    char filename[bufsize_];
     if (s[0] == '~') {
 	char* home = getenv("HOME");
 	if (home)
@@ -500,7 +516,7 @@ void HTTP::userAgent(const char* s)
  * the current value of auth_info_. The file has the format:
  * 
  *  server:realm:auth_info
- * 
+* 
  * Where: server is the HTTP server hostname
  *        realm is a string returned from the server (in the auth request)
  *        auth_info is the base64 encoded "username:passwd"
@@ -512,9 +528,9 @@ int HTTP::addAuthFileEntry(const char* server, const char* realm)
 
     ifstream is(auth_file_);
     ostringstream os;
-    char newentry[1024];
+    char newentry[bufsize_];
     sprintf(newentry, "%s:%s:%s", server, realm, auth_info_);
-    char buf[1024];
+    char buf[bufsize_];
     int n = strlen(server) + strlen(realm) + 1;
     while(is.getline(buf, sizeof(buf))) {
 	if (strncmp(buf, newentry, n) != 0)
@@ -529,6 +545,7 @@ int HTTP::addAuthFileEntry(const char* server, const char* realm)
     chmod(auth_file_, 0600);
     if (f) 
 	f << os.str();
+    f.close();
 
     return 0;
 }
@@ -545,10 +562,10 @@ int HTTP::findAuthFileEntry(const char* server, const char* realm)
 	authFile(default_auth_file_);
 
     ifstream is(auth_file_);
-    char entry[1024];
+    char entry[bufsize_];
     sprintf(entry, "%s:%s:", server, realm);
     int n = strlen(entry);
-    char buf[1024];
+    char buf[bufsize_];
     while(is.getline(buf, sizeof(buf))) {
 	if (strncmp(buf, entry, n) == 0) {
 	    char* new_auth_info = buf+n;
@@ -613,7 +630,7 @@ int HTTP::get(const char* url)
 
     // look for local file URL: "file:/..."
     if (strncmp(url, "file:", 5) == 0) {
-	char filename[1024]; 
+	char filename[bufsize_]; 
 	if (sscanf(url, "file:%1023s", filename) == 1) {
 	    if (openFile(filename) != 0)
 		return 1;
@@ -631,21 +648,21 @@ int HTTP::get(const char* url)
     }
 
     // look for URL: "http://host:port/args" or "http://host/args"
-    char host[32];		// http host name
+    char host[64];		// http host name
     int port = 80;		// http server port on host
-    char args[1024];		// part of URL after host:port
+    char args[bufsize_];	// part of URL after host:port
     char req[2048];		// request sent to http
 
     // replace blanks or tabs in request with %20
-    char new_url[1024];
+    char new_url[bufsize_];
     replace_blanks(url, new_url, sizeof(new_url));
     if (feedback_) {
 	fprintf(feedback_, "url: %s\n", new_url); // mainly for debugging info
  	fflush(feedback_);
     }
 
-    if (sscanf(new_url, "http://%31[^:/]:%d%1000s", host, &port, args) != 3 && 
-	sscanf(new_url, "http://%31[^/]%1000s", host, args) != 2) {
+    if (sscanf(new_url, "http://%63[^:/]:%d%1000s", host, &port, args) != 3 && 
+	sscanf(new_url, "http://%63[^/]%1000s", host, args) != 2) {
 	return error("bad URL format: ", new_url);
     }
 
@@ -664,11 +681,11 @@ int HTTP::get(const char* url)
             return 1;		// error
 
         // Request to proxy needs the fully qualified URL.
-        strncpy( args, new_url, 1024 );
+        strncpy( args, new_url, bufsize_ );
 
         // The apparent hostname and port are now wrong. Change these
         // to values that make sense in the feedback messages.
-        strncpy( hostname_, host, 32 );
+        strncpy( hostname_, host, 64 );
         port_ = port;
     }
 
@@ -679,7 +696,14 @@ int HTTP::get(const char* url)
 
     // generate the request
     ostringstream os;
-    os << "GET " << args << " HTTP/1.0\r\n";
+    os << "GET " << args << " HTTP/1.0" << "\r\n";
+
+    // PWD: add the Host: header, this is required by some
+    // interception proxy servers (these are transparent servers that
+    // sniff port 80 traffic and don't require any client
+    // configuration, this is a HTTP/1.1 standard header that does no
+    // harm for 1.0).
+    os << "Host: " << hostname_ << "\r\n";
 
     // add the user-agent
     if (! user_agent_)
@@ -715,7 +739,7 @@ int HTTP::get(const char* url)
     }
 
     // Read the result and position after the HTTP header, which ends with a blank line 
-    char buf[1024];
+    char buf[bufsize_];
     while (readline(buf, sizeof(buf)) > 2) {
 	scanHeaderLine(buf);
     }
@@ -750,7 +774,7 @@ int HTTP::get(const char* url)
 char* HTTP::get(const char* url, int& nlines, int freeFlag)
 {
     if (resultGC_) {
-	delete resultGC_;
+	free( resultGC_ );
 	resultGC_ = resultBuf_ = resultPtr_ = NULL;
     }
 
@@ -761,7 +785,7 @@ char* HTTP::get(const char* url, int& nlines, int freeFlag)
 	
     // read the data into a buffer
     ostringstream os;
-    char buf[8*1024];
+    char buf[8*bufsize_];
     nlines = 0;
     int n;
     if (feedback_) {
@@ -862,13 +886,13 @@ int HTTP::post(const char* url, const char* data)
     }
 
     // look for URL: "http://host:port/args" or "http://host/args"
-    char host[32];		// http host name
+    char host[64];		// http host name
     int port = 80;		// http server port on host
-    char args[1024];		// part of URL after host:port
-    char req[1024];		// request sent to http
+    char args[bufsize_];	// part of URL after host:port
+    char req[bufsize_];		// request sent to http
 
-    if (sscanf(url, "http://%31[^:/]:%d%1000s", host, &port, args) != 3 && 
-	sscanf(url, "http://%31[^/]%1000s", host, args) != 2) {
+    if (sscanf(url, "http://%63[^:/]:%d%1000s", host, &port, args) != 3 && 
+	sscanf(url, "http://%63[^/]%1000s", host, args) != 2) {
 	return error("bad URL format: ", url);
     }
 
@@ -887,11 +911,11 @@ int HTTP::post(const char* url, const char* data)
             return 1;		// error
 
         // Request to proxy needs the fully qualified URL.
-        strncpy(args, url, 1024);
+        strncpy(args, url, bufsize_);
 
         // The apparent hostname and port are now wrong. Change these
         // to values that make sense in the feedback messages.
-        strncpy(hostname_, host, 32);
+        strncpy(hostname_, host, 64);
         port_ = port;
     }
 
@@ -902,7 +926,7 @@ int HTTP::post(const char* url, const char* data)
 
     // generate the HTTP POST command
     sprintf(req, "POST %s HTTP/1.0\r\nContent-type: text/plain\r\nContent-length: %d\r\n\r\n%s", 
-	    args, strlen(data), data);
+	    args, (int) strlen(data), data);
 
     int n = strlen(req);
     if (writen(req, n) != n) {
@@ -923,7 +947,7 @@ int HTTP::post(const char* url, const char* data)
     }
 
     // skip the HTTP header: ends with a blank line 
-    char buf[1024];
+    char buf[bufsize_];
     while (readline(buf, sizeof(buf)) > 2) {
 	scanHeaderLine(buf);
     }
@@ -965,7 +989,7 @@ int HTTP::post(const char* url, const char* data, ostream& os)
  */
 int HTTP::copy(ostream& os)
 {
-    char buf[8*1024];
+    char buf[8*bufsize_];
     int n;
     if (feedback_) {
 	int tot = 0;
@@ -1096,8 +1120,8 @@ void HTTP::checkProxy( const char *host )
         //  Parse the string into a hostname and port number. This
         //  should be in the form :
         //  "http://host:port/" or "http://host/"
-        if ( sscanf( proxy, "http://%31[^:/]:%d", proxyname_, &proxyport_ ) == 2 ||
-             sscanf( proxy, "http://%31[^/]", proxyname_ ) == 1 ) {
+        if ( sscanf( proxy, "http://%63[^:/]:%d", proxyname_, &proxyport_ ) == 2 ||
+             sscanf( proxy, "http://%63[^/]", proxyname_ ) == 1 ) {
           
             //  Succeeded. Make sure port is valid.
             if ( proxyport_ == -1 ) {
@@ -1112,7 +1136,7 @@ void HTTP::checkProxy( const char *host )
                 if (hostdomain != NULL) {
                     hostdomain++;
 		    // make a copy of the http_noproxy string for strtok
-		    char buf[1024];
+		    char buf[bufsize_];
 		    strncpy(buf, ptr, sizeof(buf)-1);
                     ptr = NULL;
 		    char* noproxy = buf;

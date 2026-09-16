@@ -197,7 +197,7 @@ CONFIG_CLEAN_FILES = Makefile tifftclConfig.sh pkgIndex.tcl port.h
 CPPFLAGS	=  -DPACKAGE_NAME=\"$(PACKAGE)\"
 LIBS		= 
 AR		= ar
-CFLAGS		=  ${CFLAGS_DEFAULT} ${CFLAGS_WARNING} ${SHLIB_CFLAGS}
+CFLAGS		= -O2 -arch arm64 ${CFLAGS_DEFAULT} ${CFLAGS_WARNING} ${SHLIB_CFLAGS}
 COMPILE		= $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 #========================================================================

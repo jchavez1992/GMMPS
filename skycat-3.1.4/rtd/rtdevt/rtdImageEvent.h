@@ -43,12 +43,17 @@
 #define _POSIX_SOURCE 1
 #undef rtdEVT_POSIX 
 #endif 
+
 #ifdef __cplusplus
 extern "C" {
+#ifndef CONST
 #define CONST const
-#else
+#endif
+#else  /* __cplusplus */
+#ifndef CONST
 #define CONST
 #endif
+#endif /* __cplusplus */
 
 /*
  * DEFINES
@@ -76,7 +81,7 @@ extern "C" {
  * Image types (also corresponds to FITS BITPIX field)
  */
     typedef enum rtdIMAGE_TYPE {
-	BYTE = 		8, 	/* 8 bit images */ 
+	UBYTE = 		8, 	/* 8 bit images */ 
 	XIMAGE = 	-8, 	/* prescaled ximage */
 	SHORT = 	16, 	/* 16 bit signed */ 
 	USHORT = 	-16, 	/* 16 bit unsigned */ 
@@ -92,7 +97,7 @@ extern "C" {
     typedef struct {
 	char 	version;	/* protocol version (filled by rtdSendImageInfo) */
 	char 	frameId;	/* Frame Id */
-	char 	dataType; 	/* BYTE, SHORT, FLOAT etc. */
+	char 	dataType; 	/* UBYTE, SHORT, FLOAT etc. */
 	char 	bytePerPixel; 	/* No. of bytes used per pixel */
 	int 	shmId; 		/* ID for the shared memory block */
 	short 	frameX; 	/* X Coord. for upper left corner */
@@ -152,6 +157,9 @@ extern "C" {
 	char 	reqName[RTD_NAMELEN];
     } rtdIMAGE_EVT_HNDL;
 
+#ifdef STATUS
+#undef STATUS
+#endif
     typedef enum rtdSERVER_CMDS {
 	ATTACH = 1, 	 	/* RTD Widget Event Attachment */
 	DETACH, 	 	/* RTD Widget Event Detachment */

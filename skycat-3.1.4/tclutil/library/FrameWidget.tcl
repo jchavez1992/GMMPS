@@ -10,6 +10,7 @@
 # Peter W. Draper 20 Jan 98  Fixed busy focus -lastfor so
 #                            that it does restore the focus,
 #                            not just get the window name. 
+#                 23 Jan 08  Make focus control is busy method optional.
 
 itk::usual FrameWidget {}
 
@@ -40,13 +41,17 @@ itcl::class util::FrameWidget {
 
 
     # run the given tcl command while displaying the busy cursor
-    # in the frame's parent top level window
+    # in the frame's parent top level window, if defocus is false don't handle
+    #  focussing. 
 
-    public method busy {cmd} {
+
+    public method busy {cmd {defocus 1}} {
 	global ::errorInfo ::errorCode
 
 	if {[incr busy_count_] == 1} {
-	    catch {focus .}
+            if { $defocus } {
+   	       catch {focus .}
+            }
 	    blt::busy hold $w_
 	    update idletasks
 	}
@@ -58,8 +63,10 @@ itcl::class util::FrameWidget {
 
 	if {[incr busy_count_ -1] == 0} {
 	    blt::busy release $w_
-            catch {focus [focus -lastfor $w_]}
-	}
+            if { $defocus } {
+                catch {focus [focus -lastfor $w_]}
+	    }
+        } 
 
 	if {$code} {
 	    uplevel [list error $msg $info $code]

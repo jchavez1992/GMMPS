@@ -19,6 +19,7 @@
 #                           Starlink).
 # pbiereic        11/10/99  Added 'wm colormapwindows' if private colormaps are used
 # pbiereic        04/11/03  Workaround bug in tcl 8.4.3 (SourceForge Request ID 835020)
+# Peter W. Draper 21/07/12  Make cmap_dir a PATH-like list.
 
 itk::usual RtdImage {}
 
@@ -706,7 +707,7 @@ itcl::class rtd::RtdImage {
 	set app [lindex [winfo name .] 0]
 	set date [clock format [clock seconds] -format {%b %d, %Y at %H:%M:%S}]
 	
-	utilReUseWidget RtdImagePrint $w_.print \
+	utilReUseWidget rtd::RtdImagePrint $w_.print \
 	    -image $this \
 	    -show_footer 1 \
 	    -whole_canvas 0 \
@@ -878,7 +879,7 @@ itcl::class rtd::RtdImage {
 	    error_dialog $msg
 	    return
 	}
-        utilReUseWidget RtdImagePerf $w_.perf \
+        utilReUseWidget rtd::RtdImagePerf $w_.perf \
             -target_image $this \
             -shorthelpwin $itk_option(-shorthelpwin)
     }
@@ -886,7 +887,7 @@ itcl::class rtd::RtdImage {
     # Methods for the playing and recording of images.
 
     public method record {camera} {
-        utilReUseWidget RtdRecorderTool $w_.rec \
+        utilReUseWidget rtd::RtdRecorderTool $w_.rec \
             -target_image $this \
             -server_camera $camera \
             -shorthelpwin $itk_option(-shorthelpwin)
@@ -940,7 +941,7 @@ itcl::class rtd::RtdImage {
 	    set h [$image_ dispheight]
 	    set_scrollregion 0 0 $w $h
 	} else {
-	    error_dialog "warning: '$itk_option(-file)' does not exist" $w_
+	    error_dialog "'$itk_option(-file)' does not exist" $w_
 	    set file ""
 	    clear
 	}
@@ -1170,19 +1171,46 @@ itcl::class rtd::RtdImage {
     # Set the default color scale algorithm to one of: {linear log sqrt histeq}
     itk_option define -color_scale color_scale Color_scale linear
 
-    # Colormap initialization and directory for colormap and ITT files
+    # Colormap initialization and directory search path for colormap 
+    # and ITT files
     itk_option define -cmap_dir cmap_dir Cmap_dir {} {
-	if {!$colormap_initialized_} {
-	    global ::rtd_library
-	    if {"$itk_option(-cmap_dir)" == ""} {
-		set itk_option(-cmap_dir) $rtd_library/colormaps
-	    }
-	    $image_ cmap file \
-		$itk_option(-cmap_dir)/$itk_option(-default_cmap).$itk_option(-cmap_suffix)
-	    $image_ itt file \
-		$itk_option(-cmap_dir)/$itk_option(-default_itt).$itk_option(-itt_suffix)
-	    set colormap_initialized_ 1
-	}
+        if {!$colormap_initialized_} {
+            global ::rtd_library
+            if {"$itk_option(-cmap_dir)" == ""} {
+               set itk_option(-cmap_dir) $rtd_library/colormaps
+            }
+            #  find default cmap and itt, could be on the search path
+            set basename $itk_option(-default_cmap).$itk_option(-cmap_suffix)
+            set cmap {}
+            set dirlist [split $itk_option(-cmap_dir) {;}]
+            foreach dir $dirlist {
+               set offered_cmap ${dir}/${basename}
+               if { [::file exists $offered_cmap] } {
+                  set cmap $offered_cmap
+                  break
+               }
+            }
+            if { $cmap == {} } {
+               set cmap [lindex $dirlist 0]/$basename
+            } 
+            $image_ cmap file $cmap
+
+            set basename $itk_option(-default_itt).$itk_option(-itt_suffix)
+            set itt {}
+            foreach dir $dirlist {
+               set offered_itt ${dir}/${basename}
+               if { [::file exists $offered_itt] } {
+                  set itt $offered_itt
+                  break
+               }
+            }
+            if { $itt == {} } {
+               set itt [lindex $dirlist 0]/$basename
+            } 
+            $image_ itt file $itt
+
+            set colormap_initialized_ 1
+        }
    }
 
     # suffix for colormap files

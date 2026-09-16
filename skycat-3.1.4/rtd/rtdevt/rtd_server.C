@@ -85,6 +85,7 @@ static const char* const rcsId="@(#) $Id: rtd_server.C,v 1.1.1.1 2009/03/31 14:1
  * Local Headers
  */
 #include "rtdSERVER.h"
+#include "rtdLOG.h"
 
 #define DELAY 5     // default time to sleep before new events are read
 
@@ -93,8 +94,8 @@ typedef void (*MySigFunc)(int);  // prototype cast to keep Sun cc quiet
 /*
  * Globals needed for cleanup() after signals
  */
-int       socketFd  = 0;
-rtdSERVER *mainLoop = NULL;     // rtdSERVER object
+static int       socketFd  = 0;
+static rtdSERVER *mainLoop = NULL;     // rtdSERVER object
 
 
 void usage(void)
@@ -122,7 +123,8 @@ void cleanup(int sig=0)
     exit(0);
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     extern char *optarg;
     extern int  optind;

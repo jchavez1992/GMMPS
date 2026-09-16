@@ -14,6 +14,7 @@
  * --------------  --------  ----------------------------------------
  * Allan Brighton  05/10/95  Created
  * pbiereic        17/02/03  Added 'using namespace std'. Removed ::std specs.
+ * Peter W. Draper 19/09/07  Added rgbcolor member.
  */
 
 using namespace std;
@@ -44,8 +45,9 @@ struct RGBColor {
 class ColorMapInfo {
 private:
     char* name_;		// filename
-    RGBColor* rgb_;	// array of RGB values
+    RGBColor* rgb_;	        // array of RGB values
     ColorMapInfo* next_;	// pointer to next colormap
+    int nameowner_;             // true if we "own" the name_ memory pointer
 
     // copy constructor (not defined)
     ColorMapInfo(const ColorMapInfo&); 
@@ -53,8 +55,10 @@ private:
 public:
     // constructor - arguments are the name of the colormap
     // and an array of RGB color values. Both are assumed to
-    // have been allocated.
+    // have been allocated. If second form we take ownership
+    // of the name memory (allocated by malloc).
     ColorMapInfo(char* name, RGBColor* rgb);
+    ColorMapInfo(char* name, RGBColor* rgb, int nameowner);
 
     // destructor
     ~ColorMapInfo();
@@ -68,6 +72,7 @@ public:
     // member access
     const char* name() const {return name_;}
     ColorMapInfo* next() {return next_;}
+    const RGBColor* rgbcolor() {return rgb_;}
 
     // set the red, green and blue values from the colormap data
     // and interpolate based on the count of available colors

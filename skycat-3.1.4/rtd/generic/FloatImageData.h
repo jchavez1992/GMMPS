@@ -14,6 +14,7 @@
  * Allan Brighton  05/10/95  Created
  * Peter W. Draper 04/03/98  Added llookup
  * P.Biereichel    22/03/99  Added definitions for bias subtraction
+ * Peter W. Draper 29/10/07  Added colorScale
  */
 
 #include <sys/types.h>
@@ -43,7 +44,7 @@ private:
     // Convert the given float image value to byte, scaling to short
     // first and then using the short value as an index in the color
     // lookup table.
-    inline byte lookup(float f) {return lookup_[(ushort)scaleToShort(f)];}
+    inline BYTE lookup(float f) {return lookup_[(ushort)scaleToShort(f)];}
     inline unsigned long llookup(float f) {return lookup_[(ushort)scaleToShort(f)];}
 
     // return NTOH converted value evtl. subtracted with corresponding bias value
@@ -66,6 +67,7 @@ protected:
     float getMedian(float *samples, int n);
     float getBoxVal(float *rawImage, int idx, int wbox, float *samples, int xs);
     float getRMS(float *samples, int n);
+    void colorScale(int ncolors, unsigned long* colors);
 
 public:
     // constructor
@@ -74,6 +76,9 @@ public:
           blank_(0),
 	  bias_(0.0),
           scale_(1.0) {}
+
+    // return class name as a string
+    virtual const char* classname() { return "FloatImageData"; }
 
     // return the data type of the raw data
     int dataType() {return FLOAT_IMAGE;}

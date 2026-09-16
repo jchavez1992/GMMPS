@@ -30,11 +30,6 @@
 AC_INIT([cat], [4.1.0])
 
 #--------------------------------------------------------------------
-# Do application specific checks (see aclocal.m4)
-#--------------------------------------------------------------------
-CAT_CONFIG
-
-#--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
 # This will define a ${TEA_PLATFORM} variable == "unix" or "windows"
 # as well as PKG_LIB_FILE and PKG_STUB_LIB_FILE.
@@ -72,6 +67,11 @@ TEA_PREFIX
 
 TEA_SETUP_COMPILER
 
+#--------------------------------------------------------------------
+# Do application specific checks (see aclocal.m4)
+#--------------------------------------------------------------------
+CAT_CONFIG
+
 #-----------------------------------------------------------------------
 # __CHANGE__
 # Specify the C source files to compile in TEA_ADD_SOURCES,
@@ -86,9 +86,9 @@ TEA_ADD_SOURCES([${csources}])
 TEA_ADD_HEADERS([${cheaders}])
 TEA_ADD_INCLUDES([${cincludes}])
 if test $MERGED = yes ; then
-    TEA_ADD_LIBS(${BLT_LIB_SPEC})
+    TEA_ADD_LIBS(${BLT_LIB_SPEC} ${CFITSIO_LIB_SPEC})
 else
-    TEA_ADD_LIBS([$astrotcl_BUILD_LIB_SPEC $tclutil_BUILD_LIB_SPEC ${BLT_LIB_SPEC}])
+    TEA_ADD_LIBS([$astrotcl_BUILD_LIB_SPEC $tclutil_BUILD_LIB_SPEC ${BLT_LIB_SPEC} ${CFITSIO_LIB_SPEC}])
 fi
 TEA_ADD_CFLAGS([])
 TEA_ADD_STUB_SOURCES([])

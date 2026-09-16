@@ -15,7 +15,9 @@
  *----------------------------------------------------------------------
  */
 
+#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE 1
+#endif
 
 #include "rtdImageEvent.h"
 #include "rtdSem.h"

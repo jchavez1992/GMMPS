@@ -12,11 +12,15 @@ if test -f $cf ; then
     AC_SUBST(tclutil_LIB_SPEC)
     AC_SUBST(BLT_LIB_SPEC)
     AC_SUBST(tclutil_SRC_DIR)
+    AC_SUBST(CFITSIO_LIB_SPEC)
 else
     AC_MSG_ERROR([$cf doesn't exist])
 fi
 
 AC_CHECK_HEADERS(sys/filio.h)
+
+#  Check if we need (or can use) the socklen_t type.
+AC_CHECK_TYPES([socklen_t],,,[#include <sys/socket.h>])
 
 AC_DEFINE(USE_COMPAT_CONST, 1, [For compatibility between tcl8.4 and previous tcl releases])
 
@@ -101,7 +105,8 @@ fi
 
 AC_MSG_CHECKING("do we have union semun defined")
 AC_TRY_COMPILE(
-[#include <sys/ipc.h>
+[#include <sys/types.h>
+#include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
 ], [
@@ -115,5 +120,96 @@ AC_DEFINE(HAVE_NET_SERVICES)
 
 # ==================== END OF cfitsio SECTION ================
 
+#------------------------------------------------------------------------
+# ASTROTCL_PATH_CFITSIO --
+#
+#	Locate the CFITSIO library
+#
+# Arguments:
+#	none
+#
+# Results:
+#
+#	Adds the following arguments to configure:
+#		--with-cfitsio=...
+#
+#	Defines the following vars:
+#		CFITSIO_LIB_SPEC      String to add to link the CFITSIO lib (-L... -lBLT)
+#		CFITSIO_LIB_DIR       Directory containing libcfitsio.so
+#------------------------------------------------------------------------
+
+AC_DEFUN(ASTROTCL_PATH_CFITSIO, [
+    AC_MSG_CHECKING(for CFITSIO library)
+    AC_ARG_WITH(cfitsio,
+       [AC_HELP_STRING([--with-cfitsio=DIR],[link with CFITSIO library installed in DIR])],
+       CFITSIO_LIB_DIR=$withval)
+
+    CFITSIO_LIBNAME=libcfitsio${SHLIB_SUFFIX}
+    CFITSIO_LIBFLAG=-lcfitsio
+
+    if test -z "$CFITSIO_LIB_DIR" ; then
+	# If --with-cfitsio=dir was not specified, try the exec-prefix/lib dir
+       	places="\
+		$exec_prefix/lib \
+		$prefix/lib \
+	" 
+	for i in $places ; do 
+		if test -f $i/$CFITSIO_LIBNAME 
+		then
+       			CFITSIO_LIB_DIR=$i
+			break
+		fi
+	done
+        if test -z "$CFITSIO_LIB_DIR" ; then
+	     echo
+	     AC_MSG_ERROR([could not find $CFITSIO_LIBNAME: Please use the --with-cfitsio=DIR option.])
+	fi
+    else 
+        #  Just assume the given value will work. This may not be true if
+        #  CFITSIO itself isn't built yet, so allow the flexibility.
+        CFITSIO_LIB_DIR=$CFITSIO_LIB_DIR/lib
+    fi
+    CFITSIO_LIB_SPEC="-L$CFITSIO_LIB_DIR $CFITSIO_LIBFLAG"
+    AC_MSG_RESULT($CFITSIO_LIB_DIR)
+    AC_SUBST(CFITSIO_LIB_DIR)
+    AC_SUBST(CFITSIO_LIB_SPEC)
+])
+
+
+#------------------------------------------------------------------------
+#  Check if we require additional libraries to support C++ shareable
+#  libraries.
+system=`uname -s`-`uname -r`
+SHLIB_LD_CXX_LIBS=""
+export SHLIB_LD_CXX_LIBS
+case $system in
+   SunOS-5*)
+      SHLIB_LD_CXX_LIBS="-lCrun -lCstd"
+   ;;
+   OSF*)
+      SHLIB_LD_CXX_LIBS="-lcxx -lcxxstd"
+   ;;
+esac
+AC_SUBST(SHLIB_LD_CXX_LIBS)
+
+#-------------------------------------------------------------------------
+#  The cxx C++ compiler under Tru64 UNIX needs the special
+#  CXXFLAGS "-std gnu -D__USE_STD_IOSTREAM=1". These allow the standard 
+#  library streams headers to work and to generate templates that do 
+#  not require special handling throughout skycat directories (normally 
+#  template object files are created in various cxx_repository subdirectories,
+#  this way the object files are kept embedded the usual object files, see 
+#  the cxx man page for details).
+#-------------------------------------------------------------------------
+export CXXFLAGS
+case $system in
+   OSF*) 
+      case "x$CXX" in
+         xcxx*)
+            CXXFLAGS="$CXXFLAGS -g3 -std gnu -D__USE_STD_IOSTREAM=1"
+         ;;
+      esac
+  ;;
+esac
 ])
 

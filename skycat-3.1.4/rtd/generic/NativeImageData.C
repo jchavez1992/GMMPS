@@ -18,6 +18,7 @@
  * who             when      what
  * --------------  --------  ----------------------------------------
  * Allan Brighton  20/03/98  Created
+ * Peter W. Draper 07/04/05  Added __x86_64
  * pbiereic        17/02/03  Native byte order routines revised
  */
 
@@ -56,12 +57,3 @@
 #include "DoubleImageData.C"
 #undef DoubleImageData
 #undef NTOH
-
-
-
-
-
-
-
-
-

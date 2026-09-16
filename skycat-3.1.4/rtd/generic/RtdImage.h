@@ -21,6 +21,8 @@
  *                           classes can add new options more easily.
  * Peter W. Draper 13/01/99  Added changes to support non 8 bit
  *                           colors (colorUpdate).
+ *                           Made displayImageEvent virtual (need for UKIRT
+ *                           quick look updates).
  * P.Biereichel    22/03/99  Added code for bias subtraction
  * P.Biereichel    29/06/99  Added HDU includes (copied from skycat)
  * P.Biereichel    26/05/00  Added options fillWidth / fillHeight
@@ -28,6 +30,8 @@
  * P.Biereichel    23/10/02  Made gcc 3.2 happy which complained about RTD_OPTION:
  *                           (invalid offsetof from non-POD type `class RtdImageOptions'; use 
  *                           pointer to member instead). POD means "Plain Old Data".
+ * Peter W. Draper 04/08/09  Added optionModified member to recover
+ *                           functionality lost in Tk 8.5.
  * pbiereic        10/08/07  increased MAX_VIEWS from 8 to 64
  * 
  */
@@ -142,23 +146,43 @@ typedef struct Rtd_Options {
 
 
 class RtdImageOptions : public TkImageOptions {
-public:
+ public:
 
     // constructor
     RtdImageOptions() {
-	memset(&rtd_options_, '\0', sizeof(Rtd_Options));
-
-	rtd_options_.displaymode=1;
-	rtd_options_.usexshm=1;
-	rtd_options_.usexsync=1;
-	rtd_options_.min_colors=30;
-	rtd_options_.max_colors=60;
+        rtd_options_ = new Rtd_Options;
+        manage = 1;
+        initialise();
+    }
+    RtdImageOptions( Rtd_Options *options ) {
+        rtd_options_ = options;
+        manage = 0;
+        initialise();
     }
 
-    struct Rtd_Options rtd_options_;
+    struct Rtd_Options *rtd_options_;
+    int manage;
 
     // Accessors
-    char *get_rtd_options() {return (char *)&rtd_options_;}
+    virtual char *get_rtd_options() {return (char *)rtd_options_;}
+
+    // destructor
+    virtual ~RtdImageOptions() {
+        if ( manage ) {
+            delete rtd_options_;
+        }
+    }
+
+ private:
+    void initialise() {
+        memset(rtd_options_, '\0', sizeof(Rtd_Options));
+	rtd_options_->displaymode=1;
+	rtd_options_->usexshm=1;
+	rtd_options_->usexsync=1;
+	rtd_options_->min_colors=30;
+	rtd_options_->max_colors=60;
+    }
+
 };
 
 
@@ -304,6 +328,9 @@ protected:
     // redefined from parent class to check configuration options
     virtual int configureImage(int argc, char* argv[], int flags);
 
+    // test if an option has been modified during the configureImage.
+    int optionModified(int argc, char *argv[], const char* option);
+
     // return true if this is an embedded (not embedded) rapid frame (in master image)
     int isEmbeddedRapidFrame();
     int isSeparateRapidFrame();
@@ -424,7 +451,7 @@ public:
     static void motionProc(ClientData clientData);
 
     // called from the Camera class to display image from shared memory
-    int displayImageEvent(const rtdIMAGE_INFO&, const Mem& data);
+    virtual int displayImageEvent(const rtdIMAGE_INFO&, const Mem& data);
     
     // utility Tcl command proc to set colormap for popup windows
     static int rtd_set_cmap(ClientData, Tcl_Interp* interp, int argc, char** argv);
@@ -436,25 +463,25 @@ public:
     static ImageColor* colors() {return colors_;}
     static RtdPerf* rtdperf() {return rtdperf_;}
 
-    int displaymode() 	const {return options_->rtd_options_.displaymode;}
-    int fitWidth() 	const {return options_->rtd_options_.fitWidth;}
-    int fitHeight() 	const {return options_->rtd_options_.fitHeight;}
-    int fillWidth() 	const {return options_->rtd_options_.fillWidth;}
-    int fillHeight() 	const {return options_->rtd_options_.fillHeight;}
-    int subsample() 	const {return options_->rtd_options_.subsample;}
-    int sampmethod() 	const {return options_->rtd_options_.sampmethod;}
-    char* file() 	const {return options_->rtd_options_.file;}
-    char* newImageCmd() const {return options_->rtd_options_.newImageCmd;}
-    char* name() 	const {return ((options_->rtd_options_.name && *options_->rtd_options_.name) ? 
-				       options_->rtd_options_.name : instname_);}
-    int usexshm() 	const {return options_->rtd_options_.usexshm;}
-    int usexsync() 	const {return options_->rtd_options_.usexsync;}
-    int shm_header() 	const {return options_->rtd_options_.shm_header;}
-    int shm_data() 	const {return options_->rtd_options_.shm_data;}
-    int min_colors() 	const {return options_->rtd_options_.min_colors;}
-    int max_colors() 	const {return options_->rtd_options_.max_colors;}
-    int verbose() 	const {return options_->rtd_options_.verbose;}
-    int debug() 	const {return options_->rtd_options_.debug;}
+    int displaymode() 	const {return options_->rtd_options_->displaymode;}
+    int fitWidth() 	const {return options_->rtd_options_->fitWidth;}
+    int fitHeight() 	const {return options_->rtd_options_->fitHeight;}
+    int fillWidth() 	const {return options_->rtd_options_->fillWidth;}
+    int fillHeight() 	const {return options_->rtd_options_->fillHeight;}
+    int subsample() 	const {return options_->rtd_options_->subsample;}
+    int sampmethod() 	const {return options_->rtd_options_->sampmethod;}
+    char* file() 	const {return options_->rtd_options_->file;}
+    char* newImageCmd() const {return options_->rtd_options_->newImageCmd;}
+    char* name() 	const {return ((options_->rtd_options_->name && *options_->rtd_options_->name) ? 
+				       options_->rtd_options_->name : instname_);}
+    int usexshm() 	const {return options_->rtd_options_->usexshm;}
+    int usexsync() 	const {return options_->rtd_options_->usexsync;}
+    int shm_header() 	const {return options_->rtd_options_->shm_header;}
+    int shm_data() 	const {return options_->rtd_options_->shm_data;}
+    int min_colors() 	const {return options_->rtd_options_->min_colors;}
+    int max_colors() 	const {return options_->rtd_options_->max_colors;}
+    int verbose() 	const {return options_->rtd_options_->verbose;}
+    int debug() 	const {return options_->rtd_options_->debug;}
 
 
     // -- short cuts --
@@ -480,7 +507,7 @@ public:
     char* cameraPostCmd() {return cameraPostCmd_;}
 
     // Set state of image event (currently true/false)
-    int   imageEvent(int state) {imageEvent_ = state;}
+    int imageEvent(int state) {return ( imageEvent_ = state );}
 
     ImageData* image() {return image_;}
 };

@@ -32,7 +32,7 @@ itcl::class rtd::RtdImagePickView {
 	eval itk_initialize $args
 
 	itk_component add image {
-	    RtdImage $w_.image \
+	    rtd::RtdImage $w_.image \
 		    -name           ZoomWin \
 		    -scrollbars     0 \
 		    -graphics       0 \
@@ -46,7 +46,7 @@ itcl::class rtd::RtdImagePickView {
 	catch {pack forget [$w_.image component hscrollf] \
 		[$w_.image component vscrollf]}
 
-	blt::table $w_ \
+	blt::blttable $w_ \
 		$itk_component(image) 0,0 -fill both
 	
 	set image_  [$itk_component(image) get_image]

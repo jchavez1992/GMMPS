@@ -6,6 +6,12 @@
 # who             when       what
 # --------------  ---------  ----------------------------------------
 # Allan Brighton  01 Jun 94  Created
+# Peter W. Draper 03 Jul 06  Stop . being used as a parent, that is usually
+#                            in a withdrawn state. Why hasn't this been a 
+#                            problem before?
+#                 21 Mar 07  Raise the window on activation. Keeps hiding.
+#                 13 Apr 07  And wait for update 
+#                 17 May 07  Make truncation lines an option.
 
 itk::usual DialogWidget {}
 
@@ -24,7 +30,9 @@ itcl::class util::DialogWidget {
 	global ::$variable_
 
 	wm iconname $w_ DialogWidget
-	wm transient $w_ [winfo parent $w_]
+        if {[winfo parent $w_] != "." } {
+           wm transient $w_ [winfo parent $w_]
+        }
 
 	# The top frame has one frame for the message and bitmap
 	# and another for extensions defined in derived classes.
@@ -85,8 +93,8 @@ itcl::class util::DialogWidget {
     protected method init {} {
 	# truncate long (many lines) error mesages
 	set err [split $itk_option(-text) \n]
-	if {[llength $err] > 20} {
-	    set err [lrange $err 0 20]
+	if {[llength $err] > $itk_option(-max_lines) } {
+	    set err [lrange $err 0 $itk_option(-max_lines)]
 	    lappend err "..."
 	}
 	set err [join $err \n]
@@ -144,12 +152,18 @@ itcl::class util::DialogWidget {
 	if {$itk_option(-modal)} {
 	    catch {grab $w_}
 	}
+        catch {::raise $w_}
+        update idletasks
 	tkwait visibility $w_
 	if {$itk_option(-default) >= 0} {
 	    focus $itk_component(button$itk_option(-default))
 	} else {
 	    focus $w_
 	}
+
+        # If the window is closed by the window manager we need to
+        # get that request as well.
+        wm protocol $w_ WM_DELETE_WINDOW "set ::$variable_ 0"
 
 	# Wait for the user to respond, then restore the focus and
 	# return the index of the selected button.
@@ -214,6 +228,9 @@ itcl::class util::DialogWidget {
     
     # flag: if true, grab the screen
     itk_option define -modal modal Modal 1
+   
+    # number of lines before truncation.
+    itk_option define -max_lines max_lines Max_Lines 20
 
     # -- protected vars --
 

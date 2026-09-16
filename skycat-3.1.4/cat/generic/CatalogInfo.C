@@ -43,6 +43,8 @@
  *
  *   is_tcs:      flag: true if using TCS columns
  *
+ *   stc_col:     column with STC region description (VO WCS)
+ *
  *  Service Types
  * ---------------
  *
@@ -125,11 +127,23 @@
  * who             when       what
  * --------------  --------   ----------------------------------------
  * Allan Brighton  29 Oct 95  Created
+ * Peter W. Draper 25 Sep 03  Modified to output ra_col and dec_col 
+ *                            even when at default values. Can cause
+ *                            problems when x_col and y_col are also
+ *                            set (after ra_col and dec_col).
+ *                 04 Jul 08  Add additional meta-data support (ucd, utype,
+ *                            unit and datatype), required for VO world.
+ *                 03 Dec 08  Always output ra_col, dec_col, x_col and y_col.
+ *                            This is needed for catalogues that are saved
+ *                            and do not have this information set (otherwise
+ *                            when read back the default columns are assumed).
+ *                 20 Mar 09  Add support for comments. Note these are not
+ *                            output as they are verbose and associated 
+ *                            with local catalogues (so are volatile).
+ *                 26 Mar 15  Added xtype support (more VO).
  */
 static const char* const rcsId="@(#) $Id: CatalogInfo.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
-
-using namespace std;
 #include <unistd.h>
 #include <cstdlib>
 #include <cctype>
@@ -142,6 +156,7 @@ using namespace std;
 #include "HTTP.h"
 #include "CatalogInfo.h"
 
+using namespace std;
 
 // define the default URL for the catalog config info
 const char* catlib_config_url_ = "http://archive.eso.org/skycat/skycat2.0.cfg";
@@ -219,13 +234,19 @@ istream& CatalogInfo::getline(istream& f, char* buf, int size)
 {
     if (f.getline(buf, size)) {
 	char* p = buf;
-	int i = strlen(p) - 1;
-	while(f && p[i] == '\\') {
-	    size -= i;
-	    p = p + i;
-	    if (f.getline(p, size))
-		i = strlen(p) - 1;
-	}
+	int i = strlen(p);
+        if ( i > 0 ) {
+            i -= 1;
+            while(f && p[i] == '\\') {
+                size -= i;
+                p = p + i;
+                if (f.getline(p, size)) {
+                    i = strlen(p);
+                    if ( i == 0 ) break;
+                    i -= 1;
+                }
+            }
+        }
     }
     return f;
 }
@@ -244,7 +265,6 @@ istream& CatalogInfo::getline(istream& f, char* buf, int size)
 CatalogInfoEntry* CatalogInfo::load(istream& f, const char* filename)
 {
     int line = 0;		// line number in config file
-    int n;
     char buf[10*2048];		// contents of a line
     char* keyword;		// left of ':'
     char* value;		// right of ':'
@@ -409,10 +429,69 @@ int CatalogInfo::set_entry_value(CatalogInfoEntry* entry,
 	if (sscanf(value, "%d", &is_tcs) == 1)
 	    entry->is_tcs(is_tcs);
     }
-    if (strcmp(keyword, "equinox") == 0) {
+
+    // PWD: extras.
+    else if (strcmp(keyword, "stc_col") == 0) {
+	int stc_col = undef_col_;
+	if (sscanf(value, "%d", &stc_col) == 1 && stc_col != undef_col_) 
+	    entry->stc_col(stc_col);
+    }
+    else if (strcmp(keyword, "system") == 0) {
+	entry->system(value);
+    } 
+    else if (strcmp(keyword, "epoch") == 0) {
 	double d;
-	if (sscanf(value, "%lf", &d) == 1)
+        const char *p = value;
+        if ( p[0] == 'j' || p[0] == 'J' ) {
+            entry->epochprefix( "J" );
+            p++;
+        }
+        else if ( p[0] == 'b' || p[0] == 'B' ) {
+            entry->epochprefix( "B" );
+            p++;
+        }
+        else {
+            entry->epochprefix( "" );
+        }
+	if (sscanf(p, "%lf", &d) == 1) {
+	    entry->epoch(d);
+        }
+    } 
+    else if (strcmp(keyword, "equinox") == 0) {
+	double d;
+        const char *p = value;
+        if ( p[0] == 'j' || p[0] == 'J' ) {
+            entry->equinoxprefix( "J" );
+            p++;
+        }
+        else if ( p[0] == 'b' || p[0] == 'B' ) {
+            entry->equinoxprefix( "B" );
+            p++;
+        }
+        else {
+            entry->equinoxprefix( "" );
+        }
+	if (sscanf(p, "%lf", &d) == 1) {
 	    entry->equinox(d);
+        }
+    } 
+    else if (strcmp(keyword, "unit") == 0) {
+	entry->unit(value);
+    } 
+    else if (strcmp(keyword, "ucd") == 0) {
+	entry->ucd(value);
+    } 
+    else if (strcmp(keyword, "utype") == 0) {
+	entry->utype(value);
+    } 
+    else if (strcmp(keyword, "xtype") == 0) {
+	entry->xtype(value);
+    } 
+    else if (strcmp(keyword, "datatype") == 0) {
+	entry->datatype(value);
+    } 
+    else if ( strcmp(keyword, "comments") == 0) {
+        entry->comments(value);
     }
     return 0;
 }
@@ -852,7 +931,9 @@ CatalogInfoEntry::CatalogInfoEntry()
       x_col_(undef_col_),
       y_col_(undef_col_),
       is_tcs_(0),
+      stc_col_(undef_col_),
       equinox_(2000.),
+      epoch_(2000.),
       link_(NULL),
       next_(NULL)
 {
@@ -871,7 +952,9 @@ CatalogInfoEntry::CatalogInfoEntry(const CatalogInfoEntry& e)
       x_col_(e.x_col_),
       y_col_(e.y_col_),
       is_tcs_(e.is_tcs_),
+      stc_col_(undef_col_),
       equinox_(e.equinox_),
+      epoch_(e.epoch_),
       link_(NULL),  // no links or marks copied
       next_(NULL)
 {
@@ -891,7 +974,9 @@ CatalogInfoEntry& CatalogInfoEntry::operator=(const CatalogInfoEntry& e)
     x_col_ = e.x_col_;
     y_col_ = e.y_col_;
     is_tcs_ = e.is_tcs_;
+    stc_col_ = e.stc_col_;
     equinox_ = e.equinox_;
+    epoch_ = e.epoch_;
     // don't copy the links or marks
 
     for (int i = 0; i < NUM_KEY_STRINGS_; i++)
@@ -1002,6 +1087,18 @@ int CatalogInfoEntry::dec_col() const
 
 
 /*
+ * Return the column number for the STC region, defaults to -1 if no
+ * STC column is defined.
+ */
+int CatalogInfoEntry::stc_col() const 
+{
+    if (stc_col_ == undef_col_) 
+	return -1;
+    return stc_col_;
+}
+
+
+/*
  * set the value for a config keyword
  */
 void CatalogInfoEntry::setVal_(KeyStrings keyword, const char* s)
@@ -1083,27 +1180,55 @@ ostream& operator<<(ostream& os, const CatalogInfoEntry& e)
     if (e.help())
 	os << "help: " << e.help() << endl;
     
-    if (e.equinox() != 2000.)
-	os << "equinox: " << e.equinox() << endl;
+    if (e.equinox() != 2000.) {
+        if ( e.equinoxprefix() ) 
+            os << "equinox: " << e.equinoxprefix() << e.equinox() << endl;
+        else 
+            os << "equinox: " << e.equinox() << endl;
+    }
 
     if (e.id_col() > 0)
 	os << "id_col: " << e.id_col() << endl;
 
-    // don't need to output default order of: id, ra, dec
-    if (e.ra_col() >= 0 && e.ra_col() != 1)  
+    // PWD: always write these values if defined.
+    if (e.ra_col() != undef_col_ )  
 	os << "ra_col: " << e.ra_col() << endl;
     
-    if (e.dec_col() >= 0 && e.dec_col() != 2)
+    if (e.dec_col() != undef_col_ )
 	os << "dec_col: " << e.dec_col() << endl;
 
-    if (e.x_col() >= 0 && e.x_col() != 1)
+    if (e.x_col() != undef_col_ )
 	os << "x_col: " << e.x_col() << endl;
 
-    if (e.y_col() >= 0 && e.y_col() != 2)
+    if (e.y_col() != undef_col_ )
 	os << "y_col: " << e.y_col() << endl;
 
     if (e.is_tcs())
 	os << "is_tcs: " << e.is_tcs() << endl;
+
+    //  PWD: extras.
+    if (e.stc_col() != undef_col_ )
+	os << "stc_col: " << e.stc_col() << endl;
+
+    if (e.epoch() != 2000.) {
+        if ( e.epochprefix() ) 
+            os << "epoch: " << e.epochprefix() << e.epoch() << endl;
+        else 
+            os << "epoch: " << e.epoch() << endl;
+    }
+    
+    if (e.system())
+        os << "system: " << e.system() << endl;
+    if (e.unit())
+        os << "unit: " << e.unit() << endl;
+    if (e.ucd())
+        os << "ucd: " << e.ucd() << endl;
+    if (e.utype())
+        os << "utype: " << e.utype() << endl;
+    if (e.xtype())
+        os << "xtype: " << e.xtype() << endl;
+    if (e.datatype())
+        os << "datatype: " << e.datatype() << endl;
 
     return os;
 }

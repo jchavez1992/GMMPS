@@ -862,7 +862,7 @@ AC_DEFUN(TEA_CONFIG_CFLAGS, [
 	    # results, and the version is kept in special file).
 	
 	    if test -r /etc/.relid -a "X`uname -n`" = "X`uname -s`" ; then
-		system=MP-RAS-`awk '{print $3}' /etc/.relid'`
+		system=MP-RAS-`awk '{print $3}' /etc/.relid`
 	    fi
 	    if test "`uname -s`" = "AIX" ; then
 		system=AIX-`uname -v`.`uname -r`
@@ -1607,7 +1607,8 @@ dnl AC_CHECK_TOOL(AR, ar, :)
 		    LIBS="$LIBS -lpthread -lmach -lexc"
 		else
 		    CFLAGS="$CFLAGS -pthread"
-		    LDFLAGS="$LDFLAGS -pthread"
+                    # PWD: don't need this.
+		    #LDFLAGS="$LDFLAGS -pthread"
 		fi
 	    fi
 
@@ -1702,7 +1703,7 @@ dnl AC_CHECK_TOOL(AR, ar, :)
 		SHLIB_LD="$CXX -shared"
 		LD_SEARCH_FLAGS='-Wl,-R,${LIB_RUNTIME_DIR}'
 	    else
-		SHLIB_LD="/usr/ccs/bin/ld -G -z text"
+		SHLIB_LD="$CXX -G -z text"
 		LD_SEARCH_FLAGS='-R ${LIB_RUNTIME_DIR}'
 	    	SHLIB_CFLAGS="-KPIC"
 	    fi
@@ -1778,7 +1779,7 @@ dnl AC_CHECK_TOOL(AR, ar, :)
 		fi
 	    else
 	 	SHLIB_CFLAGS="-KPIC"
-		SHLIB_LD="/usr/ccs/bin/ld -G -z text"
+		SHLIB_LD="$CXX -G -z text"
 		LD_SEARCH_FLAGS='-R ${LIB_RUNTIME_DIR}'
 	    fi
 	    ;;
@@ -3125,6 +3126,12 @@ AC_DEFUN(TEA_SETUP_COMPILER, [
     fi
 
     #--------------------------------------------------------------------
+    #  Pick up flags from the environment (user).
+    #--------------------------------------------------------------------
+    CC="${CC} $CFLAGS"
+    CXX="${CXX} $CXXFLAGS $CFLAGS"
+
+    #--------------------------------------------------------------------
     # Common compiler flag setup
     #--------------------------------------------------------------------
 
@@ -3169,7 +3176,7 @@ AC_DEFUN(TEA_MAKE_LIB, [
 	MAKE_STUB_LIB="\${STLIB_LD} -out:\[$]@ \$(PKG_STUB_OBJECTS)"
     else
 	MAKE_STATIC_LIB="\${STLIB_LD} \[$]@ \$(PKG_OBJECTS)"
-	MAKE_SHARED_LIB="\${SHLIB_LD} -o \[$]@ \$(PKG_OBJECTS) \${SHLIB_LD_LIBS}"
+	MAKE_SHARED_LIB="\${SHLIB_LD} -o \[$]@ \$(PKG_OBJECTS) \${LDFLAGS_DEFAULT} \${SHLIB_LD_LIBS}"
 	MAKE_STUB_LIB="\${STLIB_LD} \[$]@ \$(PKG_STUB_OBJECTS)"
     fi
 

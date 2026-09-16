@@ -260,21 +260,21 @@ itcl::class rtd::RtdRecorderTool {
 
 	# do the packing
 
-	blt::table $itk_component(status) \
+	blt::blttable $itk_component(status) \
 	    $itk_component(progressLabel)      1,0 -anchor w -fill x \
 	    $itk_component(progressBar)        1,1 -anchor e -fill x -columnspan 2 \
 	    $itk_component(imagecount)         2,0 -anchor w -fill x -columnspan 2 \
 	    $itk_component(ncounts)            2,2 -anchor w -fill x
 
-	blt::table $itk_component(fileframe) \
+	blt::blttable $itk_component(fileframe) \
 	    $itk_component(filename)        1,0 -anchor w -fill x \
 	    $itk_component(cameraname)      2,0 -anchor w -fill x
 
-	blt::table $itk_component(pbaction1) \
+	blt::blttable $itk_component(pbaction1) \
 	    $itk_component(direction)   1,0 -anchor w -fill x \
 	    $itk_component(protect)     1,1 -anchor e -fill x	    
 
-	blt::table $itk_component(pbaction2) \
+	blt::blttable $itk_component(pbaction2) \
  	    $itk_component(play)        1,0 -anchor w -fill none \
  	    $itk_component(rewind)      1,1 -anchor w -fill none \
  	    $itk_component(ff)          1,2 -anchor w -fill none \
@@ -311,7 +311,7 @@ itcl::class rtd::RtdRecorderTool {
     # Method to add the menu bar to the top of the dialogue.
     protected method add_menubar {} {
 	global ::$w_.cmode ::$w_.pbspeed
-	TopLevelWidget::add_menubar
+	util::TopLevelWidget::add_menubar
 
 	# File menu
 	set m [add_menubutton File]
@@ -514,7 +514,7 @@ itcl::class rtd::RtdRecorderTool {
 	set height [expr {int($y1-$y0+1)}]
 	set subimage_ 1
 
-	RtdImageFrame $w_.subimage \
+	rtd::RtdImageFrame $w_.subimage \
 	    -target_image $target_image_ \
 	    -xoffset $xoffset \
 	    -yoffset $yoffset \
@@ -537,7 +537,7 @@ itcl::class rtd::RtdRecorderTool {
     # Set the maximum allowed file size in recording images
 
     public method set_max_filesize {} {
-	utilReUseWidget InputDialog $w_.maxfsize \
+	utilReUseWidget util::InputDialog $w_.maxfsize \
 	    -title "Maximum File Size" \
 	    -text "Set maximum recording file size in Mb (currently $maxFile_ Mb)" \
 	    -modal 1 \
@@ -856,10 +856,10 @@ itcl::class rtd::RtdRecorderTool {
     }
 
     # font used for labels
-    itk_option define -labelfont labelFont LabelFont -Adobe-helvetica-bold-r-normal-*-12*
+    itk_option define -labelfont labelFont LabelFont TkDefaultFont
 
     # font used for values
-    itk_option define -valuefont valueFont ValueFont -Adobe-helvetica-medium-r-normal-*-12*
+    itk_option define -valuefont valueFont ValueFont TkDefaultFont
 
     # server camera name
     itk_option define -server_camera server_camera Server_camera {}

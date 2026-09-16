@@ -5,20 +5,27 @@
  *
  * Mem.C - method definitions for class Mem, for managing memory
  *         areas with or without shared memory.
- * 
+ *
  * who             when      what
  * --------------  --------  ----------------------------------------
  * Allan Brighton  07/03/96  Created
  * D.Hopkinson     21/01/97  Added constructor to use when multi-buffering shared memory.
  * pbiereic        22/10/99  Attach to shm with SHM_RDONLY when owner=0
  * pbiereic        10/11/99  Use _exit() in signal handler, so that the
+ * Peter W. Draper 23/01/00  Added constructor to accept "malloc'd"
+ *                           memory. This is may or may not be "owned"
+ *                           (I added this to accept memory mapped
+ *                           from the NDF library, so as to avoid the
+ *                           need for a memory copy).
  *                           message queue of a possible parent process is not closed
  * pbiereic        17/02/03  Added 'using namespace std'.
+ * Peter W. Draper 03/09/04  New addr arguments for Mem and Mem_Rep
+ *                           constructors. 
+ *                 04/04/06  Added "refcnt" member so that owner can control
+ *                           when to release memory.
  */
 static const char* const rcsId="@(#) $Id: Mem.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
-
-using namespace std;
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
@@ -36,6 +43,8 @@ using namespace std;
 #include "util.h"
 #include "Mem.h"
 #include "Mem_Map.h"
+
+using namespace std;
 
 /*
  * NOTE: on Solaris2.5, the default limit is 8 shared memory areas per process:
@@ -63,50 +72,52 @@ extern "C" {
 
 
 // The following is used to keep track of shared memory Mem objects.
-// On some systems (hp), a shmat will fail if the shared memory 
-// is alread attached (also: mmap fails if the file is already mapped). 
-// That is why we need the following. It is also handy for cleaning up when 
+// On some systems (hp), a shmat will fail if the shared memory
+// is alread attached (also: mmap fails if the file is already mapped).
+// That is why we need the following. It is also handy for cleaning up when
 // a program is killed.
 enum {MAX_SHM_ = 255};	   	   // max number of shared memory Mem objects allowed
 static MemRep* shmObjs_[MAX_SHM_]; // array of existing shared memory Mem objects
 static int shmCount_ = 0;	   // count of objects in above array
 
 
-/* 
- * default constructor 
- */		
+/*
+ * default constructor
+ */
 
-MemRep::MemRep() 
+MemRep::MemRep()
     : size(0),
-      owner(0), 
-      refcnt(1), 
-      ptr(NULL), 
+      owner(0),
+      refcnt(1),
+      ptr(NULL),
+      newmem(0),
       shmId(-1),
       shmNum(0),
       semId(-1),
-      options(0), 
-      status(0), 
-      verbose(0), 
+      options(0),
+      status(0),
+      verbose(0),
       m_map(NULL),
       linkName(NULL)
-{ 
+{
 }
 
 
-/* 
+/*
  * constructor - attach to existing sysV shared memory with given id
- */		
-MemRep::MemRep(int sz, int own, int id, int verb) 
-    : size(sz), 
-      owner(own), 
-      refcnt(1), 
-      ptr(NULL), 
-      shmId(id), 
+ */
+MemRep::MemRep(size_t sz, int own, int id, int verb)
+    : size(sz),
+      owner(own),
+      refcnt(1),
+      ptr(NULL),
+      newmem(0),
+      shmId(id),
       shmNum(0),
       semId(-1),
-      options(0), 
-      status(0), 
-      verbose(verb), 
+      options(0),
+      status(0),
+      verbose(verb),
       m_map(NULL),
       linkName(NULL)
 {
@@ -152,17 +163,18 @@ MemRep::MemRep(int sz, int own, int id, int verb)
  * "useShm" is non-zero, shared memory is allocated, otherwise "operator
  * new" is used.
  */
-MemRep::MemRep(int sz, int useShm, int verb) 
-    : size(sz), 
-      owner(1), 
-      refcnt(1), 
-      ptr(NULL), 
-      shmId(-1), 
+MemRep::MemRep(size_t sz, int useShm, int verb)
+    : size(sz),
+      owner(1),
+      refcnt(1),
+      ptr(NULL),
+      newmem(0),
+      shmId(-1),
       shmNum(0),
       semId(-1),
-      options(0), 
-      status(0), 
-      verbose(verb), 
+      options(0),
+      status(0),
+      verbose(verb),
       m_map(NULL),
       linkName(NULL)
 {
@@ -171,6 +183,7 @@ MemRep::MemRep(int sz, int useShm, int verb)
 
     if (! useShm) {
 	ptr = new char[size];
+        newmem = 1;
 	if (!ptr)
 	    status = error("out of memory");
 	return;
@@ -181,8 +194,8 @@ MemRep::MemRep(int sz, int useShm, int verb)
 	return;
     }
 
-    shmId = shmget(IPC_PRIVATE, size, 0666); 
-    ptr = (void *)shmat(shmId,  NULL, 0); 
+    shmId = shmget(IPC_PRIVATE, size, 0666);
+    ptr = (void *)shmat(shmId,  NULL, 0);
     if (ptr == NULL || ptr == (void *)-1) {
 	ptr = NULL;
 	status = sys_error("error creating shared memory");
@@ -192,35 +205,58 @@ MemRep::MemRep(int sz, int useShm, int verb)
     if (verbose)
 	log_message("Shared Memory area created, Id: %d, size: %d", shmId, size);
 #endif
-    
+
     // enter new object in table for later reference
     shmObjs_[shmCount_++] = this;
 }
 
+/*
+ * constructor - accept pointer to malloc'd memory.
+ *
+ * If owner is non-zero the memory is freed when this object is
+ * deleted.
+ */
+MemRep::MemRep(void *inptr, size_t sz, int own)
+    : size(sz),
+      owner(own),
+      refcnt(1),
+      ptr(inptr),
+      newmem(0),
+      shmId(-1),
+      shmNum(0),
+      semId(-1),
+      options(0),
+      status(0),
+      verbose(0),
+      m_map(NULL),
+      linkName(NULL)
+{
+}
 
-/* 
+/*
  * constructor - mmap the given file using the given options and flags.
  *
  * If owner is non-zero, the file is deleted when this object is deleted.
  */
-MemRep::MemRep(const char *filename, int flags, int prot, int share, int nbytes, 
-	       int own, int verb) 
-    : size(0), 
-      owner(own), 
-      refcnt(1), 
-      ptr(NULL), 
-      shmId(-1), 
+MemRep::MemRep(const char *filename, int flags, int prot, int share,
+               size_t nbytes, int own, int verb, void *addr)
+    : size(0),
+      owner(own),
+      refcnt(1),
+      ptr(NULL),
+      newmem(0),
+      shmId(-1),
       shmNum(0),
       semId(-1),
-      options(0), 
-      status(0), 
-      verbose(verb), 
+      options(0),
+      status(0),
+      verbose(verb),
       m_map(NULL),
-      linkName(NULL) 
+      linkName(NULL)
 {
     if (! filename) {
 	status = error("no file name specified for mmap");
-	return;	
+	return;
     }
 
     if ((flags & O_CREAT) == 0) { // using existing file, not creating a new one?
@@ -230,20 +266,20 @@ MemRep::MemRep(const char *filename, int flags, int prot, int share, int nbytes,
 	    return;
 	}
 
-	// can't map a file without read permission 
+	// can't map a file without read permission
 	if (access(filename, R_OK) != 0) {
 	    status = error("file has no read permission: ", filename);
 	    return;
 	}
 
-	// check the file permissions and the mmap flags, since on solaris at least, 
+	// check the file permissions and the mmap flags, since on solaris at least,
 	// mmap(read-write) seems to succede, even if file is read-only
 	if ((flags & O_RDWR) && access(filename, W_OK) != 0) {
 	    status = error("can't mmap read-only file for writing: ", filename);
 	    return;
 	}
     }
-   
+
     // get the name of the real file (if a link)
     //char realname[1024];
     //const char* fname = fileRealname(filename, realname, sizeof(realname));
@@ -252,13 +288,14 @@ MemRep::MemRep(const char *filename, int flags, int prot, int share, int nbytes,
     const char* fname = filename;  // allan: 9.11.00: had problems with relative links
 
     // map the file
-    m_map = new Mem_Map(fname, 
+    m_map = new Mem_Map(fname,
 			nbytes,               // length
 			flags,                // Read/Write, etc.
 			MMAP_DEFAULT_PERMS,   // mode
 			prot,                 // protection,
-			share);               // share map on write
-			
+			share,                // share map on write
+                        addr);                // address to map file at
+
     if (!m_map || m_map->status() != 0) {
 	// status = error("mapping of file failed");
 	status = 1;
@@ -276,7 +313,7 @@ MemRep::MemRep(const char *filename, int flags, int prot, int share, int nbytes,
 /*
  * internal destructor - Detach and/or delete shared memory, if needed.
  */
-MemRep::~MemRep() 
+MemRep::~MemRep()
 {
     if (shmId >= 0 || m_map) {
 	// remove this obejct from the table, and shift others left
@@ -312,7 +349,7 @@ MemRep::~MemRep()
 	    semDec[0].sem_num = (unsigned short)shmNum;
 	    semDec[0].sem_op = (short)(0 - semctl(semId, shmNum, GETVAL, s));
 	    semop(semId, &semDec[0], 1);
-	
+
 #ifdef DEBUG
 	    if (verbose)
 		log_message("removing (IPC_RMID) shared memory area: %d", shmId);
@@ -332,13 +369,18 @@ MemRep::~MemRep()
     else if (m_map != 0) {	// mmap file
 	if (owner && m_map->filename())
 	    unlink(m_map->filename()); // if we are the owner, rm the file now
-	delete m_map;
+	if(m_map) delete m_map;
     }
     else if (ptr) {		// must be using plain memory
-	delete (char *)ptr;
-    } 
+       if (newmem && owner) {
+          delete[] (char *)ptr;
+       } else if (owner) {
+          free( ptr );
+       }
+    }
     
     ptr = NULL;
+    newmem = 0;
     m_map = NULL;
     shmId = -1;
     size = 0;
@@ -355,7 +397,7 @@ MemRep::~MemRep()
  * If flag is 1 and the original file was a link, return the link name,
  * otherwise return the real name.
  */
-const char* MemRep::filename(int flag) const 
+const char* MemRep::filename(int flag) const
 {
     if (m_map) {
 	if (flag && linkName)
@@ -380,7 +422,7 @@ void MemRep::unmap()
 	m_map->close();
 	ptr = NULL;
     }
-    
+
     // not impl for sysV shared mem
 }
 
@@ -388,12 +430,12 @@ void MemRep::unmap()
 /*
  * remap the shared memory after a call to unmap()
  * (may be used to unmap and remap with different options, see MemFileOptions)
- * If the optional newsize arg is given and is not -1, it indicates a new
+ * If the optional newsize arg is given and is not 0, it indicates a new
  * file size. This can be used to extend the file size.
  */
-int MemRep::remap(int opts, int newsize) 
+int MemRep::remap(int opts, size_t newsize)
 {
-    if (!m_map || !m_map->filename()) 
+    if (!m_map || !m_map->filename())
 	return error("can't remap memory, not mapped");
 
     int flags = 0;
@@ -404,7 +446,7 @@ int MemRep::remap(int opts, int newsize)
 	flags = MEM_MMAP_DEFAULT_FLAGS;
 	prot = MEM_MMAP_DEFAULT_PROT;
 	sharing = MEM_MMAP_DEFAULT_SHARING;
-    } 
+    }
     else {
 	// There are client specified options
 	flags |= (opts & Mem::FILE_RDWR ) ? O_RDWR : O_RDONLY;
@@ -416,12 +458,12 @@ int MemRep::remap(int opts, int newsize)
     m_map->close();
 
     // now remap
-    if (m_map->map(m_map->filename(), 
-		   newsize, 
-		   flags, 
-		   MMAP_DEFAULT_PERMS, 
-		   prot, 
-		   sharing, 
+    if (m_map->map(m_map->filename(),
+		   newsize,
+		   flags,
+		   MMAP_DEFAULT_PERMS,
+		   prot,
+		   sharing,
 		   NULL, 0) < 0) {
 	return sys_error("mmap failed for file: ", m_map->filename());
     }
@@ -441,11 +483,11 @@ int MemRep::remap(int opts, int newsize)
 static MemRep* findMemRep(int shmId)
 {
     if (shmId >= 0) {
-	for (int i = 0; i < shmCount_; i++) 
-	    if (shmObjs_[i]->shmId == shmId) 
+	for (int i = 0; i < shmCount_; i++)
+	    if (shmObjs_[i]->shmId == shmId)
 		return shmObjs_[i];
     }
-	
+
     return NULL;
 }
 
@@ -469,13 +511,13 @@ static MemRep* findMemRep(const char* filename)
 		rep = shmObjs_[i];
 		// Note: memory may have been temporarily unmapped (see unmap())
 		// If so, remap it here.
-		if (rep->ptr == NULL && rep->remap() != 0) 	
+		if (rep->ptr == NULL && rep->remap() != 0)
 		    return NULL;
 		return rep;
 	    }
 	}
     }
-	
+
     return NULL;   // not found
 }
 
@@ -488,7 +530,7 @@ static MemRep* findMemRep(const char* filename)
 /*
  * constructor - attach (if needed) to existing shm area
  */
-Mem::Mem(int size, int shmId, int owner, int verbose) 
+Mem::Mem(size_t size, int shmId, int owner, int verbose)
     : offset_(0), length_(0)
 {
     // see if we have this Id already
@@ -502,13 +544,13 @@ Mem::Mem(int size, int shmId, int owner, int verbose)
 }
 
 /*
- * Constructor to use when multi-buffering shared memory. The fifth argument 
- * is the number of the buffer in the sequence of use of shared memory 
- * buffers. This is only required to lock the memory when using semaphores. 
- * The final argument is the ID of the semaphore used to lock this 
+ * Constructor to use when multi-buffering shared memory. The fifth argument
+ * is the number of the buffer in the sequence of use of shared memory
+ * buffers. This is only required to lock the memory when using semaphores.
+ * The final argument is the ID of the semaphore used to lock this
  * particular area of shared memory.
  */
-Mem::Mem(int size, int shmId, int owner, int verbose, int shmNum, int semId)
+Mem::Mem(size_t size, int shmId, int owner, int verbose, int shmNum, int semId)
 : offset_(0), length_(0)
 {
     // see if we have this Id already
@@ -528,7 +570,7 @@ Mem::Mem(int size, int shmId, int owner, int verbose, int shmNum, int semId)
 /*
  * constructor - use Mem_Map to open file and get pointer
  */
-Mem::Mem(const char *filename, int verbose) 
+Mem::Mem(const char *filename, int verbose)
     : offset_(0), length_(0)
 {
     // see if we have mapped this file already
@@ -537,17 +579,17 @@ Mem::Mem(const char *filename, int verbose)
 	return;
     }
 
-    rep_ = new MemRep(filename, 
-		    MEM_MMAP_DEFAULT_FLAGS, 
-		    MEM_MMAP_DEFAULT_PROT, 
-		    MEM_MMAP_DEFAULT_SHARING, -1, 0, verbose);
+    rep_ = new MemRep(filename,
+		    MEM_MMAP_DEFAULT_FLAGS,
+		    MEM_MMAP_DEFAULT_PROT,
+		    MEM_MMAP_DEFAULT_SHARING, 0, 0, verbose);
 }
 
 
 /*
  * Constructor uses mmap to map a file and adds file options
  */
-Mem::Mem(const char *filename, int options, int verbose)
+Mem::Mem(const char *filename, int options, int verbose, void *addr)
     : offset_(0), length_(0)
 {
     int flags = 0;
@@ -558,7 +600,7 @@ Mem::Mem(const char *filename, int options, int verbose)
 	flags = MEM_MMAP_DEFAULT_FLAGS;
 	prot = MEM_MMAP_DEFAULT_PROT;
 	sharing = MEM_MMAP_DEFAULT_SHARING;
-    } 
+    }
     else {
 	// There are client specified options
 	flags |= (options & FILE_RDWR ) ? O_RDWR : O_RDONLY;
@@ -572,7 +614,7 @@ Mem::Mem(const char *filename, int options, int verbose)
 	return;
     }
 
-    rep_ = new MemRep(filename, flags, prot, sharing, -1, 0, verbose);
+    rep_ = new MemRep(filename, flags, prot, sharing, 0, 0, verbose, addr);
     rep_->options = options;
 }
 
@@ -584,7 +626,7 @@ Mem::Mem(const char *filename, int options, int verbose)
  * If owner if non-zero, the file is deleted when there are no more
  * references.
  */
-Mem::Mem(int size, const char *filename, int owner, int verbose)
+Mem::Mem(size_t size, const char *filename, int owner, int verbose)
     : offset_(0), length_(0)
 {
     // see if we have mapped this file already
@@ -595,15 +637,24 @@ Mem::Mem(int size, const char *filename, int owner, int verbose)
     }
 
     unlink(filename);		// remove any existing file by this name... (is this needed?)
-    rep_ = new MemRep(filename, O_RDWR|O_CREAT, PROT_RDWR, MAP_SHARED, 
+    rep_ = new MemRep(filename, O_RDWR|O_CREAT, PROT_RDWR, MAP_SHARED,
 		      size, owner, verbose);
 }
 
+/*
+ * Constructor: accept a pointer to memory, do not modify this
+ * reference (assume user looks after it).
+ */
+Mem::Mem(void *ptr, size_t size, int owner)
+   : offset_(0), length_(0)
+{
+   rep_ = new MemRep(ptr, size, owner);
+}
 
 /*
  * destructor, detach and/or delete memory if needed
  */
-Mem::~Mem() 
+Mem::~Mem()
 {
   if (rep_ && --rep_->refcnt <= 0)
     delete rep_;
@@ -615,9 +666,9 @@ Mem::~Mem()
  */
 Mem& Mem::operator=(const Mem& m)
 {
-    if (m.rep_) 
+    if (m.rep_)
 	m.rep_->refcnt++;		// protect against "shm = shm"
-    if (rep_ && --rep_->refcnt <= 0) 
+    if (rep_ && --rep_->refcnt <= 0)
 	delete rep_;
     offset_ = m.offset_;
     length_ = m.length_;
@@ -625,6 +676,16 @@ Mem& Mem::operator=(const Mem& m)
     return *this;
 }
 
+/*
+ * return the current reference count.
+ */
+int Mem::refcnt()
+{
+    if ( rep_ ) {
+        return rep_->refcnt;
+    }
+    return 0;
+}
 
 /*
  * force the memory to be shared (1) or not shared (0)
@@ -658,10 +719,10 @@ void Mem::cleanup()
     }
 }
 
-/* 
+/*
  * external version, for use as a signal handler
  */
-void Mem_cleanup(int) 
+void Mem_cleanup(int)
 {
     Mem::cleanup();
     _exit(0);

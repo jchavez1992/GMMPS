@@ -17,6 +17,8 @@
  * Peter W. Draper 21 Sep 98  Modified private data members to be
  *                            protected. Need these for derived
  *                            classes. 
+ *                 03 Jul 08  Added getQuery() method to access whole
+ *                            data without an actual query.
  */
 
 #include "AstroCatalog.h"
@@ -40,12 +42,11 @@
  * where the table name and variable assignments are optional. 
  */
 class LocalCatalog : public AstroCatalog {
-  //private:
+
 protected:  // PWD: change here
     char* filename_;		// file name for local catalog
     time_t timestamp_;		// last update time of file, for caching
 
-protected:
 public:
     // constructor - create local catalog class instance
     // note: public interface uses AstroCatalog::open() with the name of the
@@ -67,6 +68,9 @@ public:
     // query server for catalog column names and put result in info_
     virtual int getInfo();
     virtual int checkInfo();
+
+    // get the full query for whole table.
+    QueryResult& getQuery() {return info_;}
 };
 
 #endif /* _LocalCatalog_h_ */

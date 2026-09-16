@@ -8,7 +8,12 @@
 # who         when       what
 # --------   ---------   ----------------------------------------------
 # A.Brighton 14 Dec 95   created
-# P.W.Draoer 12 Dec 97   added methods to get equinox and table name
+# P.W.Draper 12 Dec 97   added methods to get equinox and table name
+#            11 May 00   stop immediate delete of images, need backing 
+#                        store for my catalogue handling commands.
+#            03 Mar 08   Remove check in new_catalog, opened file is
+#                        never closed (and can leave a temporary file).
+#            10 Nov 08   Add command to local catalogues menu to clear the list.
 
 
 itk::usual AstroCat {}
@@ -48,6 +53,11 @@ itcl::class cat::AstroCat {
 		}
 	    }
 	}
+        catch {
+           if { $tempimage_ != {} } { 
+              file delete $tempimage_
+           }
+        }
 	catch {$w_.cat delete}
 	catch {close $rfd_}
 	catch {close $wfd_}
@@ -80,7 +90,7 @@ itcl::class cat::AstroCat {
 	make_short_help
 
 	# create an object for running interruptable batch queries
-	Batch $w_.batch \
+	util::Batch $w_.batch \
 	    -command [code $this preview_done] \
 	    -debug $itk_option(-debug)
 
@@ -172,7 +182,7 @@ itcl::class cat::AstroCat {
     # add the menu bar
 
     protected method add_menubar {} {
-	TopLevelWidget::add_menubar
+	util::TopLevelWidget::add_menubar
 
 	set m [add_menubutton File "Display File menu"]
 	set file_menu_ $m
@@ -290,7 +300,7 @@ itcl::class cat::AstroCat {
 	    $m add separator
 	}
 	add_menuitem $m command "Proxies..."  \
-	    "Define an HTTP proxy server for use with a firewall." \
+	    "Define an HTTP proxy server." \
 	    -command [code cat::AstroCat::proxies]
 	check_proxies
 
@@ -382,6 +392,12 @@ itcl::class cat::AstroCat {
 	    -command [code cat::AstroCat::local_catalog $id $classname $debug $w] \
 		-accelerator "Control-O"
 
+        # clear the local catalogs (handy when many local catalogs have been
+        # opened).
+        $w add_menuitem $m.local command "Clear local catalogs" \
+           {Clear all local catalogs from the list} \
+           -command [code clear_local_catalogs]
+
 	$m add separator
 
 	$w add_menuitem $m command "Browse Catalog Directories..."  \
@@ -452,7 +468,7 @@ itcl::class cat::AstroCat {
 
     public proc proxies {} {
 	global ::env
-	utilReUseWidget ProxyDialog .proxy \
+	utilReUseWidget cat::ProxyDialog .proxy \
 	    -configfile $env(HOME)/.skycat/proxies
     }
 
@@ -491,7 +507,7 @@ itcl::class cat::AstroCat {
     public proc update_catalog_menus {} {
 	foreach i [array names catalog_menu_info_] {
 	    if {[winfo exists [utilNamespaceTail $i]]} {
-		eval $catalog_menu_info_($i)
+		{*}$catalog_menu_info_($i)
 	    }
 	}
     }
@@ -772,7 +788,6 @@ itcl::class cat::AstroCat {
     public proc open_catalog_window {name {id ""} {classname AstroCat} {debug 0} {w ""}} {
 	if {[catch {$astrocat_ open $name} msg]} {
 	    error_dialog $msg
-	    return
 	}
 	cat::AstroCat::select_catalog $name catalog $id $classname 0 $debug $w
     }
@@ -850,7 +865,7 @@ itcl::class cat::AstroCat {
 	set name $itk_option(-catalog)
 	if {[catch {$w_.cat open $name $itk_option(-catalogdir)} msg]} {
 	    error_dialog $msg $w_
-	    return
+	    return -code error
 	}
 
 	# set iscat_ to true if the catalog is not an image server
@@ -882,7 +897,7 @@ itcl::class cat::AstroCat {
     protected method add_search_options {} {
 	# AstroQuery(n) widget for displaying catalog search options.
 	itk_component add searchopts {
-	    set searchopts_ [AstroQuery $w_.searchopts \
+	    set searchopts_ [cat::AstroQuery $w_.searchopts \
 				 -relief groove \
 				 -borderwidth 2 \
 				 -debug $itk_option(-debug) \
@@ -901,7 +916,7 @@ itcl::class cat::AstroCat {
     protected method add_result_table {} {
 	# QueryResult(n) widget to display catalog query results
 	itk_component add results {
-	    set results_ [QueryResult $w_.results \
+	    set results_ [cat::QueryResult $w_.results \
 			      -astrocat [code $w_.cat] \
 			      -title "Search Results" \
 			      -hscroll 1 \
@@ -998,7 +1013,7 @@ itcl::class cat::AstroCat {
 
     protected method add_progress_bar {} {
 	# add a progress bar at the botton
-	pack [ProgressBar $w_.progress] \
+	pack [util::ProgressBar $w_.progress] \
 	    -side top -fill x
     }
     
@@ -1021,7 +1036,7 @@ itcl::class cat::AstroCat {
     # add a short help window and set the help texts
     
     protected method make_short_help {} {
-	TopLevelWidget::make_short_help
+	util::TopLevelWidget::make_short_help
 
 	add_short_help $results_ \
 	    {Query results: {bitmap b1} = select object, \
@@ -1203,7 +1218,10 @@ itcl::class cat::AstroCat {
 		set filename $info
 		# load the image and remove the temp file
 		display_image_file $filename
-		#catch {file delete $filename}
+                if { $tempimage_ != {} } { 
+                   catch {file delete $tempimage_}
+                }
+                set tempimage_ $filename
 	    } else {
 		busy {
 		    set prev_headings $headings_
@@ -1331,6 +1349,24 @@ itcl::class cat::AstroCat {
 	cat::CatalogInfo::save "" $w 0
 	update_catalog_menus
 	return 1
+    }
+
+    # remove all local catalogues from the list.
+    public proc clear_local_catalogs {} {
+
+       if {[catch {set catalog_list [lsort [$astrocat_ info local]]} msg]} {
+          error_dialog $msg
+          return
+       }
+       
+       if {[llength $catalog_list]} {
+          foreach i $catalog_list {
+             set name [$astrocat_ longname $i]
+             $astrocat_ entry remove $name
+          }
+          cat::CatalogInfo::save "" "" 0
+          update_catalog_menus
+       }
     }
 
     
@@ -1478,7 +1514,7 @@ itcl::class cat::AstroCat {
 			      || "$type" == "text/x-starbase" \
 			      || "$type" == "text/plain" \
 			      || "$type" == ""} {
-		    PreviewPlot $w_.pplot[incr count_] \
+		    cat::PreviewPlot $w_.pplot[incr count_] \
 			-file $filename \
 			-name $object_name_ \
 			-shorthelpwin $this \
@@ -1582,11 +1618,6 @@ itcl::class cat::AstroCat {
 		# for local catalogs, search automatically when opened
 		$instances_($i) search
 	    }
-	    return
-	}
-
-	if {[catch {$astrocat_ open $name $dirPath} msg]} {
-	    error_dialog $msg
 	    return
 	}
 
@@ -1724,13 +1755,13 @@ itcl::class cat::AstroCat {
     protected variable info_ {}
 
     # font to use for labels
-    itk_option define -labelfont labelFont LabelFont -Adobe-helvetica-bold-r-normal--12*
+    itk_option define -labelfont labelFont LabelFont TkDefaultFont
 
     # font to use for values
-    itk_option define -valuefont valueFont ValueFont -Adobe-helvetica-medium-r-normal--12*
+    itk_option define -valuefont valueFont ValueFont TkDefaultFont
 
     # font to use for ra,dec labels
-    itk_option define -wcsfont wcsFont WcsFont -*-symbol-*-*-*-*-14-*-*-*-*-*-*-*
+   itk_option define -wcsfont wcsFont WcsFont {Symbol -14}
 
     # set the width for  displaying labels
     itk_option define -labelwidth labelWidth LabelWidth 12
@@ -1804,6 +1835,9 @@ itcl::class cat::AstroCat {
     # flag: true if searching is allowed
     protected variable search_state_ normal
 
+    # name of temporary image file, deleted when new image is
+    # obtained, or when object destroyed.
+    protected variable tempimage_ {}
 
     # -- common variables (common to all instances of this class) --
     

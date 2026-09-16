@@ -35,11 +35,11 @@ sed 's/%@/@@/; s/@%/@@/; s/%g$/@g/; /@g$/s/[\\&%]/\\&/g;
  s/@@/%@/; s/@@/@%/; s/@g$/%g/' > conftest.subs <<\CEOF
 /^[ 	]*VPATH[ 	]*=[^:]*$/d
 
-s%@CFLAGS@%-O2%g
+s%@CFLAGS@%-O2 -arch arm64%g
 s%@CPPFLAGS@%%g
-s%@CXXFLAGS@%%g
+s%@CXXFLAGS@%-O2 -arch arm64%g
 s%@DEFS@%-DHAVE_CONFIG_H%g
-s%@LDFLAGS@%%g
+s%@LDFLAGS@%-arch arm64%g
 s%@LIBS@%%g
 s%@exec_prefix@%${prefix}%g
 s%@prefix@%/usr/local%g

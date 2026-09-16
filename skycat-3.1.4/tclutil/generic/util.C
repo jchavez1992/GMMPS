@@ -17,7 +17,6 @@
 static const char* const rcsId="@(#) $Id: util.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -41,6 +40,7 @@ using namespace std;
 #endif
 #include "define.h"
 
+using namespace std;
 
 /*
  * util: make a copy of the given string array in a single buffer
@@ -114,7 +114,7 @@ const char* fileBasename(const char* name)
 /* 
  * return the size of the file in bytes or -1 on error
  */
-int fileSize(const char* filename) 
+size_t fileSize(const char* filename) 
 {
     struct stat buf;
     if (stat(filename, &buf) != 0) 
@@ -129,7 +129,7 @@ int fileSize(const char* filename)
  * given buffer and returned, otherwise a pointer to the original
  * filename is returned. No error message is generated here.
  */
-const char* fileRealname(const char* filename, char* buf, int buflen) 
+const char* fileRealname(const char* filename, char* buf, size_t buflen) 
 {
     // NOTE: readlink() does NOT null terminate filename !!! 
     int n = readlink(filename, buf, buflen);
@@ -167,9 +167,9 @@ int fileAbsPath(const char* filename, char* path, int pathlen, int& flag)
  * Read "n" bytes from a file descriptor.
  * Use in place of read() when fd is a stream socket.
  */
-int readUnbufferedBytes(int fd, char* ptr, int nbytes)
+ssize_t readUnbufferedBytes(int fd, char* ptr, size_t nbytes)
 {
-    int	nleft, nread;
+    ssize_t nleft, nread;
 
     nleft = nbytes;
     while (nleft > 0) {
@@ -198,7 +198,8 @@ int readUnbufferedBytes(int fd, char* ptr, int nbytes)
  */
 int readUnbufferedLine(int fd, char* ptr, int maxlen)
 {
-    int	n, rc;
+    int	n;
+    ssize_t rc;
     char	c;
 
     for (n = 1; n < maxlen; n++) {
@@ -231,9 +232,9 @@ int readUnbufferedLine(int fd, char* ptr, int maxlen)
  *
  * Taken from Stevens, "Unix Network Programming".
  */
-int writeUnbufferedBytes(int fd, char* ptr, int nbytes)
+ssize_t writeUnbufferedBytes(int fd, char* ptr, size_t nbytes)
 {
-    int	nleft, nwritten;
+    ssize_t	nleft, nwritten;
 
     nleft = nbytes;
     while (nleft > 0) {
@@ -253,7 +254,7 @@ int writeUnbufferedBytes(int fd, char* ptr, int nbytes)
 /*
  * write the given buffer to the given fd followed by a newline
  */
-int writeUnbufferedLine(int fd, char* ptr)
+ssize_t writeUnbufferedLine(int fd, char* ptr)
 {
     return writeUnbufferedBytes(fd, ptr, strlen(ptr)) 
 	+ writeUnbufferedBytes(fd, (char *)"\n", 1);
@@ -320,7 +321,7 @@ int localSockListen(int& sock, int& port)
 {
     // clear out address structures 
     sockaddr_in addr;	// for local socket address    
-    int addrSize = sizeof(addr);
+    size_t addrSize = sizeof(addr);
     memset((char *)&addr, '\0', addrSize);
 
     addr.sin_family = AF_INET;
@@ -333,7 +334,7 @@ int localSockListen(int& sock, int& port)
 	return sys_error("socket");
 
     // Bind the listen address to the socket. 
-    if (bind(sock, (struct sockaddr *)&addr, addrSize) == -1) 
+    if (::bind(sock, (struct sockaddr *)&addr, addrSize) == -1)
 	return sys_error("bind");
 
     // note the port number (in case it was 0 and is generated)

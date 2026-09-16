@@ -30,8 +30,8 @@ Kernel configured for up to 8 processors.
 Processor type: arm64e (ARM64E)
 Processors active: 0 1 2 3 4 5 6 7
 Primary memory available: 16.00 gigabytes
-Default processor set: 644 tasks, 3011 threads, 8 processors
-Load average: 14.00, Mach factor: 1.25
+Default processor set: 594 tasks, 2947 threads, 8 processors
+Load average: 13.07, Mach factor: 0.78
 /bin/machine           = unknown
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
@@ -58,7 +58,6 @@ PATH: /Applications/iTerm.app/Contents/Resources/utilities
 ## ----------- ##
 
 configure:1367: checking for gcc
-configure:1383: found /usr/bin/gcc
 configure:1393: result: gcc
 configure:1637: checking for C compiler version
 configure:1640: gcc --version </dev/null >&5
@@ -78,7 +77,7 @@ clang: error: argument to '-V' is missing (expected 1 value)
 clang: error: no input files
 configure:1653: $? = 1
 configure:1676: checking for C compiler default output file name
-configure:1679: gcc    conftest.c  >&5
+configure:1679: gcc -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:1682: $? = 0
 configure:1728: result: a.out
 configure:1733: checking whether the C compiler works
@@ -88,15 +87,15 @@ configure:1759: result: yes
 configure:1766: checking whether we are cross compiling
 configure:1768: result: no
 configure:1771: checking for suffix of executables
-configure:1773: gcc -o conftest    conftest.c  >&5
+configure:1773: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:1776: $? = 0
 configure:1801: result: 
 configure:1807: checking for suffix of object files
-configure:1828: gcc -c   conftest.c >&5
+configure:1828: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:1831: $? = 0
 configure:1853: result: o
 configure:1857: checking whether we are using the GNU C compiler
-configure:1881: gcc -c   conftest.c >&5
+configure:1881: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:1887: $? = 0
 configure:1891: test -z 
 			 || test ! -s conftest.err
@@ -114,7 +113,7 @@ configure:1956: test -s conftest.o
 configure:1959: $? = 0
 configure:1970: result: yes
 configure:1987: checking for gcc option to accept ANSI C
-configure:2057: gcc  -c   conftest.c >&5
+configure:2057: gcc  -c -O2 -arch arm64  conftest.c >&5
 conftest.c:16:14: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C2x [-Wdeprecated-non-prototype]
    16 | static char *e (p, i)
       |              ^
@@ -126,7 +125,7 @@ configure:2070: $? = 0
 configure:2073: test -s conftest.o
 configure:2076: $? = 0
 configure:2094: result: none needed
-configure:2112: gcc -c   conftest.c >&5
+configure:2112: gcc -c -O2 -arch arm64  conftest.c >&5
 conftest.c:2:3: error: unknown type name 'choke'
     2 |   choke me
       |   ^
@@ -178,9 +177,6 @@ configure: failed program was:
 | #define PACKAGE_BUGREPORT ""
 | /* end confdefs.h.  */
 | #include <ac_nonexistent.h>
-configure:2538: checking for g++
-configure:2554: found /usr/bin/g++
-configure:2564: result: g++
 configure:2580: checking for C++ compiler version
 configure:2583: g++ --version </dev/null >&5
 Apple clang version 16.0.0 (clang-1600.0.26.6)
@@ -199,7 +195,7 @@ clang++: error: argument to '-V' is missing (expected 1 value)
 clang++: error: no input files
 configure:2596: $? = 1
 configure:2599: checking whether we are using the GNU C++ compiler
-configure:2623: g++ -c   conftest.cc >&5
+configure:2623: g++ -c -O2 -arch arm64  conftest.cc >&5
 configure:2629: $? = 0
 configure:2633: test -z 
 			 || test ! -s conftest.err
@@ -216,14 +212,14 @@ configure:2695: $? = 0
 configure:2698: test -s conftest.o
 configure:2701: $? = 0
 configure:2712: result: yes
-configure:2754: g++ -c -g -O2  conftest.cc >&5
+configure:2754: g++ -c -O2 -arch arm64  conftest.cc >&5
 configure:2760: $? = 0
 configure:2764: test -z 
 			 || test ! -s conftest.err
 configure:2767: $? = 0
 configure:2770: test -s conftest.o
 configure:2773: $? = 0
-configure:2799: g++ -c -g -O2  conftest.cc >&5
+configure:2799: g++ -c -O2 -arch arm64  conftest.cc >&5
 conftest.cc:13:1: error: use of undeclared identifier 'exit'
    13 | exit (42);
       | ^
@@ -246,7 +242,7 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:2754: g++ -c -g -O2  conftest.cc >&5
+configure:2754: g++ -c -O2 -arch arm64  conftest.cc >&5
 conftest.cc:9:17: error: use of undeclared identifier 'std'
     9 | extern "C" void std::exit (int) throw (); using std::exit;
       |                 ^
@@ -273,7 +269,7 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:2754: g++ -c -g -O2  conftest.cc >&5
+configure:2754: g++ -c -O2 -arch arm64  conftest.cc >&5
 conftest.cc:9:17: error: use of undeclared identifier 'std'
     9 | extern "C" void std::exit (int); using std::exit;
       |                 ^
@@ -300,7 +296,7 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:2754: g++ -c -g -O2  conftest.cc >&5
+configure:2754: g++ -c -O2 -arch arm64  conftest.cc >&5
 In file included from conftest.cc:10:
 In file included from /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/stdlib.h:94:
 In file included from /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/stdlib.h:58:
@@ -330,14 +326,14 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:2754: g++ -c -g -O2  conftest.cc >&5
+configure:2754: g++ -c -O2 -arch arm64  conftest.cc >&5
 configure:2760: $? = 0
 configure:2764: test -z 
 			 || test ! -s conftest.err
 configure:2767: $? = 0
 configure:2770: test -s conftest.o
 configure:2773: $? = 0
-configure:2799: g++ -c -g -O2  conftest.cc >&5
+configure:2799: g++ -c -O2 -arch arm64  conftest.cc >&5
 configure:2805: $? = 0
 configure:2809: test -z 
 			 || test ! -s conftest.err
@@ -376,20 +372,20 @@ config.status:652: creating Makefile
 
 ac_cv_c_compiler_gnu=yes
 ac_cv_cxx_compiler_gnu=yes
-ac_cv_env_CC_set=
-ac_cv_env_CC_value=
-ac_cv_env_CFLAGS_set=
-ac_cv_env_CFLAGS_value=
+ac_cv_env_CC_set=set
+ac_cv_env_CC_value=gcc
+ac_cv_env_CFLAGS_set=set
+ac_cv_env_CFLAGS_value='-O2 -arch arm64'
 ac_cv_env_CPPFLAGS_set=
 ac_cv_env_CPPFLAGS_value=
 ac_cv_env_CPP_set=
 ac_cv_env_CPP_value=
-ac_cv_env_CXXFLAGS_set=
-ac_cv_env_CXXFLAGS_value=
-ac_cv_env_CXX_set=
-ac_cv_env_CXX_value=
-ac_cv_env_LDFLAGS_set=
-ac_cv_env_LDFLAGS_value=
+ac_cv_env_CXXFLAGS_set=set
+ac_cv_env_CXXFLAGS_value='-O2 -arch arm64'
+ac_cv_env_CXX_set=set
+ac_cv_env_CXX_value=g++
+ac_cv_env_LDFLAGS_set=set
+ac_cv_env_LDFLAGS_value='-arch arm64'
 ac_cv_env_build_alias_set=
 ac_cv_env_build_alias_value=
 ac_cv_env_host_alias_set=
@@ -401,7 +397,6 @@ ac_cv_objext=o
 ac_cv_path_install='/usr/bin/install -c'
 ac_cv_prog_CPP='gcc -E'
 ac_cv_prog_ac_ct_CC=gcc
-ac_cv_prog_ac_ct_CXX=g++
 ac_cv_prog_ac_ct_RANLIB=ranlib
 ac_cv_prog_cc_g=yes
 ac_cv_prog_cc_stdc=
@@ -413,12 +408,12 @@ ac_cv_prog_make_make_set=yes
 ## ----------------- ##
 
 CC='gcc'
-CFLAGS=''
+CFLAGS='-O2 -arch arm64'
 CONFIGDIR='./tclconfig'
 CPP='gcc -E'
 CPPFLAGS=''
 CXX='g++'
-CXXFLAGS='-g -O2'
+CXXFLAGS='-O2 -arch arm64'
 DEFS='-DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" '
 ECHO_C='ECHO_N=''
 ECHO_T=''
@@ -430,7 +425,7 @@ IMG_VERSION='1.3'
 INSTALL_DATA='${INSTALL} -m 644'
 INSTALL_PROGRAM='${INSTALL}'
 INSTALL_SCRIPT='${INSTALL}'
-LDFLAGS=''
+LDFLAGS='-arch arm64'
 LIBOBJS=''
 LIBS=''
 LTLIBOBJS=''
@@ -445,7 +440,7 @@ RANLIB='ranlib'
 SET_MAKE=''
 SHELL='/bin/sh'
 ac_ct_CC='gcc'
-ac_ct_CXX='g++'
+ac_ct_CXX=''
 ac_ct_RANLIB='ranlib'
 bindir='${exec_prefix}/bin'
 build_alias=''

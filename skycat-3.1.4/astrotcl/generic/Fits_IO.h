@@ -12,12 +12,33 @@
  * who             when      what
  * --------------  --------  ----------------------------------------
  * Allan Brighton  05/10/95  Created
+ * Peter W. Draper 10/01/00  Added getFitsFile member to allow access
+ *                           to fitsio file handle (used to access
+ *                           HDUs in derived/related classes). 
+ * Peter W. Draper 04/02/00  Changed constness of write so that
+ *                           non-const member can be used within this
+ *                           member. 
+ *                 15/08/00  Made write virtual so it can be overriden.
+ * pbiereic        17/02/03  Revised byte-order issues
+ * Peter W. Draper 13/06/05  Made setHDU virtual so it can be overriden.
+ *                 28/11/05  Made copy virtual so it can be overridden.
+ *                 14/12/05  Moved setHDU and copy to the ImageIORep base
+ *                           class so that CompoundImageData does not
+ *                           need knowledge of this class (so that other
+ *                           ImageIORep implementations can be used in
+ *                           CompoundImages).
+ *                 01/03/07  Added putcard member to write a header card
+ *                           without decomposition to kvc.
  * pbiereic        17/02/03  Revised byte-order issues
  * abrighto        02/01/05  Renamed .h file to avoid conflict with cfitsio's 
  *                           "fitsio.h" on case-ignoring file systems, such as 
  *                           Mac OSX.
+ *                 16/03/09  Added getComment function.
+ * Peter W. Draper 29/30/09  Added length_ to support check of opened file
+ *                           length.
  * pbiereic        12/08/07  added support for data types double and long long int
  * pbiereic        07/09/07  added support for tiled-image compressed files
+ * Peter W. Draper 06/06/14  Added getComments function.
  */
 
 #include <cstdio>
@@ -32,15 +53,7 @@
  */
 class FitsIO : public ImageIORep {
 private:
-    fitsfile* fitsio_;		// handle to use for cfitsio C library routines
-    static FitsIO* fits_;	// current class ptr for reallocFile callback
-
-    Mem primaryHeader_;		// the primary header, if there is more than one HDU
-
-    Mem mergedHeader_;		// the primary header merged with the current extension
-                                // header, if applicable (The primary header is appended
-                                // after the extension header).
-    
+   
     // set wcslib header length for searching
     static void set_header_length(const Mem& header);
     void set_header_length() const;
@@ -54,6 +67,18 @@ private:
     static void* reallocFile(void* p, size_t newsize);
 
 protected:   
+    //  PWD: Move here so that derived classes can manipulate (needed to get
+    //  at HDU functions from ther  
+    fitsfile* fitsio_;		// handle to use for cfitsio C library routines
+    static FitsIO* fits_;	// current class ptr for reallocFile callback
+    static size_t length_;	// current mapped length for reallocFile callback
+
+    Mem primaryHeader_;		// the primary header, if there is more than one HDU
+
+    Mem mergedHeader_;		// the primary header merged with the current extension
+                                // header, if applicable (The primary header is appended
+                                // after the extension header).
+ 
     // Check that this object represents a FITS file (and not just some kind of memory)
     // and return 0 if it does. If not, return an error message.
     int checkFitsFile();
@@ -100,7 +125,7 @@ public:
     ~FitsIO();
 
     // Return a copy of this object that shares the data, but can have a different current HDU
-    FitsIO* copy();
+    virtual FitsIO* copy();
 
     // initialize world coordinates (based on the image header)
     int wcsinit();
@@ -113,7 +138,7 @@ public:
     static FitsIO* read(const char* filename, int memOptions = 0);
 
     // write the data to a FITS file 
-    int write(const char *filename) const;
+    int write(const char *filename);
 
     // compress or decompress the given file and return the new filename
     // see comments in source file for details.
@@ -152,6 +177,12 @@ public:
     // find and return the value for the given FITS keyword, or NULL if not found
     char* get(const char* keyword) const;
 
+    // find and return the comment for the given FITS keyword, or NULL if not found
+    char* getComment(const char* keyword) const;
+
+    // find and return the next COMMENT value or NULL if not found
+    char* getComments() const;
+
     // same as get(const char*), but you supply the buffer to hold the result
     char* get(const char* keyword, char* buf, int bufsz) const;
 
@@ -181,6 +212,8 @@ public:
     int put(const char* keyword, int val, const char* comment = NULL);
     int put(const char* keyword, const char* val, const char* comment = NULL);
 
+    //  Insert a formatted header card.
+    int putcard(const char* card);
     
     // -- HDU access --
     
@@ -195,7 +228,7 @@ public:
     int getHDUNum();
 
     // Move to the specified HDU and make it the current one
-    int setHDU(int num);
+    virtual int setHDU(int num);
 
     // Delete the given HDU
     int deleteHDU(int num);
@@ -210,7 +243,7 @@ public:
     char* getTableHead(int col);
 
     // Return the value in the current FITS table at the given row and column
-    char* getTableValue(long row, int col);
+    char* getTableValue(long row, int col, double scale = 1.0);
 
     // get the contents of the given column as an array of doubles
     int getTableColumn(int col, double* values, int numValues);

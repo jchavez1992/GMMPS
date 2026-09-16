@@ -13,8 +13,12 @@
  * pbiereic        10/08/07  RtdFITSCube::writeFITSHeader: using ISO date string (VLTSW20070156)
  */
 
-#include <ctime>
+/*#include <ctime>*/
+#include <strings.h>
+#include <sys/types.h>
+#include <time.h>
 #include "RtdRPFile.h"
+
 
 static int cnt = 0;         // Shared memory counter
 

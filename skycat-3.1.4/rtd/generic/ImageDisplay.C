@@ -14,7 +14,10 @@
  * Peter W. Draper 04/03/98  Added putpixel member. Fixed allocation
  *                           of data to bytes_per_line*width when not
  *                           using shared memory. 
-  */
+ *                 18/06/03  Some changes to attempt cleanup when
+ *                           shared memory cannot be attached (Solaris
+ *                           limit is 6 segments!).
+ */
 static const char* const rcsId="@(#) $Id: ImageDisplay.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 // #define DEBUG
@@ -38,13 +41,13 @@ static const char* const rcsId="@(#) $Id: ImageDisplay.C,v 1.1.1.1 2009/03/31 14
 
 #ifdef NEED_SHM_PROTO
 // missing prototypes (on SunOS at least)
-extern "C" {
+/*extern "C" {
     // should be in sys/shm.h
     void *shmat(int shmid, const void* shmaddr, int shmflg);
     int shmdt(const void* shmaddr);
     int shmget(key_t, size_t, int);
     int shmctl(int shmid, int cmd, shmid_ds *buf);
-}
+}*/
 #endif
 
 
@@ -186,6 +189,8 @@ int ImageDisplay::updateShm(int width, int height)
     shmInfo_.shmaddr = (char *) shmat(shmInfo_.shmid, 0, 0);
     if (shmInfo_.shmaddr == ((char *) -1)) {
 	XDestroyImage(xImage_);
+        shmctl(shmInfo_.shmid, IPC_RMID, 0);
+        shmdt(shmInfo_.shmaddr);
 	xImage_ = NULL;
 #ifdef DEBUG
 	if (verbose_)
@@ -200,7 +205,10 @@ int ImageDisplay::updateShm(int width, int height)
 
     // check for X errors
     if (errorHandler.errors()) {
-	XDestroyImage(xImage_);
+        XShmDetach(display_, &shmInfo_);
+        XDestroyImage(xImage_);
+        shmctl(shmInfo_.shmid, IPC_RMID, 0);
+        shmdt(shmInfo_.shmaddr);
 	xImage_ = NULL;
 #ifdef DEBUG
 	if (verbose_)
@@ -293,4 +301,3 @@ void ImageDisplay::clear(unsigned long val)
 	}
     }
 }
-

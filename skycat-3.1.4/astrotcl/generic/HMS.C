@@ -3,32 +3,40 @@
  * $Id: HMS.C,v 1.1.1.1 2009/03/31 14:11:53 cguirao Exp $
  *
  * HMS.C - method definitions for class HMS
- * 
+ *
  * See the man page for a complete description.
- * 
+ *
  * who             when       what
  * --------------  --------   ----------------------------------------
  * Allan Brighton  26 Sep 95  Created
+ * Peter W. Draper 27 Jan 03  Added extra_precision flags for milli-arcsec
+ *                 08 Aug 08  Use libwcs dec2str and ra2str functions in the
+ *                            print methods. Previous version wasn't careful
+ *                            enough at the boundary conditions (given the
+ *                            fraction part of the arcseconds value, which
+ *                            can round up).
  */
 static const char* const rcsId="@(#) $Id: HMS.C,v 1.1.1.1 2009/03/31 14:11:53 cguirao Exp $";
-
 
 #include <cstdio>
 #include <cstring>
 #include <cmath>
 #include "error.h"
 #include "HMS.h"
+#include "fitshead.h"
 
+//  Default precision.
+int HMS::extra_precision = 0;
 
-/*  
- * constructor - from H:M:S.sss, calculate double value 
+/*
+ * constructor - from H:M:S.sss, calculate double value
  * (note: hours is taken as double incase of "-00:mm:ss"
  */
 HMS::HMS(double hours, int min, double sec)
     : hours_(int(hours)), min_(min), sec_(sec), show_sign_(0)
 {
     val_ = (sec/60.0 + min)/60.0;
-    
+
     double z = -0.0;  // check also for neg zero
     if (hours < 0.0 || memcmp(&z, &hours, sizeof(double)) == 0) {
 	val_ = hours_ - val_;
@@ -36,13 +44,13 @@ HMS::HMS(double hours, int min, double sec)
 	sign_ = '-';
     }
     else {
-	val_ = hours_ + val_; 
+	val_ = hours_ + val_;
 	sign_ = '+';
     }
 }
-   
 
-/*  
+
+/*
  * constructor - from decimal value, calculate H:M:S.sss
  */
 HMS::HMS(double val)
@@ -57,7 +65,12 @@ HMS::HMS(double val)
 	sign_ = '+';
     }
 
-    dd = v + 0.0000000001;
+    if ( extra_precision ) {
+       dd = v + 0.000000000001;
+    }
+    else {
+       dd = v + 0.0000000001; 
+    } 
     hours_ = (int)dd;
     md = (dd - hours_) * 60.;
     min_ = (int)md;
@@ -91,7 +104,7 @@ HMS::HMS(const char* s, int hflag, int* dflag)
 	if (hours == 0.0 && strchr(s, '-'))
 	    hours = -0.0;
 	*this = HMS(hours, min, sec);
-    } 
+    }
     else if (n == 1) {
 	if (sscanf(s, "%lf", &val) == 1) {
 	    if (hflag && strchr(s, '.')) {
@@ -117,32 +130,40 @@ HMS::HMS(const char* s, int hflag, int* dflag)
  */
 void HMS::print(char* buf) const
 {
-    // allan: 22.4.98: make sure seconds are formatted with leading zero
-    // (%02.2f doesn't do it)
-    char secs[8];
-    if (show_sign_) {  // show 2 digits precision for dec, 3 for ra
-	if (sec_ < 10.) {  
-	    sprintf(secs, "0%2.2f", sec_);
-	}
-	else {
-	    sprintf(secs, "%2.2f", sec_);
-	}
+    if ( extra_precision ) {
+        print_extra_precise_( buf );
     }
     else {
-	if (sec_ < 10.) {  
-	    sprintf(secs, "0%2.3f", sec_);
-	}
-	else {
-	    sprintf(secs, "%2.3f", sec_);
-	}
+        print_normal_precise_( buf );
     }
+}
 
-    if (show_sign_ || sign_ == '-') {
-	sprintf(buf, "%c%02d:%02d:%s", sign_, hours_, min_, secs);
+//  Show 2 digits prec for dec, 3 for ra
+void HMS::print_normal_precise_( char *buf ) const
+{
+    char lbuf[32];
+
+    if ( show_sign_ ) {
+        dec2str( lbuf, 32, val_, 2 );
     }
     else {
-	sprintf(buf, "%02d:%02d:%s", hours_, min_, secs);
+        ra2str( lbuf, 32, val_ * 15.0, 3 );
     }
+    strncpy( buf, lbuf, 32 );
+}
+
+//  Show 4 digits prec for dec, 5 for ra
+void HMS::print_extra_precise_( char *buf ) const
+{
+    char lbuf[32];
+
+    if ( show_sign_ ) {
+        dec2str( lbuf, 32, val_, 4 );
+    }
+    else {
+        ra2str( lbuf, 32, val_ * 15.0, 5 );
+    }
+    strncpy( buf, lbuf, 32 );
 }
 
 
@@ -150,7 +171,7 @@ void HMS::print(char* buf) const
  * write this object to the given stream in the format
  * H:M:S.sss
  */
-ostream& operator<<(ostream& os, const HMS& hms) 
+ostream& operator<<(ostream& os, const HMS& hms)
 {
     char buf[80];
     hms.print(buf);
@@ -163,7 +184,7 @@ ostream& operator<<(ostream& os, const HMS& hms)
  * read an HMS object from the given stream in the format
  * H:M:S.sss or H M S
  */
-istream& operator>>(istream& is, HMS& hms) 
+istream& operator>>(istream& is, HMS& hms)
 {
     char c;
     double hours = 0;

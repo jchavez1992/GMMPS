@@ -18,6 +18,9 @@
  * --------------  --------  ----------------------------------------
  * Allan Brighton  05/10/95  Created
  * P.Biereichel    30/06/97  Changed parameters in getValues() for pixel table
+ * Peter W. Draper 12/07/99  Added getBlank();
+ *                 16/04/08  Added growAndShrink()
+ *                 19/06/09  Added parseBlank()
  */
 
 #define SAMP_METHOD_MAX              0  /* max value of all pixels in a NxN box (default) */
@@ -68,6 +71,9 @@ void rawToXImage(int x0, int y0, int x1, int y1, int dest_x, int dest_y);
 void grow(int x0, int y0, int x1, int y1, int dest_x, int dest_y);
 void shrink(int x0, int y0, int x1, int y1, int dest_x, int dest_y);
 
+// version of grow that can deal with a shrinked axis
+void growAndShrink(int x0, int y0, int x1, int y1, int dest_x, int dest_y);
+
 // automatically set the cut levels using median filtering
 void medianFilter();
 
@@ -82,3 +88,9 @@ void initBlankPixel();
 // visible image area 
 void getHistogram(ImageDataHistogram&);
 
+// return the blank value.
+int haveBlank() {return haveBlank_;}
+double getBlank() {return (double) blank_;}
+
+// set blank value from a string
+int parseBlank(const char* value);

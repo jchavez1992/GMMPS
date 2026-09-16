@@ -7,7 +7,7 @@
 # who         when       what
 # --------   ---------   ----------------------------------------------
 # A.Brighton 26 Jun 98   created
-
+# P.W.Draper 05 Sep 08   modified some of the text descriptions
 
 itk::usual ProxyDialog {}
 
@@ -38,8 +38,8 @@ itcl::class cat::ProxyDialog {
 		  -width 6.5i \
 		  -padx 1m \
 		  -anchor c \
-		  -text "If your host is behind a firewall, you may need to use a \
-                         proxy server to access remote catalogs via HTTP.\
+		  -text "You may need to use a proxy server to access \
+                         remote catalogs via HTTP.\
                          Please enter the hostname and port number for the proxy \
                          server:"] \
 	    -side top -anchor w -pady 3m
@@ -47,13 +47,13 @@ itcl::class cat::ProxyDialog {
 	pack [set f [frame $w_.proxyf]] \
 	    -side top -anchor w -fill x -pady 2m
 	
-	pack [LabelEntry $w_.proxy \
+	pack [util::LabelEntry $w_.proxy \
 		  -text "HTTP Proxy server:" \
 		  -anchor e \
                   -valuewidth 32] \
 	    -side left -fill x -in $f
 
-	pack [LabelEntry $w_.port \
+	pack [util::LabelEntry $w_.port \
 		 -text "Port:" \
 		 -anchor e \
 		 -valuewidth 8] \
@@ -68,7 +68,7 @@ itcl::class cat::ProxyDialog {
                          server is needed (separate names by space or comma):"] \
 	    -side top -anchor w -pady 3m
 	
-	pack [LabelEntry $w_.noproxy \
+	pack [util::LabelEntry $w_.noproxy \
 		  -text "No proxy for:" \
 		  -anchor e] \
 	    -side top -fill x -anchor w -pady 2m
@@ -87,7 +87,7 @@ itcl::class cat::ProxyDialog {
 		 -text "Clear" \
 		 -command [code $this clear]] \
 	    [button $w_.cancel \
-		 -text "cancel" \
+		 -text "Cancel" \
 		 -command [code $this cancel]] \
 	    -side left -expand 1 -pady 2m -in $w_.buttons
 

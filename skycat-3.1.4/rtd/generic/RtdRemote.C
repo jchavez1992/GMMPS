@@ -15,6 +15,11 @@
  *                           loses this values occasionally. 
  * Allan Brighton  18/03/99  Added #ifdef in RtdRemote.h, since Tcl_File
  *                           is no longer supported in tcl8...
+ * Peter W. Draper 11/05/99  Added changes to getsockname calls so
+ *                           that size_t or int are used for addrSize (this
+ *                           is needed for OSF/1). 
+ *                 16/12/05  Change all SOCKLEN_T use to socklen_t. The logic
+ *                           that guarantees a value is set in define.h.
  */
 static const char* const rcsId="@(#) $Id: RtdRemote.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
@@ -23,6 +28,7 @@ static const char* const rcsId="@(#) $Id: RtdRemote.C,v 1.1.1.1 2009/03/31 14:11
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <fstream>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -44,7 +50,6 @@ static const char* const rcsId="@(#) $Id: RtdRemote.C,v 1.1.1.1 2009/03/31 14:11
 #endif
 #include "RtdRemote.h"
 
-
 // this call changed in tcl8
 #if (TCL_MAJOR_VERSION >= 8)
 #define RTD_TCL_GETFILE_(x) x
@@ -54,8 +59,8 @@ static const char* const rcsId="@(#) $Id: RtdRemote.C,v 1.1.1.1 2009/03/31 14:11
 
 // should be in sys/shm.h
 #ifdef NEED_SHM_PROTO
-extern "C" void *shmat(int shmid, const void* shmaddr, int shmflg);
-extern "C" int shmdt(const void* shmaddr);
+/*extern "C" void *shmat(int shmid, const void* shmaddr, int shmflg);
+extern "C" int shmdt(const void* shmaddr);*/
 #endif
 
 #ifdef NEED_SOCKET_PROTO
@@ -188,7 +193,8 @@ RtdRemote::RtdRemote(Tcl_Interp* interp, int port, int verbose)
 
     // clear out address structures 
     sockaddr_in addr;	// for local socket address    
-    int addrSize = sizeof(addr);
+    socklen_t addrSize = (socklen_t) sizeof(addr);
+
     memset ((char *)&addr, 0, addrSize);
 
     addr.sin_family = AF_INET;
@@ -249,7 +255,7 @@ RtdRemote::~RtdRemote()
  */
 int RtdRemote::makeStatusFile(sockaddr_in& addr)
 {
-  socklen_t addrSize = (socklen_t)sizeof(sockaddr_in);
+    socklen_t addrSize = (socklen_t)sizeof(sockaddr_in);
     if (getsockname(socket_, (struct sockaddr *)&addr, &addrSize) == -1) 
 	return sys_error("getsockname");
     
@@ -434,7 +440,7 @@ int RtdRemote::clientEvent(Client* clientPtr)
 
 #ifdef DEBUG
     if (verbose_)
-	printf("RtdRemote: Bytes readable: %d\n",readable);
+	printf("RtdRemote: bytes readable: %d\n",readable);
 #endif
 
     if (readable <= 0) {
@@ -452,7 +458,9 @@ int RtdRemote::clientEvent(Client* clientPtr)
 #endif
 
     int status = evalClientCmd(buf);
-    return sendToClient(clientPtr->socket, status, strlen(interp_->result), interp_->result);
+    return sendToClient(clientPtr->socket, status, 
+                        strlen(Tcl_GetStringResult(interp_)), 
+                        Tcl_GetStringResult(interp_));
 }
     
 

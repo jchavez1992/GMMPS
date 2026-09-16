@@ -68,7 +68,7 @@ TCL_SHLIB_CFLAGS='-fno-common'
 TCL_CFLAGS_WARNING='-Wall -Wno-implicit-int -fno-strict-aliasing'
 
 # Extra flags to pass to cc:
-TCL_EXTRA_CFLAGS=''
+TCL_EXTRA_CFLAGS='-O2 -arch arm64'
 
 # Base command to use for combining object files into a shared library:
 TCL_SHLIB_LD='cc -dynamiclib ${LDFLAGS} -Wl,-single_module'
@@ -90,7 +90,7 @@ TCL_DL_LIBS=''
 
 # Flags to pass to the compiler when linking object files into
 # an executable tclsh or tcltest binary.
-TCL_LD_FLAGS=' -prebind -headerpad_max_install_names -Wl,-search_paths_first'
+TCL_LD_FLAGS='-arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first'
 
 # Flags to pass to ld, such as "-R /usr/local/tcl/lib", that tell the
 # run-time dynamic linker where to look for shared libraries such as

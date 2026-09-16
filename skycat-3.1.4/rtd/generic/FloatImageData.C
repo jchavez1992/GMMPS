@@ -12,6 +12,9 @@
  * --------------  --------  ----------------------------------------
  * Allan Brighton  05/10/95  Created
  * Peter W. Draper 15/03/99  Modified to use LOOKUP_BLANK for blank pixels.
+ *                 29/10/07  Add colorScale so that a bin for NaN pixels
+ *                           is always available (shared with blank).
+ * Peter W. Draper 23/06/09  Added parseBlank to get blank value in this type.
  */
 
 #include <cstdlib>
@@ -33,8 +36,9 @@
  */
 short FloatImageData::scaleToShort(float d) 
 {
-    if (isnan(d))
+    if ( isnan(d) ) {
 	return LOOKUP_BLANK;
+    }
 
     //  Blank pixel value is is special lookup table position. Note
     //  Starlink uses a special value for floating point too (not a NaN).
@@ -82,8 +86,32 @@ void FloatImageData::initShortConversion()
 
     scaledLowCut_ = scaleToShort(lowCut_);
     scaledHighCut_ = scaleToShort(highCut_);
-    if (haveBlank_)
-	scaledBlankPixelValue_ = LOOKUP_BLANK;
+    scaledBlankPixelValue_ = LOOKUP_BLANK;
+}
+
+/*
+ * Define a scaledBlankPixelValue_ so that we have a blank bin for NaN's
+ * not just blanks (both use same color).
+ */
+void FloatImageData::colorScale(int ncolors, unsigned long* colors)
+{
+    ImageData::colorScale(ncolors, colors);
+
+    // Always set value for blank pixel in case we have NaNs, not just
+    // when blank is set.
+    lookup_.setPixelColor( scaledBlankPixelValue_, color0_ );
+}
+
+/*
+ * Set the blank value from a given string. Return 1 if successful.
+ */
+int FloatImageData::parseBlank(const char* value) {
+    double d;
+    int n = sscanf(value, "%lf", &d);
+    if ( n > 0 ) {
+        blank_ = (float) d;
+    }
+    return n;
 }
 
 

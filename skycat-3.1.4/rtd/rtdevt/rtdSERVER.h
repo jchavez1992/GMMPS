@@ -18,7 +18,9 @@
 #define MAX_CLNT 300  // max. number of clients which can connect
 
 #include "rtdCLNT.h"  // includes almost all we need
+#include "rtdLOG.h"
 #include <time.h>
+#include <sys/select.h>
 
 // This class is handling semaphores, not rtdCLNT
 

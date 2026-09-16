@@ -35,7 +35,7 @@ itcl::class rtd::RtdImageBias {
     # Method to add the menu bar to the top of the dialogue.
     
     protected method add_menubar {} {
-        TopLevelWidget::add_menubar
+        util::TopLevelWidget::add_menubar
 	
         # File menu
         set m [add_menubutton File]
@@ -110,7 +110,7 @@ itcl::class rtd::RtdImageBias {
                 -command [code $this onOff]
         } { keep -state }
 
-        blt::table $itk_component(bias) \
+        blt::blttable $itk_component(bias) \
             $itk_component(onoff)         0,0 -pady 3 \
             $itk_component(copy)          0,1 -pady 3
 
@@ -121,12 +121,12 @@ itcl::class rtd::RtdImageBias {
 		label $w_.label$comp \
 			-anchor c
 	    }
-	    blt::table $itk_component(status) \
+	    blt::blttable $itk_component(status) \
 		    $itk_component(label$comp)      0,$i
-	    blt::table configure $itk_component(status) c$i -resize none
+	    blt::blttable configure $itk_component(status) c$i -resize none
 	    incr i
 	}
-	blt::table configure $itk_component(status) c5 -resize expand
+	blt::blttable configure $itk_component(status) c5 -resize expand
 
 	foreach el "Load Copy Clear" {
 	    set s [string tolower $el]
@@ -205,7 +205,7 @@ itcl::class rtd::RtdImageBias {
 	    }
             $itk_component(filename$i) component entry config -highlightthickness 0 -takefocus 0
 
-	    blt::table $itk_component(status) \
+	    blt::blttable $itk_component(status) \
 		    $itk_component(labelnr$i)     $n,0 \
 		    $itk_component(select$i)      $n,1 \
 		    $itk_component(choose$i)      $n,2 \
@@ -224,7 +224,7 @@ itcl::class rtd::RtdImageBias {
 	foreach el "Low High" {
 	    set s [string tolower $el]
 	    itk_component add $s {
-		LabelEntry $w_.$s \
+		util::LabelEntry $w_.$s \
 			-text "$el:" \
 			-command [code $this set_cut_levels] \
 			-labelfont $itk_option(-labelfont) \
@@ -244,7 +244,7 @@ itcl::class rtd::RtdImageBias {
                     -command [code $this auto_set_cut_levels]       
 	}
 
-        blt::table $itk_component(cuts) \
+        blt::blttable $itk_component(cuts) \
 		$itk_component(labelcut)     0,0 -columnspan 3 -pady 4 \
 		$itk_component(low)          1,0 -anchor w -ipady 3 -pady 2 \
 		$itk_component(high)         1,1 -anchor w -ipady 3 -pady 2 \
@@ -257,7 +257,7 @@ itcl::class rtd::RtdImageBias {
 		    -command [code $this close]
 	}
 
-        blt::table $itk_component(buttons) \
+        blt::blttable $itk_component(buttons) \
             $itk_component(close)        0,0 -pady 3
 
     }
@@ -522,10 +522,10 @@ itcl::class rtd::RtdImageBias {
     }
 
     # font used for labels
-    itk_option define -labelfont labelFont LabelFont -Adobe-helvetica-bold-r-normal-*-12*
+    itk_option define -labelfont labelFont LabelFont TkDefaultFont
 
     # font used for values
-    itk_option define -valuefont valueFont ValueFont -Adobe-helvetica-medium-r-normal-*-12*
+    itk_option define -valuefont valueFont ValueFont TkDefaultFont
 
     # set the width for  displaying labels and values
     itk_option define -labelwidth labelWidth LabelWidth 4

@@ -16,6 +16,8 @@ if test -f $cf ; then
     AC_SUBST(BLT_LIB_SPEC)
     AC_SUBST(tclutil_SRC_DIR)
     AC_SUBST(tclutil_PKG_OBJECTS)
+    AC_SUBST(CFITSIO_LIB_DIR)
+    AC_SUBST(CFITSIO_LIB_SPEC)
 else
     AC_MSG_ERROR([$cf doesn't exist])
 fi
@@ -49,7 +51,7 @@ changequote(<<, >>)
 csources=`cd $srcdir; echo generic/*.[Cc] rtdevt/rtdImageEvent.c rtdevt/rtdSem.c`
 changequote([, ])
 
-rtd_headers=`cd $srcdir; echo generic/*.h rtdevt/rtdImageEvent.h rtdevt/rtdSem.h`
+rtd_headers=`cd $srcdir; echo generic/*.h generic/*.icc rtdevt/rtdImageEvent.h rtdevt/rtdSem.h`
 astrotcl_headers=`cd $srcdir; echo ../astrotcl/{generic,press,libwcs,cfitsio}/*.h`
 tclutil_headers=`cd $srcdir; echo ../tclutil/generic/*.h`
 
@@ -100,7 +102,8 @@ AC_CHECK_SIZEOF(long, 4)
 
 AC_MSG_CHECKING("do we have union semun defined")
 AC_TRY_COMPILE(
-[#include <sys/ipc.h>
+[#include <sys/types.h>
+#include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
 ], [
@@ -113,12 +116,16 @@ AC_MSG_RESULT("yes")
 AC_DEFINE(HAVE_NET_SERVICES)
 AC_CHECK_HEADERS(sys/filio.h)
 
+#  Check if we need (or can use) the socklen_t type.
+AC_CHECK_TYPES([socklen_t],,,[#include <sys/socket.h>])
+
 #------------------------------------------------------------------------
 AC_LANG(C++)
 AC_MSG_CHECKING([fd_set])
 AC_TRY_COMPILE([
 #include <sys/types.h>
-#include <sys/time.h>],
+#include <sys/time.h>
+#include <unistd.h>],
 	[fd_set readFds; select(32, &readFds, 0, 0, 0);], test_ok=yes, test_ok=no)
 if test $test_ok = yes; then
 	AC_DEFINE(HAVE_SELECT_FD_SET, 1, 
@@ -126,6 +133,41 @@ if test $test_ok = yes; then
 fi
 AC_MSG_RESULT($test_ok)
 
+#------------------------------------------------------------------------
+#  Check if we require additional libraries to support C++ shareable
+#  libraries.
+system=`uname -s`-`uname -r`
+SHLIB_LD_CXX_LIBS=""
+export SHLIB_LD_CXX_LIBS
+case $system in
+   SunOS-5*)
+      SHLIB_LD_CXX_LIBS="-lCrun -lCstd"
+   ;;
+   OSF*)
+      SHLIB_LD_CXX_LIBS="-lcxx -lcxxstd"
+   ;;
+esac
+AC_SUBST(SHLIB_LD_CXX_LIBS)
+
+#-------------------------------------------------------------------------
+#  The cxx C++ compiler under Tru64 UNIX needs the special
+#  CXXFLAGS "-std gnu -D__USE_STD_IOSTREAM=1". These allow the standard 
+#  library streams headers to work and to generate templates that do 
+#  not require special handling throughout skycat directories (normally 
+#  template object files are created in various cxx_repository subdirectories,
+#  this way the object files are kept embedded the usual object files, see 
+#  the cxx man page for details).
+#-------------------------------------------------------------------------
+export CXXFLAGS
+case $system in
+   OSF*) 
+      case "x$CXX" in
+         xcxx*)
+            CXXFLAGS="$CXXFLAGS -g3 -std gnu -D__USE_STD_IOSTREAM=1"
+         ;;
+      esac
+  ;;
+esac
 ])
 
 

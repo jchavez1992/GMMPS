@@ -30,8 +30,8 @@ Kernel configured for up to 8 processors.
 Processor type: arm64e (ARM64E)
 Processors active: 0 1 2 3 4 5 6 7
 Primary memory available: 16.00 gigabytes
-Default processor set: 645 tasks, 3004 threads, 8 processors
-Load average: 3.23, Mach factor: 4.76
+Default processor set: 607 tasks, 3005 threads, 8 processors
+Load average: 3.88, Mach factor: 4.11
 /bin/machine           = unknown
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
@@ -66,7 +66,6 @@ configure:1579: result: found /Users/joy.chavez/Desktop/Work/gmmps_add_480/tcltk
 configure:1585: checking for existence of /Users/joy.chavez/Desktop/Work/gmmps_add_480/tcltk-8.4.1/tcl8.4.11/unix/tclConfig.sh
 configure:1589: result: loading
 configure:1740: checking for gcc
-configure:1756: found /usr/bin/gcc
 configure:1766: result: gcc
 configure:2010: checking for C compiler version
 configure:2013: gcc --version </dev/null >&5
@@ -86,7 +85,7 @@ clang: error: argument to '-V' is missing (expected 1 value)
 clang: error: no input files
 configure:2026: $? = 1
 configure:2049: checking for C compiler default output file name
-configure:2052: gcc    conftest.c  >&5
+configure:2052: gcc -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:2055: $? = 0
 configure:2101: result: a.out
 configure:2106: checking whether the C compiler works
@@ -96,15 +95,15 @@ configure:2132: result: yes
 configure:2139: checking whether we are cross compiling
 configure:2141: result: no
 configure:2144: checking for suffix of executables
-configure:2146: gcc -o conftest    conftest.c  >&5
+configure:2146: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:2149: $? = 0
 configure:2174: result: 
 configure:2180: checking for suffix of object files
-configure:2201: gcc -c   conftest.c >&5
+configure:2201: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:2204: $? = 0
 configure:2226: result: o
 configure:2230: checking whether we are using the GNU C compiler
-configure:2254: gcc -c   conftest.c >&5
+configure:2254: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:2260: $? = 0
 configure:2264: test -z 
 			 || test ! -s conftest.err
@@ -122,7 +121,7 @@ configure:2329: test -s conftest.o
 configure:2332: $? = 0
 configure:2343: result: yes
 configure:2360: checking for gcc option to accept ANSI C
-configure:2430: gcc  -c   conftest.c >&5
+configure:2430: gcc  -c -O2 -arch arm64  conftest.c >&5
 conftest.c:16:14: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C2x [-Wdeprecated-non-prototype]
    16 | static char *e (p, i)
       |              ^
@@ -134,7 +133,7 @@ configure:2443: $? = 0
 configure:2446: test -s conftest.o
 configure:2449: $? = 0
 configure:2467: result: none needed
-configure:2485: gcc -c   conftest.c >&5
+configure:2485: gcc -c -O2 -arch arm64  conftest.c >&5
 conftest.c:2:3: error: unknown type name 'choke'
     2 |   choke me
       |   ^
@@ -196,14 +195,14 @@ configure:3045: result: ranlib
 configure:3067: checking for egrep
 configure:3077: result: grep -E
 configure:3082: checking for ANSI C header files
-configure:3107: gcc -c   conftest.c >&5
+configure:3107: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3113: $? = 0
 configure:3117: test -z 
 			 || test ! -s conftest.err
 configure:3120: $? = 0
 configure:3123: test -s conftest.o
 configure:3126: $? = 0
-configure:3215: gcc -o conftest    conftest.c  >&5
+configure:3215: gcc -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 conftest.c:26:7: error: call to undeclared library function 'exit' with type 'void (int) __attribute__((noreturn))'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
    26 |       exit(2);
       |       ^
@@ -242,7 +241,7 @@ configure: failed program was:
 | }
 configure:3238: result: no
 configure:3262: checking for sys/types.h
-configure:3278: gcc -c   conftest.c >&5
+configure:3278: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3284: $? = 0
 configure:3288: test -z 
 			 || test ! -s conftest.err
@@ -251,7 +250,7 @@ configure:3294: test -s conftest.o
 configure:3297: $? = 0
 configure:3308: result: yes
 configure:3262: checking for sys/stat.h
-configure:3278: gcc -c   conftest.c >&5
+configure:3278: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3284: $? = 0
 configure:3288: test -z 
 			 || test ! -s conftest.err
@@ -260,7 +259,7 @@ configure:3294: test -s conftest.o
 configure:3297: $? = 0
 configure:3308: result: yes
 configure:3262: checking for stdlib.h
-configure:3278: gcc -c   conftest.c >&5
+configure:3278: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3284: $? = 0
 configure:3288: test -z 
 			 || test ! -s conftest.err
@@ -269,7 +268,7 @@ configure:3294: test -s conftest.o
 configure:3297: $? = 0
 configure:3308: result: yes
 configure:3262: checking for string.h
-configure:3278: gcc -c   conftest.c >&5
+configure:3278: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3284: $? = 0
 configure:3288: test -z 
 			 || test ! -s conftest.err
@@ -278,7 +277,7 @@ configure:3294: test -s conftest.o
 configure:3297: $? = 0
 configure:3308: result: yes
 configure:3262: checking for memory.h
-configure:3278: gcc -c   conftest.c >&5
+configure:3278: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3284: $? = 0
 configure:3288: test -z 
 			 || test ! -s conftest.err
@@ -287,7 +286,7 @@ configure:3294: test -s conftest.o
 configure:3297: $? = 0
 configure:3308: result: yes
 configure:3262: checking for strings.h
-configure:3278: gcc -c   conftest.c >&5
+configure:3278: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3284: $? = 0
 configure:3288: test -z 
 			 || test ! -s conftest.err
@@ -296,7 +295,7 @@ configure:3294: test -s conftest.o
 configure:3297: $? = 0
 configure:3308: result: yes
 configure:3262: checking for inttypes.h
-configure:3278: gcc -c   conftest.c >&5
+configure:3278: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3284: $? = 0
 configure:3288: test -z 
 			 || test ! -s conftest.err
@@ -305,7 +304,7 @@ configure:3294: test -s conftest.o
 configure:3297: $? = 0
 configure:3308: result: yes
 configure:3262: checking for stdint.h
-configure:3278: gcc -c   conftest.c >&5
+configure:3278: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3284: $? = 0
 configure:3288: test -z 
 			 || test ! -s conftest.err
@@ -314,7 +313,7 @@ configure:3294: test -s conftest.o
 configure:3297: $? = 0
 configure:3308: result: yes
 configure:3262: checking for unistd.h
-configure:3278: gcc -c   conftest.c >&5
+configure:3278: gcc -c -O2 -arch arm64  conftest.c >&5
 configure:3284: $? = 0
 configure:3288: test -z 
 			 || test ! -s conftest.err
@@ -323,7 +322,7 @@ configure:3294: test -s conftest.o
 configure:3297: $? = 0
 configure:3308: result: yes
 configure:3330: checking if the compiler understands -pipe
-configure:3350: gcc -pipe -c   conftest.c >&5
+configure:3350: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:3356: $? = 0
 configure:3360: test -z 
 			 || test ! -s conftest.err
@@ -332,14 +331,14 @@ configure:3366: test -s conftest.o
 configure:3369: $? = 0
 configure:3371: result: yes
 configure:3388: checking whether byte ordering is bigendian
-configure:3415: gcc -pipe -c   conftest.c >&5
+configure:3415: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:3421: $? = 0
 configure:3425: test -z 
 			 || test ! -s conftest.err
 configure:3428: $? = 0
 configure:3431: test -s conftest.o
 configure:3434: $? = 0
-configure:3458: gcc -pipe -c   conftest.c >&5
+configure:3458: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:25:2: error: use of undeclared identifier 'not'
    25 |  not big endian
       |  ^
@@ -378,7 +377,7 @@ configure: failed program was:
 | }
 configure:3599: result: no
 configure:3627: checking for sin
-configure:3684: gcc -pipe -o conftest    conftest.c  >&5
+configure:3684: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 conftest.c:42:6: warning: incompatible redeclaration of library function 'sin' [-Wincompatible-library-redeclaration]
    42 | char sin ();
       |      ^
@@ -392,7 +391,7 @@ configure:3700: test -s conftest
 configure:3703: $? = 0
 configure:3715: result: yes
 configure:3723: checking for main in -lieee
-configure:3747: gcc -pipe -o conftest    conftest.c -lieee   >&5
+configure:3747: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c -lieee   >&5
 ld: library 'ieee' not found
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 configure:3753: $? = 1
@@ -425,7 +424,7 @@ configure: failed program was:
 | }
 configure:3779: result: no
 configure:3791: checking for main in -linet
-configure:3815: gcc -pipe -o conftest    conftest.c -linet   >&5
+configure:3815: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c -linet   >&5
 ld: library 'inet' not found
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 configure:3821: $? = 1
@@ -458,7 +457,7 @@ configure: failed program was:
 | }
 configure:3847: result: no
 configure:3863: checking net/errno.h usability
-configure:3875: gcc -pipe -c   conftest.c >&5
+configure:3875: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:52:10: fatal error: 'net/errno.h' file not found
    52 | #include <net/errno.h>
       |          ^~~~~~~~~~~~~
@@ -548,7 +547,7 @@ configure:3944: result: no
 configure:3979: checking for net/errno.h
 configure:3986: result: no
 configure:4018: checking for connect
-configure:4075: gcc -pipe -o conftest    conftest.c  >&5
+configure:4075: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:4081: $? = 0
 configure:4085: test -z 
 			 || test ! -s conftest.err
@@ -557,7 +556,7 @@ configure:4091: test -s conftest
 configure:4094: $? = 0
 configure:4106: result: yes
 configure:4381: checking for gethostbyname
-configure:4438: gcc -pipe -o conftest    conftest.c  >&5
+configure:4438: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:4444: $? = 0
 configure:4448: test -z 
 			 || test ! -s conftest.err
@@ -566,7 +565,7 @@ configure:4454: test -s conftest
 configure:4457: $? = 0
 configure:4469: result: yes
 configure:4553: checking dirent.h
-configure:4590: gcc -pipe -o conftest    conftest.c  >&5
+configure:4590: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c  >&5
 configure:4596: $? = 0
 configure:4600: test -z 
 			 || test ! -s conftest.err
@@ -575,7 +574,7 @@ configure:4606: test -s conftest
 configure:4609: $? = 0
 configure:4628: result: yes
 configure:4640: checking errno.h usability
-configure:4652: gcc -pipe -c   conftest.c >&5
+configure:4652: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4658: $? = 0
 configure:4662: test -z 
 			 || test ! -s conftest.err
@@ -590,7 +589,7 @@ configure:4721: result: yes
 configure:4756: checking for errno.h
 configure:4763: result: yes
 configure:4787: checking float.h usability
-configure:4799: gcc -pipe -c   conftest.c >&5
+configure:4799: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:4805: $? = 0
 configure:4809: test -z 
 			 || test ! -s conftest.err
@@ -605,7 +604,7 @@ configure:4868: result: yes
 configure:4903: checking for float.h
 configure:4910: result: yes
 configure:4934: checking values.h usability
-configure:4946: gcc -pipe -c   conftest.c >&5
+configure:4946: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:52:10: fatal error: 'values.h' file not found
    52 | #include <values.h>
       |          ^~~~~~~~~~
@@ -695,7 +694,7 @@ configure:5015: result: no
 configure:5050: checking for values.h
 configure:5057: result: no
 configure:5081: checking limits.h usability
-configure:5093: gcc -pipe -c   conftest.c >&5
+configure:5093: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:5099: $? = 0
 configure:5103: test -z 
 			 || test ! -s conftest.err
@@ -714,7 +713,7 @@ configure:5227: result: yes
 configure:5423: checking for string.h
 configure:5428: result: yes
 configure:5621: checking sys/wait.h usability
-configure:5633: gcc -pipe -c   conftest.c >&5
+configure:5633: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:5639: $? = 0
 configure:5643: test -z 
 			 || test ! -s conftest.err
@@ -729,7 +728,7 @@ configure:5702: result: yes
 configure:5737: checking for sys/wait.h
 configure:5744: result: yes
 configure:5768: checking dlfcn.h usability
-configure:5780: gcc -pipe -c   conftest.c >&5
+configure:5780: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:5786: $? = 0
 configure:5790: test -z 
 			 || test ! -s conftest.err
@@ -744,7 +743,7 @@ configure:5849: result: yes
 configure:5884: checking for dlfcn.h
 configure:5891: result: yes
 configure:5921: checking sys/param.h usability
-configure:5933: gcc -pipe -c   conftest.c >&5
+configure:5933: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:5939: $? = 0
 configure:5943: test -z 
 			 || test ! -s conftest.err
@@ -771,7 +770,7 @@ configure:6452: result: no
 configure:6480: checking system version (for dynamic loading)
 configure:6503: result: Darwin-23.6.0
 configure:6511: checking for dlopen in -ldl
-configure:6541: gcc -pipe -o conftest    conftest.c -ldl   >&5
+configure:6541: gcc -pipe -o conftest -O2 -arch arm64  -arch arm64 conftest.c -ldl   >&5
 configure:6547: $? = 0
 configure:6551: test -z 
 			 || test ! -s conftest.err
@@ -783,14 +782,14 @@ configure:6607: checking for ar
 configure:6623: found /opt/local/bin/ar
 configure:6633: result: ar
 configure:8721: checking for required early compiler flags
-configure:8744: gcc -pipe -c   conftest.c >&5
+configure:8744: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 configure:8750: $? = 0
 configure:8754: test -z 
 			 || test ! -s conftest.err
 configure:8757: $? = 0
 configure:8760: test -s conftest.o
 configure:8763: $? = 0
-configure:8848: gcc -pipe -c   conftest.c >&5
+configure:8848: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:26:15: error: variable has incomplete type 'struct stat64'
    26 | struct stat64 buf; int i = stat64("/", &buf);
       |               ^
@@ -836,7 +835,7 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:8891: gcc -pipe -c   conftest.c >&5
+configure:8891: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:27:15: error: variable has incomplete type 'struct stat64'
    27 | struct stat64 buf; int i = stat64("/", &buf);
       |               ^
@@ -885,7 +884,7 @@ configure: failed program was:
 | }
 configure:8933: result: none
 configure:8941: checking for 64-bit integer type
-configure:8965: gcc -pipe -c   conftest.c >&5
+configure:8965: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:26:1: error: use of undeclared identifier '__int64'
    26 | __int64 value = (__int64) 0;
       | ^
@@ -921,7 +920,7 @@ configure: failed program was:
 |   ;
 |   return 0;
 | }
-configure:9015: gcc -pipe -c   conftest.c >&5
+configure:9015: gcc -pipe -c -O2 -arch arm64  conftest.c >&5
 conftest.c:27:26: error: duplicate case value '1'
    27 |             case 1: case (sizeof(long long)==sizeof(long)): ;
       |                          ^
@@ -993,16 +992,16 @@ config.status:716: creating itclConfig.sh
 ac_cv_c_bigendian=no
 ac_cv_c_compiler_gnu=yes
 ac_cv_c_tclconfig=/Users/joy.chavez/Desktop/Work/gmmps_add_480/tcltk-8.4.1/tcl8.4.11/unix
-ac_cv_env_CC_set=
-ac_cv_env_CC_value=
-ac_cv_env_CFLAGS_set=
-ac_cv_env_CFLAGS_value=
+ac_cv_env_CC_set=set
+ac_cv_env_CC_value=gcc
+ac_cv_env_CFLAGS_set=set
+ac_cv_env_CFLAGS_value='-O2 -arch arm64'
 ac_cv_env_CPPFLAGS_set=
 ac_cv_env_CPPFLAGS_value=
 ac_cv_env_CPP_set=
 ac_cv_env_CPP_value=
-ac_cv_env_LDFLAGS_set=
-ac_cv_env_LDFLAGS_value=
+ac_cv_env_LDFLAGS_set=set
+ac_cv_env_LDFLAGS_value='-arch arm64'
 ac_cv_env_build_alias_set=
 ac_cv_env_build_alias_value=
 ac_cv_env_host_alias_set=
@@ -1056,7 +1055,7 @@ tcl_cv_type_64bit=none
 AR='ar'
 CC='gcc -pipe'
 CELIB_DIR=''
-CFLAGS=' ${CFLAGS_DEFAULT} ${CFLAGS_WARNING} ${SHLIB_CFLAGS}'
+CFLAGS='-O2 -arch arm64 ${CFLAGS_DEFAULT} ${CFLAGS_WARNING} ${SHLIB_CFLAGS}'
 CFLAGS_DEBUG='-g'
 CFLAGS_DEFAULT='-Os'
 CFLAGS_OPTIMIZE='-Os'
@@ -1075,9 +1074,9 @@ EXEEXT=''
 INSTALL_DATA='${INSTALL} -m 644'
 INSTALL_PROGRAM='${INSTALL}'
 INSTALL_SCRIPT='${INSTALL}'
-LDFLAGS=' -prebind -Wl,-search_paths_first'
+LDFLAGS='-arch arm64 -prebind -Wl,-search_paths_first'
 LDFLAGS_DEBUG=''
-LDFLAGS_DEFAULT=' -prebind -Wl,-search_paths_first'
+LDFLAGS_DEFAULT='-arch arm64 -prebind -Wl,-search_paths_first'
 LDFLAGS_OPTIMIZE=''
 LD_LIBRARY_PATH_VAR='DYLD_LIBRARY_PATH'
 LIBOBJS=''
@@ -1121,10 +1120,10 @@ TCL_BIN_DIR='/Users/joy.chavez/Desktop/Work/gmmps_add_480/tcltk-8.4.1/tcl8.4.11/
 TCL_BMAP_DIR_NATIVE='${TCL_TOP_DIR_NATIVE}/bitmaps'
 TCL_DBGX=''
 TCL_DEFS='-DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DHAVE_STDIO_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_STRINGS_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_UNISTD_H=1 -DHAVE_SYS_TIME_H=1 -DSTDC_HEADERS=1 -DHAVE_COREFOUNDATION=1 -DHAVE_LIBKERN_OSATOMIC_H=1 -DHAVE_OSSPINLOCKLOCK=1 -DMAC_OSX_TCL=1 -DUSE_VFORK=1 -DTCL_DEFAULT_ENCODING=\"utf-8\" -DTCL_LOAD_FROM_MEMORY=1 -DTCL_WIDE_INT_IS_LONG=1 -DHAVE_GETCWD=1 -DHAVE_OPENDIR=1 -DHAVE_STRSTR=1 -DHAVE_STRTOL=1 -DHAVE_STRTOLL=1 -DHAVE_STRTOULL=1 -DHAVE_TMPNAM=1 -DHAVE_WAITPID=1 -DNO_VALUES_H=1 -DHAVE_LIMITS_H=1 -DHAVE_UNISTD_H=1 -DHAVE_SYS_PARAM_H=1 -DHAVE_SYS_TIME_H=1 -DTIME_WITH_SYS_TIME=1 -DHAVE_STRUCT_TM_TM_ZONE=1 -DHAVE_TM_ZONE=1 -DHAVE_GMTIME_R=1 -DHAVE_LOCALTIME_R=1 -DHAVE_TM_GMTOFF=1 -DHAVE_STRUCT_STAT_ST_BLKSIZE=1 -DHAVE_ST_BLKSIZE=1 -DHAVE_SIGNED_CHAR=1 -DHAVE_PUTENV_THAT_COPIES=1 -DHAVE_LANGINFO=1 -DHAVE_SYS_IOCTL_H=1 -DHAVE_SYS_FILIO_H=1'
-TCL_EXTRA_CFLAGS=''
+TCL_EXTRA_CFLAGS='-O2 -arch arm64'
 TCL_GENERIC_DIR_NATIVE='${TCL_TOP_DIR_NATIVE}/generic'
 TCL_INCLUDES='-I$(TCL_SRC_DIR)/generic -I$(TCL_SRC_DIR)/unix'
-TCL_LD_FLAGS=' -prebind -headerpad_max_install_names -Wl,-search_paths_first'
+TCL_LD_FLAGS='-arch arm64 -prebind -headerpad_max_install_names -Wl,-search_paths_first'
 TCL_LIBS='${DL_LIBS} ${LIBS} ${MATH_LIBS}'
 TCL_LIB_FILE='libtcl8.4.dylib'
 TCL_LIB_FLAG='-ltcl8.4'

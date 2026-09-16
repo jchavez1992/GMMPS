@@ -9,16 +9,16 @@
  * --------------  --------   ----------------------------------------
  * Allan Brighton  3 Aug 96  Created, added call to "sys_error()", set status_
  * Peter W. Draper 23 Jan 97 Added cast to MAP_FAILED comparison (OSF/1).
- *                 21 Nov 97 Added fix for OSF/1 problems with statvfs
- *                           include.
+ *                 23 Oct 00 Expanded error messages to be a little
+ *                           more informative to an end user.
  */
 static const char* const rcsId="@(#) $Id: Mem_Map.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
-
 
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstring>
+#include <strings.h>
 #include "error.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -26,15 +26,7 @@ static const char* const rcsId="@(#) $Id: Mem_Map.C,v 1.1.1.1 2009/03/31 14:11:5
 #include "Mem_Map.h"
 #include <cstdio>
 #ifdef HAVE_SYS_STATVFS_H
-#ifdef __alpha   // Extern "C" & prototypes missing on OSF/1
-extern "C" {
-#endif
 #include <sys/statvfs.h>
-int statvfs(const char *, struct statvfs *);
-int fstatvfs(int, struct statvfs *);
-#ifdef __alpha
-}
-#endif
 #endif
 
 //----------------------------------------------------------------------------
@@ -83,7 +75,7 @@ Mem_Map::~Mem_Map (void)
 // to map the file into memory.
 int 
 Mem_Map::map_it(int handle, 
-		int len_request, 
+		size_t len_request, 
 		int prot, 
 		int share, 
 		void *addr, 
@@ -92,38 +84,38 @@ Mem_Map::map_it(int handle,
   this->base_addr_ = addr;
   this->handle_	= handle;
 
+  //  Inquire file to access and get length in bytes.
   struct stat sb;
-  long file_len = ::fstat(this->handle_, &sb) < 0 ? -1 : sb.st_size;
+  int status = ::fstat(this->handle_, &sb);
 
-  if (file_len == -1) {
-    sys_error("fstat failed for: ", filename_);	// allan: added error report
+  if (status == -1) {
+    sys_error("get file status (fstat) failed for: ", filename_);	// allan: added error report
     return -1;
   }
 
-  // At this point we know <file_len> is not negative...
-  this->length_ = size_t(file_len); 
+  // Set initial length to all of file.
+  off_t file_len = sb.st_size;
+  this->length_ = file_len; 
 
-  if (len_request == -1) {
-    len_request = 0;
-  }
-
+  // If file is zero sized or too small.
   if ((this->length_ == 0 && len_request > 0)
-      || this->length_ < size_t(len_request)) {
+      || (this->length_ < len_request)) {
 
+    // Length is that requested.
     this->length_ = len_request;
 
 #ifdef HAVE_SYS_STATVFS_H
     // allan: make sure there is enough space on the filesystem
     struct statvfs vfs;
     if (fstatvfs(handle, &vfs) != 0) {
-      sys_error("fstatvfs failed for: ", filename_);
+      sys_error("get file system information (fstatvfs) failed for: ", filename_);
       return -1;
     }
     if (vfs.f_frsize > 0) {  // NOTE: must calculate in blocks to avoid 32bit overflow
 	unsigned long need = (len_request - file_len + vfs.f_frsize)/vfs.f_frsize;
 	unsigned long have = vfs.f_bavail;
 	if (have < need) {
-	    error("DISK FULL: can't create mmap file: ", filename_);
+	    error("DISK FULL: cannot create a sufficiently large map file: ", filename_);
 	    return -1;
 	}
     }
@@ -135,13 +127,13 @@ Mem_Map::map_it(int handle,
 		 SEEK_SET) == -1
 	|| ::write (this->handle_, "", 1) != 1
 	|| ::lseek (this->handle_, 0, SEEK_SET) == -1) {
-      sys_error("write/seek failed for: ", filename_);	// allan: added error report
+      sys_error("write or seek failed for: ", filename_);	// allan: added error report
       return -1;
     }
   }
 
   if (this->length_ <= 0) {
-      error("can't map zero length file: ", filename_);
+      error("cannot map zero length file: ", filename_);
       return -1;
   }
 
@@ -153,7 +145,8 @@ Mem_Map::map_it(int handle,
 			     off_t (round_to_pagesize (pos)));
 
   if (this->base_addr_ == (void*)MAP_FAILED) {
-      sys_error("mmap failed for: ", filename_);	// allan: added error report
+      // allan: added error report
+      sys_error("failed to map file (insufficient VM?): ", filename_);
       return -1;
   }
 
@@ -185,7 +178,7 @@ Mem_Map::open(const char file_name[],
 //----------------------------------------------------------------------------
 int
 Mem_Map::map(const char file_name[], 
-	     int len, 
+	     size_t len, 
 	     int flags, 
 	     int mode, 
 	     int prot, 
@@ -215,7 +208,7 @@ Mem_Map::Mem_Map(void)
 //----------------------------------------------------------------------------
 // Map a file specified by FILE_NAME. 
 Mem_Map::Mem_Map (const char file_name[], 
-			  int len, 
+			  size_t len, 
 			  int flags, 
 			  int mode, 
 			  int prot, 
@@ -236,7 +229,7 @@ Mem_Map::Mem_Map (const char file_name[],
 // Map a file from an open file descriptor HANDLE.  This function will
 // lookup the length of the file if it is not given.
 Mem_Map::Mem_Map (int handle, 
-		  int len, 
+		  size_t len, 
 		  int prot, 
 		  int share, 
 		  void *addr, 

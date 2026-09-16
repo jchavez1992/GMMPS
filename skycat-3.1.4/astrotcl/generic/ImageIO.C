@@ -13,17 +13,36 @@
  *                 12/03/98  Remove dependency on FitsIO (delegated to
  *                           class FitsIO or other class derived from
  *                           ImageIORep.
+ * Peter W. Draper 24/06/99  Changed to use FITS_LONG as type in byte
+ *                           swapping. "long" is 8 bytes on alphas and 64 SUNs.
  * pbiereic        12/08/07  added support for data types double and long long int
  */
 static const char* const rcsId="@(#) $Id: ImageIO.C,v 1.1.1.1 2009/03/31 14:11:53 cguirao Exp $";
 
-
+/* see Apple Developer Connection Tech Notes
+  http://developer.apple.com/technotes/tn2002/tn2071.html */
+#if ! ( defined(__APPLE__) && defined(__MACH__) )
 #include <netinet/in.h>
+#endif
+#include <arpa/inet.h>
 #include <cmath>
 #include <cstdlib>
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "define.h"
 #include "error.h"
 #include "ImageIO.h"
+#include "fitsio2.h"
+
+// The type "long" may have 64 bits.
+#if LONGSIZE == 64
+#define FITS_LONG int 
+#define FITS_LONGLONG long
+#else 
+#define FITS_LONG long 
+#define FITS_LONGLONG long long
+#endif
 
 /*
  * copy constructor - increment the reference count...
@@ -94,7 +113,7 @@ int ImageIORep::data(const Mem& m)
 int ImageIORep::byteSwapData() 
 {
     int dsize = abs(bitpix_)/8;
-    long l = 1;
+    FITS_LONG l = 1;
     if (ntohl(l) == l || dsize == 1) {
 	// no byte swapping needed
 	return 0;
@@ -122,8 +141,8 @@ int ImageIORep::byteSwapData()
     }
     else if (dsize == 4) {
 	// copy longs
-	unsigned long* from = (unsigned long*)data_.ptr();
-	unsigned long* to = (unsigned long*)data.ptr(); 
+	unsigned FITS_LONG* from = (unsigned FITS_LONG*)data_.ptr();
+	unsigned FITS_LONG* to = (unsigned FITS_LONG*)data.ptr(); 
  	while(n--) {
 	    *to++ = ntohl(*from);
 	    from++;
@@ -131,8 +150,8 @@ int ImageIORep::byteSwapData()
     }
     else if (dsize == 8) {
         // copy long longs (doubles)
-        unsigned long long* from = (unsigned long long*)data_.ptr();
-        unsigned long long* to = (unsigned long long*)data.ptr(); 
+        unsigned FITS_LONGLONG* from = (unsigned FITS_LONGLONG*)data_.ptr();
+        unsigned FITS_LONGLONG* to = (unsigned FITS_LONGLONG*)data.ptr(); 
         while(n--) {
             *to++ = SWAP64(*from);
             from++;

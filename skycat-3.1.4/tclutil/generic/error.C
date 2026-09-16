@@ -11,6 +11,10 @@
  *                           linux. Something horrible happens here 
  *                           under RH5 and glibc.
  *                 08/12/98  Changed for egcs compiler 
+ *                 21/01/03  Changed for gcc3, now only uses syserror
+ *                           rather than errno and sys_errlist.
+ *                 30/04/03  Removed ifdef for errno.h. Needed back
+ *                           for RH7.3.
  * Allan Brighton  01/04/99  Replaced sys_errlist[] with strerror()
  *                           to get around porting problems
  *                 20/01/03  Updated for gcc-3.2.1
@@ -18,8 +22,6 @@
  */
 static const char* const rcsId="@(#) $Id: error.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
-
-using namespace std;
 #include <cstdarg>
 #include <cstdlib>
 #include <iostream>
@@ -28,6 +30,9 @@ using namespace std;
 #include <cstdio>
 #include <cstring>
 #include "error.h"
+
+using namespace std;
+
 
 // static variable holding text of last error messages
 static char errmsg_[5*1024];
@@ -70,12 +75,11 @@ int error(const char* msg1, const char* msg2, int code)
  */
 int sys_error(const char* msg1, const char* msg2)
 {
-#ifndef errno
-    extern int errno;
-#endif
     char* s = strerror(errno);
-    if (s == NULL)
+
+    if (s == NULL || errno < 0 ) {
 	return error(msg1, msg2);
+    }
 
     ostringstream os;
     os << msg1 << msg2 << ": " << s;

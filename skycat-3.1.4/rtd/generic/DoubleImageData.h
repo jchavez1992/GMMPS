@@ -1,3 +1,4 @@
+// -*-c++-*-
 /*
  * E.S.O. - VLT project 
  *
@@ -7,15 +8,17 @@
  * 
  * who             when      what
  * --------------  --------  ----------------------------------------
+ * Peter W. Draper 30/05/01  Created
+ *                 14/11/05  Added bias subtraction members.
+ * Peter W. Draper 29/10/07  Added colorScale
  * pbiereic        12/08/07  Created
+ * Peter W. Draper 17/05/12  Merged skycat version created by pbiereic.
  */
 
 #include <sys/types.h>
 #include "ImageData.h"
 
-
-
-// This class is used for images where the raw data is made up of ints
+// This class is used for images where the raw data is made up of doubles.
 
 class DoubleImageData : public ImageData {
 private:
@@ -26,23 +29,26 @@ private:
     double scale_;		// factor for conversion to short lookup index
 
     // local methods used to get short index in lookup table
-    short scaleToShort(double);
+    short scaleToShort( double );
 
     // as above, but unsigned
-    inline ushort convertToUshort(double f) {
-	return ushort(scaleToShort(f));
+    inline ushort convertToUshort( double f ) {
+	return ushort( scaleToShort( f ) );
     }
 
     // Return X image pixel value for raw image value.
     // Convert the given double image value to byte, scaling to short
     // first and then using the short value as an index in the color
     // lookup table.
-    inline byte lookup(double f) {return lookup_[(ushort)scaleToShort(f)];}
-    inline unsigned long llookup(double f) {return lookup_[(ushort)scaleToShort(f)];}
+    inline BYTE lookup( double f ) {
+        return lookup_[(ushort)scaleToShort(f)];
+    }
+    inline unsigned long llookup( double f ) {
+        return lookup_[(ushort)scaleToShort(f)];
+    }
 
     // return NTOH converted value evtl. subtracted with corresponding bias value
     double getVal(double* p, int idx);
-
 
 protected:
     // initialize conversion from base type to short,
@@ -60,6 +66,7 @@ protected:
     double getMedian(double *samples, int n);
     double getBoxVal(double *rawImage, int idx, int wbox, double *samples, int xs);
     double getRMS(double *samples, int n);
+    void colorScale(int ncolors, unsigned long* colors);
 
 public:
     // constructor
@@ -68,6 +75,9 @@ public:
           blank_(0),
 	  bias_(0.0),
           scale_(1.0) {}
+
+    // return class name as a string
+    virtual const char* classname() { return "DoubleImageData"; }
 
     // return the data type of the raw data
     int dataType() {return DOUBLE_IMAGE;}

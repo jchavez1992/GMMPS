@@ -6,6 +6,7 @@
 # who             when       what
 # --------------  ---------  ----------------------------------------
 # Allan Brighton  01 Jun 94  Created
+# Peter W. Draper 20 Jul 09  Removed mono widget, BLT no longer offers this.
 
 itk::usual CanvasPrint {}
 
@@ -46,9 +47,6 @@ itcl::class util::CanvasPrint {
         [radiobutton $w_.color.gray -text "Gray-Scale" \
 	     -variable $w_.color \
 	     -value gray] \
-        [radiobutton $w_.color.mono -text "Black & White" \
-	     -variable $w_.color \
-	     -value mono] \
 	-side left -fill x -expand 1
 	::set $w_.color color
 
@@ -72,11 +70,11 @@ itcl::class util::CanvasPrint {
 		  -command [code $this toggle_fit_pagesize]] \
 	    -side top -anchor w
 	pack \
-	    [LabelEntry $w_.pagesize.width \
+	    [util::LabelEntry $w_.pagesize.width \
 		 -text "Page width " \
 		 -value $itk_option(-pagewidth) \
 		 -valuewidth 6] \
-	    [LabelEntry $w_.pagesize.height \
+	    [util::LabelEntry $w_.pagesize.height \
 		 -text "Page height" \
 		 -value $itk_option(-pageheight) \
 		 -valuewidth 6] \
@@ -232,8 +230,7 @@ itcl::class util::CanvasPrint {
     itk_option define -bot_right bot_right Bot_right {}
     
     # header/footer fonts
-    itk_option define -header_font header_font Header_font \
-	{-*-courier-bold-r-*-*-10-100-*-*-*-*-*-*}
+    itk_option define -header_font header_font Header_font TkDefaultFont
 
     # x0 coordinate of area of canvas to print
     itk_option define -x0 x0 X0 {} {set x0 $itk_option(-x0)}

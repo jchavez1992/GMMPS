@@ -51,7 +51,7 @@ private:
     }
 
     // return X image pixel value for raw image value
-    inline byte lookup(FITS_LONG l) {
+    inline BYTE lookup(FITS_LONG l) {
 	return lookup_[convertToUshort(l)];
     }
     inline unsigned long llookup(FITS_LONG l) {
@@ -78,6 +78,9 @@ public:
     LongImageData(const char* name, const ImageIO& imio, int verbose)
 	: ImageData(name, imio, verbose), 
 	  blank_(0) {}
+
+    // return class name as a string
+    virtual const char* classname() { return "LongImageData"; }
 
     // return the data type of the raw data
     int dataType() {return LONG_IMAGE;}

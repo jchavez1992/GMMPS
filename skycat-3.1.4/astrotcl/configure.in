@@ -30,11 +30,6 @@
 AC_INIT([astrotcl], [2.1.0])
 
 #--------------------------------------------------------------------
-# Do application specific checks (see aclocal.m4)
-#--------------------------------------------------------------------
-ASTROTCL_CONFIG
-
-#--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
 # This will define a ${TEA_PLATFORM} variable == "unix" or "windows"
 # as well as PKG_LIB_FILE and PKG_STUB_LIB_FILE.
@@ -72,6 +67,11 @@ TEA_PREFIX
 
 TEA_SETUP_COMPILER
 
+#--------------------------------------------------------------------
+# Do application specific checks (see aclocal.m4)
+#--------------------------------------------------------------------
+ASTROTCL_CONFIG
+
 #-----------------------------------------------------------------------
 # __CHANGE__
 # Specify the C source files to compile in TEA_ADD_SOURCES,
@@ -83,16 +83,16 @@ TEA_SETUP_COMPILER
 #-----------------------------------------------------------------------
 
 changequote(<<, >>)
-csources=`cd $srcdir; echo {generic,press,libwcs,cfitsio}/*.[Cc]`
+csources=`cd $srcdir; echo generic/*.[Cc] press/*.[Cc] libwcs/*.[Cc]`
 changequote([, ])
-cheaders=`cd $srcdir; echo {generic,press,libwcs,cfitsio}/*.h`
-cincludes="-I$srcdir/../tclutil/generic -I$srcdir/generic -I$srcdir/press -I$srcdir/libwcs -I$srcdir/cfitsio"
+cheaders=`cd $srcdir; echo generic/*.h press/*.h libwcs/*.h`
+cincludes="-I$srcdir/../tclutil/generic -I$srcdir/generic -I$srcdir/press -I$srcdir/libwcs"
 tclsources=`cd $srcdir; echo library/*.tcl`
 
 TEA_ADD_SOURCES([${csources}])
 TEA_ADD_HEADERS([${cheaders}])
 TEA_ADD_INCLUDES([$cincludes])
-TEA_ADD_LIBS([$tclutil_BUILD_LIB_SPEC ${BLT_LIB_SPEC}])
+TEA_ADD_LIBS([$tclutil_BUILD_LIB_SPEC ${BLT_LIB_SPEC} ${CFITSIO_LIB_SPEC}])
 TEA_ADD_CFLAGS([])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([${tclsources}])
@@ -160,6 +160,12 @@ TEA_ENABLE_SHARED
 #--------------------------------------------------------------------
 
 TEA_CONFIG_CFLAGS
+
+#--------------------------------------------------------------------
+# Find the CFITSIO library.
+#--------------------------------------------------------------------
+ASTROTCL_PATH_CFITSIO
+TEA_ADD_LIBS([${CFITSIO_LIB_SPEC}])
 
 #--------------------------------------------------------------------
 # Set the default compiler switches based on the --enable-symbols option.
