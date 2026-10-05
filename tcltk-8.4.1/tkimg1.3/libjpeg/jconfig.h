@@ -37,7 +37,7 @@
 
 #undef TWO_FILE_COMMANDLINE
 #undef NEED_SIGNAL_CATCHER
-#define DONT_USE_B_MODE 
+#undef DONT_USE_B_MODE
 
 /* Define this if you want percent-done progress reports from cjpeg/djpeg. */
 #undef PROGRESS_REPORT
