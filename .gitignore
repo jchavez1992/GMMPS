@@ -56,3 +56,7 @@ dkms.conf
 
 # GMMPS docs
 gmmpsdoc
+
+# Autoconf configure output
+config.status
+config.log
