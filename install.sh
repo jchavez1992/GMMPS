@@ -477,10 +477,10 @@ echo "  LDFLAGS:      $LDFLAGS"
 echo "########################################################################"
 echo ""
 
-# clean up
-rm -rf tcltk-8.4.1
-rm -rf skycat-3.1.4
-rm -rf cfitsio
+# clean up - add these back in when new tcltk, skycat, and cfitsio are working.
+#rm -rf tcltk-8.4.1
+#rm -rf skycat-3.1.4
+#rm -rf cfitsio
 
 echo " Installation complete and temporary files cleaned up"
 echo ""
