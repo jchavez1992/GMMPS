@@ -203,7 +203,7 @@ RtdRemote::RtdRemote(Tcl_Interp* interp, int port, int verbose)
     }
 
     // Bind the listen address to the socket. 
-    if (bind(socket_, (struct sockaddr *)&addr, addrSize) == -1) {
+    if (::bind(socket_, (struct sockaddr *)&addr, addrSize) == -1) {
 	status_ = sys_error("bind");
 	return;
     }
