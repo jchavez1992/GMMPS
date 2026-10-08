@@ -124,7 +124,17 @@ export CC=${CC:-"gcc"}
 # OLDC_WFLAGS: warning flags only, valid for both C and C++. Use for skycat,
 #              whose Makefiles compile .C (C++) files with CFLAGS.
 # OLDC_CFLAGS: adds -std=gnu89, which clang++ rejects. Pure C builds only.
-OLDC_WFLAGS="-Wno-implicit-int -Wno-implicit-function-declaration -Wno-error=incompatible-function-pointer-types"
+#
+# Not every compiler knows every flag (GCC 4.8 rejects the clang-only
+# incompatible-function-pointer-types; GCC 14+ calls its pointer-mismatch
+# error incompatible-pointer-types), so keep only the ones $CC accepts.
+OLDC_WFLAG_CANDIDATES="-Wno-implicit-int -Wno-implicit-function-declaration -Wno-error=incompatible-function-pointer-types -Wno-error=incompatible-pointer-types"
+OLDC_WFLAGS=""
+for flag in $OLDC_WFLAG_CANDIDATES; do
+    if ${GMMPS}/scripts/cc_accepts_flag.sh "$CC" "$flag"; then
+        OLDC_WFLAGS="$OLDC_WFLAGS $flag"
+    fi
+done
 OLDC_CFLAGS="-std=gnu89 $OLDC_WFLAGS"
 
 echo ""
@@ -134,6 +144,7 @@ echo "  CXX:      $CXX"
 echo "  CFLAGS:   $CFLAGS"
 echo "  CXXFLAGS: $CXXFLAGS"
 echo "  LDFLAGS:  $LDFLAGS"
+echo "  OLDC_WFLAGS:$OLDC_WFLAGS"
 echo ""
 
 # Verify autoconf availability for cfitsio
