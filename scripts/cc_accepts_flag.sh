@@ -20,7 +20,6 @@ fi
 COMPILER=$1
 FLAG=$2
 
-compile_test=$(echo 'int main(void){return 0;}' | $COMPILER -Werror $FLAG -x c -c -o /dev/null - 2>&1)
 if echo 'int main(void){return 0;}' | $COMPILER -Werror $FLAG -x c -c -o /dev/null - >/dev/null 2>&1 ; then
     exit 0
 fi
