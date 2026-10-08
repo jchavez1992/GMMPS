@@ -33,7 +33,7 @@
  */
 short FloatImageData::scaleToShort(float d) 
 {
-    if (isnan(d))
+    if (std::isnan(d))
 	return LOOKUP_BLANK;
 
     //  Blank pixel value is is special lookup table position. Note
@@ -99,7 +99,7 @@ void FloatImageData::initShortConversion()
 #endif
 
 // return true is the value x is a NAN (define to 0 for non-float types)
-#define ISNAN(x) isnan(x)
+#define ISNAN(x) std::isnan(x)
 
 #include "ImageTemplates.icc"
 #undef CLASS_NAME
