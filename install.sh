@@ -212,7 +212,11 @@ fi
 
 echo "Building Tcl/Tk with architecture flags: $CFLAGS"
 cd tcltk-8.4.1/
-make prefix=${GMMPS} CFLAGS="$CFLAGS $OLDC_CFLAGS" LDFLAGS="$LDFLAGS"
+# Pass CFLAGS/LDFLAGS through the environment, not as make arguments: each
+# package's configure adds its own flags to them (e.g. -fPIC on Linux), and
+# a make command-line CFLAGS= would override those in every sub-make.
+CFLAGS="$CFLAGS $OLDC_CFLAGS" LDFLAGS="$LDFLAGS" \
+    make prefix=${GMMPS}
 if [ $? -ne 0 ]; then
     echo "ERROR: Tcl/Tk build failed"
     exit 1
@@ -261,10 +265,9 @@ for dep in "${skycat_deps[@]}"; do
     fi
     
     echo "  Building $dep..."
-    make install CXX="g++ -Wno-narrowing -fpermissive -std=c++11" \
-        CFLAGS="$CFLAGS $OLDC_WFLAGS" \
-        CXXFLAGS="$CXXFLAGS" \
-        LDFLAGS="$LDFLAGS"
+    # No CFLAGS/CXXFLAGS/LDFLAGS here: configure above already saved them in
+    # the Makefile, together with the flags it adds itself (e.g. -fPIC).
+    make install CXX="g++ -Wno-narrowing -fpermissive -std=c++11"
     
     if [ $? -ne 0 ]; then
         echo "ERROR: $dep make install failed"
