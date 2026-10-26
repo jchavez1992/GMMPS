@@ -107,3 +107,44 @@ and off when it doesn't (all four Linux VMs).
   checked-in `tcltk-8.4.1/`; build the new tarballs from the repository.
 - **Re-enable** the final `rm -rf` lines in `install.sh` once the new
   tarballs are in place.
+
+## For future upgrades (not needed for this build)
+
+None of these block the current build; they matter only if the code is
+moved to a newer C++ standard or needs cleaning up later.
+
+### Moving skycat from C++11 to C++17
+
+`install.sh` builds skycat with `-std=c++11`. That is why the
+`reference to 'byte' is ambiguous` error (fixed elsewhere by renaming `byte`
+to `BYTE`) never appears here: C++17 adds `std::byte`, which clashes with
+rtd's own `typedef unsigned char byte;` because rtd's headers use
+`using namespace std;`. GCC 11 and later default to C++17, so a build that
+does not set `-std=c++11` hits it. Moving to C++17 would need:
+
+- **Rename `byte`** in `skycat-3.1.4/rtd/generic/`: 42 lines in 13 files
+  (`XImageData.h` 12, `ByteImageData.h` 10, `ImageTemplates.icc` 9,
+  `ImageData.h` 2, `LookupTable.h` 1, `ByteImageData.C` and `XImageData.C`
+  1 each, and the `lookup()` line in the six other `*ImageData.h` files).
+  The C code in `astrotcl/` (cfitsio, press, libwcs) can keep `byte`.
+  Prefer a distinctive name such as `rtd_byte` over `BYTE`, which X11's
+  `<X11/Xmd.h>` and Windows already define.
+- **Remove the `register` keyword**, which C++17 dropped: about 40 lines in
+  9 C++ files (8 in rtd, 1 in astrotcl; e.g. `register byte* dest` in
+  `ImageTemplates.icc`). Deleting the word is enough.
+- **Then build with `-std=c++17`** on macOS and the Linux VMs and fix
+  whatever else the compilers report.
+
+### Removing `using namespace std;` from headers
+
+The `bind`, `isnan` and `byte` clashes all come from `using namespace std;`
+in headers (11 header files, 85 lines in all). Removing it, and writing
+`std::` where needed, would prevent future clashes with names added to the
+C++ standard. It is the most thorough fix and the largest change.
+
+### 64-bit pointer casts
+
+GCC 8 printed about 250 `-Wpointer-to-int-cast` / `-Wint-to-pointer-cast`
+warnings, mostly from old Tcl/BLT code that stores integers in pointer-sized
+`ClientData` values. They are usually harmless on 64-bit systems, but are the
+first place to look if something fails only on 64-bit Linux at run time.
