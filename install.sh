@@ -290,7 +290,32 @@ echo " "
 sleep 1
 
 ###############################################################################
-# 2: Install CFITSIO
+# 2a: Install zlib (bundled; cfitsio 4.x needs it and some Linux systems
+#     lack the zlib development files)
+###############################################################################
+
+echo " "
+echo "################################################################### "
+echo "GMMPS Installer: Installing zlib ... "
+echo "################################################################### "
+echo " "
+
+# Build in zlib-1.3.2/build so configure's generated Makefile and zconf.h
+# stay out of the source tree.
+cd ${GMMPS}/zlib-1.3.2
+rm -rf build
+mkdir build
+cd build
+../configure --prefix=${GMMPS}
+make
+make install
+cd ${GMMPS}
+
+echo "zlib installation complete"
+echo " "
+
+###############################################################################
+# 2b: Install CFITSIO
 ###############################################################################
 
 echo " "
@@ -310,11 +335,13 @@ if [ -f configure.ac ] && command -v autoconf &> /dev/null; then
 fi
 
 echo "Configuring cfitsio with architecture flags: $CFLAGS"
+# CPPFLAGS/-L point configure at the bundled zlib installed in ${GMMPS}.
 ./configure --prefix=${GMMPS} \
     --enable-shared \
     CFLAGS="$CFLAGS" \
     CXXFLAGS="$CXXFLAGS" \
-    LDFLAGS="$LDFLAGS" | tee cfitsio.log
+    CPPFLAGS="-I${GMMPS}/include" \
+    LDFLAGS="$LDFLAGS -L${GMMPS}/lib" | tee cfitsio.log
 
 success=`grep "Congratulations, Makefile update was successful." cfitsio.log`
 if [ -z "$success" ]; then
@@ -338,7 +365,10 @@ echo "Building cfitsio..."
 # Remove any libcfitsio.a left by an older (pre-libtool) cfitsio build, so it
 # can't hide a failed build or get installed in place of the new library.
 rm -f libcfitsio.a
-make CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
+make clean
+# No CFLAGS/LDFLAGS here: configure saved them in the Makefile, including the
+# -L${GMMPS}/lib that makes cfitsio link the bundled zlib.
+make
 
 # cfitsio 4.x builds with libtool, which puts the static library in .libs/
 if [ ! -f .libs/libcfitsio.a ]; then

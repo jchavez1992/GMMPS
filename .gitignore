@@ -260,3 +260,8 @@ autom4te.cache/
 /cfitsio/.libs/
 /cfitsio/bin/
 /cfitsio/cookbook
+
+# zlib is built out of tree (install.sh), so all its output is here
+/zlib-1.3.2/build/
+# zlib.map is a zlib source file (Linux linker version script), not linker output
+!/zlib-1.3.2/zlib.map
