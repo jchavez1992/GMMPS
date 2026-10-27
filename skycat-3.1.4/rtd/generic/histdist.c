@@ -18,18 +18,27 @@ static char SccsId[] = "%W%  %G%";
 #include <stdio.h>
 #include "histeq.h"		/* define SubrangeLink */
 
-static int excess_zgroup(), excess_nzgroup(), range_zgroup();
+static int excess_zgroup (SubrangeLink *subrange, int *excess, int *range,
+                          int average);
+static int range_zgroup (SubrangeLink *subrange, int *excess, int *range,
+                          int average);
+static int excess_nzgroup (SubrangeLink *subrange, int *excess, int average);
+
+
 
 /*
  * Subroutine:	distribute_levels
  * Purpose:	Distribute the levels among histogram sub-groups
  * Returns:	number of groups with no assigned color levels
  */
-int distribute_levels ( linklist, pixel_area, color_levels,
-		        pmin, pmax, ncolor )
-     SubrangeLink *linklist;
-     int pixel_area, color_levels;
-     int pmin, pmax, ncolor;
+int distribute_levels (
+     SubrangeLink *linklist,
+     int pixel_area,
+     int color_levels,
+     int pmin, 
+     int pmax, 
+     int ncolor
+)
 {
   int average;
   int threshold;
@@ -152,10 +161,12 @@ int distribute_levels ( linklist, pixel_area, color_levels,
  * Purpose:	Find subrange with zero allotted levels and specified excess.
  *		Assign it one level
  */
-static int excess_zgroup ( subrange, excess, range, average )
-     SubrangeLink *subrange;
-     int *excess, *range;
-     int average;
+static int excess_zgroup (
+     SubrangeLink *subrange,
+     int *excess, 
+     int *range,
+     int average
+)
 {
   int max_excess, looking;
 
@@ -190,10 +201,12 @@ static int excess_zgroup ( subrange, excess, range, average )
  * Purpose:	Find group with zero allotted levels and specified range.
  *		Assign it one level.
  */
-static int range_zgroup (subrange, excess, range, average)
-     SubrangeLink *subrange;
-     int *excess, *range;
-     int average;
+static int range_zgroup (
+     SubrangeLink *subrange,
+     int *excess, 
+     int *range,
+     int average
+)
 {
   int max_range, looking;
 
@@ -228,10 +241,11 @@ static int range_zgroup (subrange, excess, range, average)
  * Purpose:	Find group with non-zero allotted levels and specified
  *		excess value.  Assign it one additional level.
  */
-static int excess_nzgroup ( subrange, excess, average )
-     SubrangeLink *subrange;
-     int *excess;
-     int average;
+static int excess_nzgroup (
+     SubrangeLink *subrange,
+     int *excess,
+     int average
+)
 {
   int looking, max_excess;
 

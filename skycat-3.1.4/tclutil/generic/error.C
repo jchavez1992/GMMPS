@@ -19,7 +19,7 @@
 static const char* const rcsId="@(#) $Id: error.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
+//using namespace std;
 #include <cstdarg>
 #include <cstdlib>
 #include <iostream>
@@ -47,7 +47,7 @@ static void (*msghandler_)(const char*) = NULL;
  */
 int error(const char* msg1, const char* msg2, int code)
 {
-    ostringstream os;
+    std::ostringstream os;
     os << msg1 << msg2;
     
     if (errhandler_)
@@ -77,7 +77,7 @@ int sys_error(const char* msg1, const char* msg2)
     if (s == NULL)
 	return error(msg1, msg2);
 
-    ostringstream os;
+    std::ostringstream os;
     os << msg1 << msg2 << ": " << s;
 
     if (errhandler_)
@@ -104,7 +104,7 @@ int fmt_error(const char* fmt, ...)
     char buf[1024];
     va_list ap;
     va_start(ap, fmt);
-    vsprintf(buf, fmt, ap);
+    vsnprintf(buf, 1024, fmt, ap);
     va_end(ap);
     
     return error(buf);
@@ -120,7 +120,7 @@ int fmt_sys_error(const char* fmt, ...)
     char buf[1024];
     va_list ap;
     va_start(ap, fmt);
-    vsprintf(buf, fmt, ap);
+    vsnprintf(buf, 1024, fmt, ap);
     va_end(ap);
     
     return sys_error(buf);
@@ -195,7 +195,7 @@ void log_message(const char* fmt, ...)
     char buf[1024];
     va_list ap;
     va_start(ap, fmt);
-    vsprintf(buf, fmt, ap);
+    vsnprintf(buf, 1024, fmt, ap);
     va_end(ap);
     
     if (msghandler_)

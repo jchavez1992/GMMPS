@@ -16,7 +16,6 @@
  * pbiereic        17/02/03  Added 'using namespace std'. Removed ::std specs.
  */
 
-using namespace std;
 #include <sys/types.h>
 #include <iostream>
 #include <X11/Xlib.h>
@@ -32,7 +31,7 @@ struct RGBColor {
     float red, green, blue;
     
     // read an RGB entry
-    friend istream& operator>>(istream& is, RGBColor& rgb) {
+    friend std::istream& operator>>(std::istream& is, RGBColor& rgb) {
         is >> rgb.red >> rgb.green >> rgb.blue;
 	return is;
     }
@@ -63,7 +62,7 @@ public:
     static ColorMapInfo* get(char* filename);
 
     // write a list of colormap files
-    static void list(ostream&);
+    static void list(std::ostream&);
 
     // member access
     const char* name() const {return name_;}

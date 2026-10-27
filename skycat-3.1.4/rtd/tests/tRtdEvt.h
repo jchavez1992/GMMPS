@@ -27,7 +27,7 @@ class tRtdEvt {
 
 public:
     // public member functions
-    tRtdEvt(char *id, rtdShm *rtdShm, char *data, opts *opt, int width, int height, int frameId);
+    tRtdEvt(char *id, rtdShm *rtdShm, char *data, Opts *opt, int width, int height, int frameId);
     ~tRtdEvt();
     void start(rtdIMAGE_EVT_HNDL *eventHndl);
 
@@ -35,7 +35,7 @@ private:
     char *id_;			// id, e.g "Main" or "rapid"
     rtdShm *rtdShm_;		// rtdShm struct
     char *data_;		// ptr to static ("big") data buffer
-    opts *opt_;			// tRtd options struct
+    Opts *opt_;			// tRtd options struct
     int width_;			// image width
     int height_;		// image height
     int frameId_;		// frame Id (eg. 0=main, 1=rapid)

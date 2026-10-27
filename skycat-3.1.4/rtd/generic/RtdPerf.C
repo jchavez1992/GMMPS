@@ -161,10 +161,10 @@ void RtdPerf::endCycle()
 	FREQtime_ = lastTimeStamp_ - startTime_;
 	accFREQtime_ += FREQtime_;
     
-	sprintf(buffer_, "%.3f", 1.0 / FREQtime_);
-	Tcl_SetVar2(interp_, var, "PERF_FREQ", buffer_, TCL_GLOBAL_ONLY);
-	sprintf(buffer_, "%.3f", (imageCount_ - 1.0) / accFREQtime_);
-	Tcl_SetVar2(interp_, var, "PERF_FREQ_AVE", buffer_, TCL_GLOBAL_ONLY);
+	snprintf(buffer_, 2048, "%.3f", 1.0 / FREQtime_);
+	Tcl_SetVar2(interp_, var, "PERF_FREQ", (const char *)buffer_, TCL_GLOBAL_ONLY);
+	snprintf(buffer_, 2048, "%.3f", (imageCount_ - 1.0) / accFREQtime_);
+	Tcl_SetVar2(interp_, var, "PERF_FREQ_AVE", (const char *)buffer_, TCL_GLOBAL_ONLY);
     }
     startTime_ = lastTimeStamp_;
 
@@ -190,27 +190,27 @@ void RtdPerf::endCycle()
     TCLtime_   = TCLtime_  * 100.0 / TOTtime;
 
     // Set the Tcl variables
-    sprintf(buffer_, "%.0f", imageCount_);
-    Tcl_SetVar2(interp_, var, "PERF_COUNT", buffer_, TCL_GLOBAL_ONLY);
+    snprintf(buffer_, 2048, "%.0f", imageCount_);
+    Tcl_SetVar2(interp_, var, "PERF_COUNT", (const char *)buffer_, TCL_GLOBAL_ONLY);
 
-    sprintf(buffer_, "%6.3f", GENtime_);
-    Tcl_SetVar2(interp_, var, "PERF_GEN", buffer_, TCL_GLOBAL_ONLY);
-    sprintf(buffer_, "%6.3f", Xtime_);
-    Tcl_SetVar2(interp_, var, "PERF_XFUNC", buffer_, TCL_GLOBAL_ONLY);
-    sprintf(buffer_, "%6.3f", TCLtime_);
-    Tcl_SetVar2(interp_, var, "PERF_TCL", buffer_, TCL_GLOBAL_ONLY);
-    sprintf(buffer_, "%8.3f", TOTtime * 1.0e+3);  // in msec
-    Tcl_SetVar2(interp_, var, "PERF_TOTAL", buffer_, TCL_GLOBAL_ONLY);
+    snprintf(buffer_, 2048, "%6.3f", GENtime_);
+    Tcl_SetVar2(interp_, var, "PERF_GEN", (const char *)buffer_, TCL_GLOBAL_ONLY);
+    snprintf(buffer_, 2048, "%6.3f", Xtime_);
+    Tcl_SetVar2(interp_, var, "PERF_XFUNC", (const char *)buffer_, TCL_GLOBAL_ONLY);
+    snprintf(buffer_, 2048, "%6.3f", TCLtime_);
+    Tcl_SetVar2(interp_, var, "PERF_TCL", (const char *)buffer_, TCL_GLOBAL_ONLY);
+    snprintf(buffer_, 2048, "%8.3f", TOTtime * 1.0e+3);  // in msec
+    Tcl_SetVar2(interp_, var, "PERF_TOTAL", (const char *)buffer_, TCL_GLOBAL_ONLY);
 
     // Do the same for the averaged amounts.
-    sprintf(buffer_, "%6.3f", aveGENtime);
-    Tcl_SetVar2(interp_, var, "PERF_GEN_AVE", buffer_, TCL_GLOBAL_ONLY);
-    sprintf(buffer_, "%6.3f", aveXtime);
-    Tcl_SetVar2(interp_, var, "PERF_XFUNC_AVE", buffer_, TCL_GLOBAL_ONLY);
-    sprintf(buffer_, "%6.3f", aveTCLtime);
-    Tcl_SetVar2(interp_, var, "PERF_TCL_AVE", buffer_, TCL_GLOBAL_ONLY);
-    sprintf(buffer_, "%6.3f", aveTOTtime * 1.0e+3);  // in msec
-    Tcl_SetVar2(interp_, var, "PERF_TOTAL_AVE", buffer_, TCL_GLOBAL_ONLY);
+    snprintf(buffer_, 2048, "%6.3f", aveGENtime);
+    Tcl_SetVar2(interp_, var, "PERF_GEN_AVE", (const char *)buffer_, TCL_GLOBAL_ONLY);
+    snprintf(buffer_, 2048, "%6.3f", aveXtime);
+    Tcl_SetVar2(interp_, var, "PERF_XFUNC_AVE", (const char *)buffer_, TCL_GLOBAL_ONLY);
+    snprintf(buffer_, 2048, "%6.3f", aveTCLtime);
+    Tcl_SetVar2(interp_, var, "PERF_TCL_AVE", (const char *)buffer_, TCL_GLOBAL_ONLY);
+    snprintf(buffer_, 2048, "%6.3f", aveTOTtime * 1.0e+3);  // in msec
+    Tcl_SetVar2(interp_, var, "PERF_TOTAL_AVE", (const char *)buffer_, TCL_GLOBAL_ONLY);
 }
 
 void RtdPerf::reset()
@@ -226,18 +226,18 @@ void RtdPerf::reset()
     accGENtime_    = accTCLtime_ = accXtime_ = accFREQtime_ = 0.0;
 
     // Clear the Tcl variables.
-    Tcl_SetVar2(interp_, var, "PERF_COUNT",     "", TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_COUNT",     (const char *)'\0', TCL_GLOBAL_ONLY);
 
-    Tcl_SetVar2(interp_, var, "PERF_FREQ",      "", TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp_, var, "PERF_GEN",       "", TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp_, var, "PERF_XFUNC",     "", TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp_, var, "PERF_TCL",       "", TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp_, var, "PERF_TOTAL",     "", TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_FREQ",      (const char *)'\0', TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_GEN",       (const char *)'\0', TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_XFUNC",     (const char *)'\0', TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_TCL",       (const char *)'\0', TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_TOTAL",     (const char *)'\0', TCL_GLOBAL_ONLY);
 
-    Tcl_SetVar2(interp_, var, "PERF_FREQ_AVE",  "", TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp_, var, "PERF_GEN_AVE",   "", TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp_, var, "PERF_XFUNC_AVE", "", TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp_, var, "PERF_TCL_AVE",   "", TCL_GLOBAL_ONLY);
-    Tcl_SetVar2(interp_, var, "PERF_TOTAL_AVE", "", TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_FREQ_AVE",  (const char *)'\0', TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_GEN_AVE",   (const char *)'\0', TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_XFUNC_AVE", (const char *)'\0', TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_TCL_AVE",   (const char *)'\0', TCL_GLOBAL_ONLY);
+    Tcl_SetVar2(interp_, var, "PERF_TOTAL_AVE", (const char *)'\0', TCL_GLOBAL_ONLY);
 }
 

@@ -215,7 +215,7 @@ void RtdRPFile::update_count()
 	    bof = 1;
 	if (imageCounter_ >= numFileImages_)
 	    eof = 1;
-	sprintf(buffer, "%d %d %d %d", imageCounter_, numFileImages_, bof, eof);
+	snprintf(buffer, 64, "%d %d %d %d", imageCounter_, numFileImages_, bof, eof);
 	imageCounter__  = imageCounter_;
 	numFileImages__ = numFileImages_;
 	Tcl_SetVar2(interp(), instname(), "COUNT", buffer, TCL_GLOBAL_ONLY);
@@ -270,7 +270,7 @@ RtdRPFile *RtdRPFile::makeFileObject(Tcl_Interp* interp, char* instname, char *f
 
     // Open the file for reading, to check the type of file that we have.
     if ((file = fopen(fileName, "r")) == NULL) {
-	sprintf(err, "Unable to open file %s", fileName);
+	snprintf(err, 64, "Unable to open file %s", fileName);
 	return NULL;
     }
 
@@ -351,30 +351,30 @@ int RtdFITSCube::writeFITSHeader(const rtdIMAGE_INFO *imageInfo, int subImage,
     // Get the number of keyword lines in the FITS header (including END).
     int size = FITSBLOCK/80;
     
-    sprintf(buf, "%-8s= %s", "SIMPLE", "T");
+    snprintf(buf, 81, "%-8s= %s", "SIMPLE", "T");
     fprintf(fPtr, "%-80s", buf); size--;
     int bitpix = imageInfo->dataType;
     if (bitpix == -16)
 	bitpix = 16;
-    sprintf(buf, "%-8s= %d", "BITPIX", bitpix);
+    snprintf(buf, 81, "%-8s= %d", "BITPIX", bitpix);
     fprintf(fPtr, "%-80s", buf); size--;
-    sprintf(buf, "%-8s= %d", "NAXIS", 3);
+    snprintf(buf, 81, "%-8s= %d", "NAXIS", 3);
     fprintf(fPtr, "%-80s", buf); size--;
-    sprintf(buf, "%-8s= %d", "NAXIS1", (subImage ? width : imageInfo->xPixels));
+    snprintf(buf, 81, "%-8s= %d", "NAXIS1", (subImage ? width : imageInfo->xPixels));
     fprintf(fPtr, "%-80s", buf); size--;
-    sprintf(buf, "%-8s= %d", "NAXIS2", (subImage ? height: imageInfo->yPixels));
+    snprintf(buf, 81, "%-8s= %d", "NAXIS2", (subImage ? height: imageInfo->yPixels));
     fprintf(fPtr, "%-80s", buf); size--;
     if (imageInfo->dataType == -16) {
-	sprintf(buf, "%-8s= %f", "BZERO", (double)32768.0);
+	snprintf(buf, 81, "%-8s= %f", "BZERO", (double)32768.0);
 	fprintf(fPtr, "%-80s", buf); size--;
-	sprintf(buf, "%-8s= %f", "BSCALE", (double)1.0);
+	snprintf(buf, 81, "%-8s= %f", "BSCALE", (double)1.0);
 	fprintf(fPtr, "%-80s", buf); size--;
     }
 
     // add the date to the cube header.
     time_t clock = time(0);
     strftime(buf2, sizeof(buf2), "%Y-%m-%d", localtime(&clock));
-    sprintf(buf, "%-8s= \'%s\'", "DATE", buf2);
+    snprintf(buf, 81, "%-8s= \'%s\'", "DATE", buf2);
     fprintf(fPtr, "%-80s", buf); size--;
     
     /*
@@ -383,7 +383,7 @@ int RtdFITSCube::writeFITSHeader(const rtdIMAGE_INFO *imageInfo, int subImage,
      */
     int i = 0;
     while (size > 1) {
-	sprintf(buf, "BLANK%02d", i++);
+	snprintf(buf, 81, "BLANK%02d", i++);
     	fprintf(fPtr, "%-80s", buf); size--;
     }
 
@@ -447,9 +447,9 @@ RtdFITSCube::~RtdFITSCube()
 
 	    // Replace this blank field with NAXIS3 count.
 	    fseek(fPtr, filePos, SEEK_SET);
-    	    sprintf(buf2, "%-8s= %d", "NAXIS3", 
+    	    snprintf(buf2, 64, "%-8s= %d", "NAXIS3", 
 		    (fileFull_ ? numFileImages_ : imageCounter_));
-	    sprintf(buffer, "%-80s", buf2);
+	    snprintf(buffer, 81, "%-80s", buf2);
 	    fputs(buffer, fPtr);
 	    break;
 	}
@@ -469,22 +469,22 @@ RtdFITSCube::~RtdFITSCube()
      * Now add the timestamp information below this line.
      */
     char TSBuf[64];
-    sprintf(TSBuf, "\0");
+    memset (TSBuf, 0, 64);
     char buf3[32];
     for (i = 0; i < (fileFull_ ? numFileImages_ : imageCounter_); i++) {
-	sprintf(buf3, "%.3lf ", timeStamps_[i]);
+	snprintf(buf3, 32, "%.3lf ", timeStamps_[i]);
 	// Create concatenated timestamp string.
 	strcat(TSBuf, buf3);
 	if (!((i + 1) % 3)) {
 	    // Every third string, dump to the FITS header.
-	    sprintf(buffer, "%-8s= \"TS: %s/\"", "COMMENT", TSBuf);
+	    snprintf(buffer, 81, "%-8s= \"TS: %s/\"", "COMMENT", TSBuf);
 	    fprintf(fPtr, "%-80s", buffer);
-	    sprintf(TSBuf, "\0");
+            memset(TSBuf, 0, 64);
 	}
     }
     // If there are any timestamps left, dump these to the FITS header.
     if (TSBuf[0] != '\0') {
-	sprintf(buffer, "%-8s= \"TS: %s/\"", "COMMENT", TSBuf);
+	snprintf(buffer, 81, "%-8s= \"TS: %s/\"", "COMMENT", TSBuf);
 	fprintf(fPtr, "%-80s", buffer);
     }
 
@@ -570,7 +570,7 @@ int RtdFITSCube::open(char *errMsg)
 	dataType_ = -16;
 
     if (feof(fPtr) || !foundBITPIX || !foundNAXIS1 || !foundNAXIS2) {
-	sprintf(errMsg, "Not a FITS file");
+	snprintf(errMsg, 32, "Not a FITS file");
 	return TCL_ERROR;
     }
 
@@ -608,7 +608,7 @@ int RtdFITSCube::open(char *errMsg)
     // Index i should be the same as the number of file images, or something
     // is terribly wrong.
     if (hasTimeInfo_ && i != numFileImages_) {
-	sprintf(errMsg, "Inconsistency between timestamp and image number");
+	snprintf(errMsg, 64, "Inconsistency between timestamp and image number");
 	return TCL_ERROR;
     }
 
@@ -732,7 +732,7 @@ int RtdFITSCube::addImage(rtdIMAGE_INFO *imageInfo, int subImage, int x0,
 		*ps++ = (unsigned int) nn;
 	    }
 	    fwrite((char*)ps_new, shmSize, 1, fPtr);
-	    delete ps_new;
+	    delete[] ps_new;
 	}
 	else {
 	    fwrite(shmData.ptr(), shmSize, 1, fPtr);     // Copy entire buffer
@@ -768,7 +768,7 @@ int RtdFITSCube::addImage(rtdIMAGE_INFO *imageInfo, int subImage, int x0,
 		    *ps++ = (unsigned int) nn;
 		}
 		fwrite((char*)ps_new, shmSize, 1, fPtr);
-		delete ps_new;
+		delete[] ps_new;
 	    }
 	    else {
 		fwrite(srcPtr, width * bpp, 1, fPtr);
@@ -792,6 +792,8 @@ int RtdFITSCube::addImage(rtdIMAGE_INFO *imageInfo, int subImage, int x0,
 	imageCounter_ = 0;
     }
     update_count();
+
+    return TCL_OK;
 }
 
 /*

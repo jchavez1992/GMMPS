@@ -34,7 +34,7 @@ on equatorial coordinates (mnemonic {\tt q}).
 #define zeta	Euler_angles[2]
 
 /*============================================================================*/
-int prej_R  (R, eq0, eq1 )   
+int prej_R  (
 /*+++
 .PURPOSE  Compute the precession matrix, using the new IAU constants.
 	(IAU 1976). The resulting matrix is such that
@@ -43,9 +43,10 @@ int prej_R  (R, eq0, eq1 )
 \end{TeX}
 .RETURNS OK
 ---*/
-	double R[3][3];	/* OUT: rotation matrix */
-	double eq0; 	/* IN: Initial equinox (Julian Years)	*/
-	double eq1; 	/* IN: Final equinox (Julian Years) 	*/
+	double R[3][3],	/* OUT: rotation matrix */
+	double eq0, 	/* IN: Initial equinox (Julian Years)	*/
+	double eq1 	/* IN: Final equinox (Julian Years) 	*/
+)
 {
  	double t0, dt, w;
 	double Euler_angles[3];
@@ -69,7 +70,7 @@ int prej_R  (R, eq0, eq1 )
 }
 
 /*============================================================================*/
-int prej_q (q0, q1, eq0, eq1)  
+int prej_u (
 /*+++
 .PURPOSE Performs a complete precession between 2 equinoxes.
 	Use the new IAU constants.
@@ -77,10 +78,48 @@ int prej_q (q0, q1, eq0, eq1)
 	then apply the rotation.
 .RETURNS OK
 ---*/
-	double q0[2];	/* IN: ra+dec at equinox eq0 in degrees */
-	double q1[2]; 	/* OUT: precessed to equinox eq1	*/
-	double eq0; 	/* IN: Initial equinox (Julian Years)	*/
-	double eq1; 	/* IN: Final equinox (Julian Years) 	*/
+	double u0[3],	/* IN: Unit vector at equinox eq0 */
+	double u1[3], 	/* OUT: precessed to equinox eq1	*/
+	double eq0, 	/* IN: Initial equinox (Julian Years)	*/
+	double eq1 	/* IN: Final equinox (Julian Years) 	*/
+)
+{ 
+	static double _eq0 = 2000.e0;
+	static double _eq1 = 2000.e0;
+	static double  _r[3][3]  = { 	{1.e0, 0.e0, 0.e0},
+				{0.e0, 1.e0, 0.e0},
+				{0.e0, 0.e0, 1.e0}};
+
+  if (eq0 == eq1)	/* No precession at all, same equinox!!!	*/
+  {	u1[0] = u0[0];
+	u1[1] = u0[1];
+	u1[2] = u0[2];
+	return(OK);
+  }
+
+  if ( (_eq0 != eq0) || (_eq1 != eq1) )
+  {	_eq0 = eq0;
+	_eq1 = eq1;
+	prej_R(_r, eq0, eq1);	/* Compute precession matrix	*/
+  }
+
+  return (tr_uu ( u0, u1, _r));	/* And finally rotate...	*/
+}
+
+/*============================================================================*/
+int prej_q (
+/*+++
+.PURPOSE Performs a complete precession between 2 equinoxes.
+	Use the new IAU constants.
+.METHOD  Compute the precession rotation matrix if necessary,
+	then apply the rotation.
+.RETURNS OK
+---*/
+	double q0[2],	/* IN: ra+dec at equinox eq0 in degrees */
+	double q1[2], 	/* OUT: precessed to equinox eq1	*/
+	double eq0, 	/* IN: Initial equinox (Julian Years)	*/
+	double eq1 	/* IN: Final equinox (Julian Years) 	*/
+)
 { 
 	double us[3];
 	
@@ -97,45 +136,9 @@ int prej_q (q0, q1, eq0, eq1)
   return (tr_uo ( us, q1));	/* And finally -> coordinates	*/
 }
 
-/*============================================================================*/
-int prej_u (u0, u1, eq0, eq1)  
-/*+++
-.PURPOSE Performs a complete precession between 2 equinoxes.
-	Use the new IAU constants.
-.METHOD  Compute the precession rotation matrix if necessary,
-	then apply the rotation.
-.RETURNS OK
----*/
-	double u0[3];	/* IN: Unit vector at equinox eq0 */
-	double u1[3]; 	/* OUT: precessed to equinox eq1	*/
-	double eq0; 	/* IN: Initial equinox (Julian Years)	*/
-	double eq1; 	/* IN: Final equinox (Julian Years) 	*/
-{ 
-	static double _eq0 = 2000.e0;
-	static double _eq1 = 2000.e0;
-	static double  _r[3][3]  = { 	{1.e0, 0.e0, 0.e0},
-				{0.e0, 1.e0, 0.e0},
-				{0.e0, 0.e0, 1.e0}};
-
-  if (eq0 == eq1)		/* No precession at all, same equinox!!!	*/
-  {	u1[0] = u0[0];
-	u1[1] = u0[1];
-	u1[2] = u0[2];
-	return(OK);
-  }
-
-  if ( (_eq0 != eq0) || (_eq1 != eq1) )
-  {	_eq0 = eq0;
-	_eq1 = eq1;
-	prej_R(_r, eq0, eq1);	/* Compute precession matrix	*/
-  }
-
-  return (tr_uu ( u0, u1, _r));	/* And finally rotate...	*/
-}
-
 #if 0
 /*============================================================================*/
-int prej_qv (q0, v0, q1, v1, eq0, ep0, eq1, ep1)
+int prej_qv (
 /*+++
 .PURPOSE Performs a complete precession between (equinox0, epoch 0)
 	to (equinox 1, epoch 1).
@@ -143,14 +146,15 @@ int prej_qv (q0, v0, q1, v1, eq0, ep0, eq1, ep1)
 .METHOD  Unit vectors
 .RETURNS OK
 ---*/
-	double q0[2];	/* IN: Position at equinox eq0, epoch ep0 	*/
-	double v0[3];	/* IN: Velocity vector				*/
-	double q1[2]; 	/* OUT: precessed to equinox + epoch ep1	*/
-	double v1[3];	/* OUT: Velocity vector				*/
-	double eq0;	/* IN: Initial equinox	(Julian Years)	*/
-	double ep0;	/* IN: Initial epoch	(Julian Years)	*/
-	double eq1;	/* IN: Final equinox	(Julian Years)	*/
-	double ep1;	/* IN: Final epoch + equinox (Julian Years)	*/
+	double q0[2],	/* IN: Position at equinox eq0, epoch ep0 	*/
+	double v0[3],	/* IN: Velocity vector				*/
+	double q1[2], 	/* OUT: precessed to equinox + epoch ep1	*/
+	double v1[3],	/* OUT: Velocity vector				*/
+	double eq0,	/* IN: Initial equinox	(Julian Years)	*/
+	double ep0,	/* IN: Initial epoch	(Julian Years)	*/
+	double eq1,	/* IN: Final equinox	(Julian Years)	*/
+	double ep1	/* IN: Final epoch + equinox (Julian Years)	*/
+)
 { 
 	static double us[3];
 
@@ -161,7 +165,7 @@ int prej_qv (q0, v0, q1, v1, eq0, ep0, eq1, ep1)
 }
 
 /*============================================================================*/
-int prej_uv (u0, v0, u1, v1, eq0, ep0, eq1, ep1)
+int prej_uv (
 /*+++
 .PURPOSE Performs a complete precession between (equinox0, epoch 0)
 	to (equinox 1, epoch 1).
@@ -170,14 +174,15 @@ int prej_uv (u0, v0, u1, v1, eq0, ep0, eq1, ep1)
 	precess to new equinox.
 .RETURNS OK
 ---*/
-	double u0[3];	/* IN: Unit vector at equinox eq0, epoch ep0 	*/
-	double v0[3];	/* IN: Velocity vector	("/yr)			*/
-	double u1[3]; 	/* OUT: precessed to equinox eq1 and epoch ep1	*/
-	double v1[3];	/* OUT: Velocity vector	("/yr)		*/
-	double eq0;	/* IN: Initial equinox	(Julian Years)	*/
-	double ep0;	/* IN: Initial epoch	(Julian Years)	*/
-	double eq1;	/* IN: Final equinox	(Julian Years)	*/
-	double ep1;	/* IN: Final epoch + equinox (Julian Years)	*/
+	double u0[3],	/* IN: Unit vector at equinox eq0, epoch ep0 	*/
+	double v0[3],	/* IN: Velocity vector	("/yr)			*/
+	double u1[3], 	/* OUT: precessed to equinox eq1 and epoch ep1	*/
+	double v1[3],	/* OUT: Velocity vector	("/yr)		*/
+	double eq0,	/* IN: Initial equinox	(Julian Years)	*/
+	double ep0,	/* IN: Initial epoch	(Julian Years)	*/
+	double eq1,	/* IN: Final equinox	(Julian Years)	*/
+	double ep1	/* IN: Final epoch + equinox (Julian Years)	*/
+)
 { 
 	static double _eq0 = 2000.e0;
 	static double _eq1 = 2000.e0;
@@ -226,10 +231,3 @@ int prej_uv (u0, v0, u1, v1, eq0, ep0, eq1, ep1)
 }
 
 #endif
-                                                        
-
-                                                               
-                                                               
-                                                               
-                                                               
-                              

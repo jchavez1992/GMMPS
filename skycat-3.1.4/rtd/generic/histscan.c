@@ -16,21 +16,25 @@ static char SccsId[] = "%W%  %G%";
 
 #include "histeq.h"
 
-static SubrangeLink *get_new_subrange_record();
-static void fill_subrange_record();
+static SubrangeLink *get_new_subrange_record (SubrangeLink *old_link);
+static void fill_subrange_record (SubrangeLink *link, int low, int high,
+     int range, int nz_entries, int pixel_area, int max_entry);
+
+extern char *calloc_errchk (int count, unsigned int size, char *errmess);
+
 
 /*
  * Subroutine:	scan_histogram_for_peaks
  * Purpose:	Scan the image histogram picking out large cell count values
  *		make sub-groups of the histogram between the large count levels
  */
-void scan_histogram_for_peaks ( subrange, histogram,
-			        pixel_area, map_levels, average )
-     SubrangeLink *subrange;	/* i/o: link (initially covers range) */
-     int *histogram;		/* i: histogram (for signed index) */
-     int *pixel_area;		/* i/o: number of pixels to account for */
-     int *map_levels;		/* i/o: number of levels left to map */
-     int *average;		/* i/o: average pixels per color map level */
+void scan_histogram_for_peaks (
+     SubrangeLink *subrange,	/* i/o: link (initially covers range) */
+     int *histogram,		/* i: histogram (for signed index) */
+     int *pixel_area,		/* i/o: number of pixels to account for */
+     int *map_levels,		/* i/o: number of levels left to map */
+     int *average		/* i/o: average pixels per color map level */
+)
 {
   int i;
   int scan_end;			/* l: end of subrange in histogram */
@@ -99,11 +103,11 @@ void scan_histogram_for_peaks ( subrange, histogram,
  * Purpose:	Create a new link in histogram link list, after one given
  * Returns:	Pointer to new subrange link
  */
-static SubrangeLink *get_new_subrange_record ( old_link )
-     SubrangeLink *old_link;
+static SubrangeLink *get_new_subrange_record (
+     SubrangeLink *old_link
+)
 {
   SubrangeLink *new_link;
-  char *calloc_errchk();
 
   /* create new record for histogram link list */
   new_link = (SubrangeLink *)
@@ -119,14 +123,14 @@ static SubrangeLink *get_new_subrange_record ( old_link )
  * Subroutine:	fill_subrange_record
  * Purpose:	Set parameters in subrange link list record
  */
-static void fill_subrange_record ( link, low, high, range, nz_entries,
-				   pixel_area, max_entry )
-     SubrangeLink *link;
-     int low, high;		/* i: first and last index in histogram */
-     int range;			/* i: span of histogram entries */
-     int nz_entries;		/* i: non-zero entries in range */
-     int pixel_area;		/* i: sum of histogram entry values (pixels) */
-     int max_entry;		/* i: highest histogram entry value */
+static void fill_subrange_record (
+     SubrangeLink *link,
+     int low, int high,		/* i: first and last index in histogram */
+     int range,			/* i: span of histogram entries */
+     int nz_entries,		/* i: non-zero entries in range */
+     int pixel_area,		/* i: sum of histogram entry values (pixels) */
+     int max_entry		/* i: highest histogram entry value */
+)
 {
   link->low = low;
   link->high = high;

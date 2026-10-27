@@ -16,7 +16,6 @@
  * Allan Brighton  13 Jun 96  Created
  */
 
-using namespace std;
 
 // NULL values
 //#define TCS_CATALOG_NULL_INT 4294967294      /* (2^32 - 1) */
@@ -60,17 +59,17 @@ public:
     TcsCatalogObject& operator=(const TcsCatalogObject &);
 
     // output operator
-    friend ostream& operator<<(ostream&, const TcsCatalogObject&);
+    friend std::ostream& operator<<(std::ostream&, const TcsCatalogObject&);
 
     // print this object to the given buffer
     void print(char* buf, int bufsize);
 
     // print the headings to match the output of '<<' above 
-    static void printHeadings(ostream& os);
+    static void printHeadings(std::ostream& os);
     static void printHeadings(char* buf, int bufsize);
 
     // print this object as a tab separated row
-    int printTableRow(ostream&);
+    int printTableRow(std::ostream&);
  
     // result all fields to default values
     void reset();

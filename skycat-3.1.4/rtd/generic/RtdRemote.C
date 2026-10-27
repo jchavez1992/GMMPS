@@ -203,7 +203,7 @@ RtdRemote::RtdRemote(Tcl_Interp* interp, int port, int verbose)
     }
 
     // Bind the listen address to the socket. 
-    if (::bind(socket_, (struct sockaddr *)&addr, addrSize) == -1) {
+    if (bind(socket_, (struct sockaddr *)&addr, addrSize) == -1) {
 	status_ = sys_error("bind");
 	return;
     }
@@ -255,7 +255,7 @@ int RtdRemote::makeStatusFile(sockaddr_in& addr)
     
     char filename[1024];
     char* home = getenv("HOME");
-    sprintf(filename, "%s/.rtd-remote", (home ? home : "/tmp"));
+    snprintf(filename, 1024, "%s/.rtd-remote", (home ? home : "/tmp"));
     FILE* f = fopen(filename, "w+");
     if (!f) 
 	return sys_error(filename);
@@ -363,7 +363,7 @@ int RtdRemote::fileEvent()
 int RtdRemote::sendToClient(int socket, int status, int length, const char* result)
 {
     char buf[80];
-    sprintf(buf, "%d %d\n", status, length);
+    snprintf(buf, 80, "%d %d\n", status, length);
     if (writen(socket, buf, strlen(buf)) <= 0 
 	|| writen(socket, result, length) < 0) {
 	return sys_error("error writing to client");
@@ -452,7 +452,8 @@ int RtdRemote::clientEvent(Client* clientPtr)
 #endif
 
     int status = evalClientCmd(buf);
-    return sendToClient(clientPtr->socket, status, strlen(interp_->result), interp_->result);
+    return sendToClient(clientPtr->socket, status,
+        strlen(Tcl_GetStringResult(interp_)), Tcl_GetStringResult(interp_));
 }
     
 

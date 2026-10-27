@@ -79,6 +79,10 @@ int ffppx(  fitsfile *fptr,  /* I - FITS file pointer                       */
     {
       ffpprj(fptr, group, firstelem, nelem, (long *) array, status);
     }
+    else if (datatype == TULONGLONG)
+    {
+      ffpprujj(fptr, group, firstelem, nelem, (ULONGLONG *) array, status);
+    }
     else if (datatype == TLONGLONG)
     {
       ffpprjj(fptr, group, firstelem, nelem, (LONGLONG *) array, status);
@@ -164,6 +168,10 @@ int ffppxll(  fitsfile *fptr,  /* I - FITS file pointer                       */
     else if (datatype == TLONG)
     {
       ffpprj(fptr, group, firstelem, nelem, (long *) array, status);
+    }
+    else if (datatype == TULONGLONG)
+    {
+      ffpprujj(fptr, group, firstelem, nelem, (ULONGLONG *) array, status);
     }
     else if (datatype == TLONGLONG)
     {
@@ -264,6 +272,11 @@ int ffppxn(  fitsfile *fptr,  /* I - FITS file pointer                       */
     {
       ffppnj(fptr, group, firstelem, nelem, (long *) array,
              *(long *) nulval, status);
+    }
+    else if (datatype == TULONGLONG)
+    {
+      ffppnujj(fptr, group, firstelem, nelem, (ULONGLONG *) array,
+             *(ULONGLONG *) nulval, status);
     }
     else if (datatype == TLONGLONG)
     {
@@ -368,6 +381,11 @@ int ffppxnll(  fitsfile *fptr,  /* I - FITS file pointer                       *
       ffppnj(fptr, group, firstelem, nelem, (long *) array,
              *(long *) nulval, status);
     }
+    else if (datatype == TULONGLONG)
+    {
+      ffppnujj(fptr, group, firstelem, nelem, (ULONGLONG *) array,
+             *(ULONGLONG *) nulval, status);
+    }
     else if (datatype == TLONGLONG)
     {
       ffppnjj(fptr, group, firstelem, nelem, (LONGLONG *) array,
@@ -440,6 +458,10 @@ int ffppr(  fitsfile *fptr,  /* I - FITS file pointer                       */
     else if (datatype == TLONG)
     {
       ffpprj(fptr, group, firstelem, nelem, (long *) array, status);
+    }
+    else if (datatype == TULONGLONG)
+    {
+      ffpprujj(fptr, group, firstelem, nelem, (ULONGLONG *) array, status);
     }
     else if (datatype == TLONGLONG)
     {
@@ -524,6 +546,11 @@ int ffppn(  fitsfile *fptr,  /* I - FITS file pointer                       */
     {
       ffppnj(fptr, group, firstelem, nelem, (long *) array,
              *(long *) nulval, status);
+    }
+    else if (datatype == TULONGLONG)
+    {
+      ffppnujj(fptr, group, firstelem, nelem, (ULONGLONG *) array,
+             *(ULONGLONG *) nulval, status);
     }
     else if (datatype == TLONGLONG)
     {
@@ -612,11 +639,17 @@ int ffpss(  fitsfile *fptr,   /* I - FITS file pointer                       */
         ffpssj(fptr, 1, naxis, naxes, blc, trc,
                (long *) array, status);
     }
+    else if (datatype == TULONGLONG)
+    {
+        ffpssujj(fptr, 1, naxis, naxes, blc, trc,
+               (ULONGLONG *) array, status);
+    }
     else if (datatype == TLONGLONG)
     {
         ffpssjj(fptr, 1, naxis, naxes, blc, trc,
                (LONGLONG *) array, status);
-    }    else if (datatype == TFLOAT)
+    }    
+    else if (datatype == TFLOAT)
     {
         ffpsse(fptr, 1, naxis, naxes, blc, trc,
                (float *) array, status);
@@ -694,6 +727,11 @@ int ffpcl(  fitsfile *fptr,  /* I - FITS file pointer                       */
     else if (datatype == TLONG)
     {
       ffpclj(fptr, colnum, firstrow, firstelem, nelem, (long *) array,
+             status);
+    }
+    else if (datatype == TULONGLONG)
+    {
+      ffpclujj(fptr, colnum, firstrow, firstelem, nelem, (ULONGLONG *) array,
              status);
     }
     else if (datatype == TLONGLONG)
@@ -804,6 +842,11 @@ int ffpcn(  fitsfile *fptr,  /* I - FITS file pointer                       */
       ffpcnj(fptr, colnum, firstrow, firstelem, nelem, (long *) array,
              *(long *) nulval, status);
     }
+    else if (datatype == TULONGLONG)
+    {
+      ffpcnujj(fptr, colnum, firstrow, firstelem, nelem, (ULONGLONG *) array,
+             *(ULONGLONG *) nulval, status);
+    }
     else if (datatype == TLONGLONG)
     {
       ffpcnjj(fptr, colnum, firstrow, firstelem, nelem, (LONGLONG *) array,
@@ -844,6 +887,121 @@ int ffpcn(  fitsfile *fptr,  /* I - FITS file pointer                       */
 
     return(*status);
 }
+
+/*--------------------------------------------------------------------------*/
+int ffpcln( fitsfile *fptr,   /* I - FITS file pointer                       */
+	    int ncols,        /* I - number of columns to write              */
+            int  *datatype,   /* I - datatypes of the values                 */
+            int  *colnum,     /* I - columns numbers to write (1 = 1st col)  */
+            LONGLONG  firstrow,   /* I - first row to write (1 = 1st row)    */
+            LONGLONG nrows,       /* I - number of rows to write             */
+            void **array,     /* I - array of pointers to values to write    */
+            void **nulval,    /* I - array of pointers to values for undefined pixels */
+            int  *status)     /* IO - error status                           */
+/*
+  Write arrays of values to NCOLS table columns. This is an optimization
+  to write all columns in one pass through the table.  The datatypes of the
+  input arrays are defined by the 3rd argument.  Data conversion
+  and scaling will be performed if necessary (e.g, if the datatype of
+  the FITS array is not the same as the array being written).
+  Undefined elements for column i that are equal to *(nulval[i]) are set to
+  the defined null value, unless nulval[i]=0,
+  in which case no checking for undefined values will be performed.
+*/
+{
+    LONGLONG ntotrows, ndone, nwrite, currow;
+    long nrowbuf;
+    LONGLONG *repeats = 0;
+    size_t sizes[255] = {0};
+    int icol;
+
+    sizes[TBYTE] = sizes[TSBYTE] = sizes[TLOGICAL] = sizeof(char);
+    sizes[TUSHORT] = sizes[TSHORT] = sizeof(short int);
+    sizes[TINT] = sizes[TUINT] = sizeof(int);
+    sizes[TLONG] = sizes[TULONG] = sizeof(long int);
+    sizes[TLONGLONG] = sizes[TULONGLONG] = sizeof(LONGLONG);
+    sizes[TFLOAT] = sizeof(float);
+    sizes[TDOUBLE] = sizeof(double);
+    sizes[TDBLCOMPLEX] = 2*sizeof(double);
+
+    if (*status > 0)
+        return(*status);
+
+    if (ncols <= 0) return (*status=0);
+
+    repeats = malloc(sizeof(LONGLONG)*ncols);
+    if (repeats == 0) return (*status=MEMORY_ALLOCATION);
+
+    fits_get_num_rowsll(fptr, &ntotrows, status);
+    fits_get_rowsize(fptr, &nrowbuf, status);
+
+    /* Retrieve column repeats */
+    for (icol = 0; (icol < ncols) && (icol < 1000); icol++) {
+      int typecode;
+      LONGLONG repeat, width;
+      fits_get_coltypell(fptr, colnum[icol], &typecode, 
+			 &repeat, &width, status);
+      repeats[icol] = repeat;
+
+      if (datatype[icol] == TBIT || datatype[icol] == TSTRING ||
+	  sizes[datatype[icol]] == 0) {
+	ffpmsg("Cannot write to TBIT or TSTRING datatypes (ffpcln)");
+	*status = BAD_DATATYPE;
+      }
+      if (typecode < 0) {
+	ffpmsg("Cannot write to variable-length data (ffpcln)");
+	*status = BAD_DIMEN;
+      }
+
+      if (*status) break;
+    }
+    if (*status) {
+      free(repeats);
+      return *status;
+    }
+
+    /* Optimize for 1 column */
+    if (ncols == 1) {
+      fits_write_colnull(fptr, datatype[0], colnum[0], firstrow, 1,
+			 nrows*repeats[0], 
+			 array[0], nulval[0], status);
+      free(repeats);
+      return *status;
+    }
+
+    /* Scan through file, in chunks of nrowbuf */
+    currow = firstrow;
+    ndone = 0;
+    while (ndone < nrows) {
+      int icol;
+      nwrite = (nrows-ndone);
+      if (nwrite > nrowbuf) nwrite = nrowbuf;
+
+      for (icol=0; icol<ncols; icol++) {
+	LONGLONG nelem1 = (nwrite*repeats[icol]);
+	char *array1 = (char *) array[icol] + repeats[icol]*ndone*sizes[datatype[icol]];
+
+	fits_write_colnull(fptr, datatype[icol], colnum[icol], ndone+1, 1, 
+			   nelem1, array1, nulval[icol], status);
+	if (*status) {
+	  char errmsg[100];
+	  sprintf(errmsg,
+		  "Failed to write column %d data rows %lld-%lld (ffpcln)",
+		  colnum[icol], currow, currow+nwrite-1);
+	  ffpmsg(errmsg);
+	  break;
+	}
+      }
+
+      if (*status) break;
+      currow += nwrite;
+      ndone += nwrite;
+    }
+
+    free(repeats);
+    return *status;
+}
+
 /*--------------------------------------------------------------------------*/
 int fits_iter_set_by_name(iteratorCol *col, /* I - iterator col structure */
            fitsfile *fptr,  /* I - FITS file pointer                      */
@@ -855,7 +1013,8 @@ int fits_iter_set_by_name(iteratorCol *col, /* I - iterator col structure */
 */
 {
     col->fptr = fptr;
-    strcpy(col->colname, colname);
+    strncpy(col->colname, colname,69);
+    col->colname[69]=0;
     col->colnum = 0;  /* set column number undefined since name is given */
     col->datatype = datatype;
     col->iotype = iotype;
@@ -894,7 +1053,8 @@ int fits_iter_set_colname(iteratorCol *col, /* I - iterator col structure  */
   set iterator column parameter
 */
 {
-    strcpy(col->colname, colname);
+    strncpy(col->colname, colname,69);
+    col->colname[69]=0;
     col->colnum = 0;  /* set column number undefined since name is given */
     return(0);
 }
@@ -1061,7 +1221,7 @@ int ffiter(int n_cols,
     void *dataptr, *defaultnull;
     colNulls *col;
     int ii, jj, tstatus, naxis, bitpix;
-    int typecode, hdutype, jtype, type, anynul, nfiles, nbytes;
+    int typecode, hdutype, jtype, type, anynul=0, nfiles, nbytes;
     long totaln, nleft, frow, felement, n_optimum, i_optimum, ntodo;
     long rept, rowrept, width, tnull, naxes[9] = {1,1,1,1,1,1,1,1,1}, groups;
     double zeros = 0.;
@@ -1077,8 +1237,6 @@ int ffiter(int n_cols,
         return(*status = BAD_COL_NUM);  /* negative number of columns */
     }
 
-    col = calloc(n_cols, sizeof(colNulls) ); /* memory for the null values */
-
     /*------------------------------------------------------------*/
     /* Make sure column numbers and datatypes are in legal range  */
     /* and column numbers and datatypes are legal.                */ 
@@ -1092,14 +1250,28 @@ int ffiter(int n_cols,
         /* check that output datatype code value is legal */
         type = cols[jj].datatype;  
 
-        /* Allow variable length arrays for InputCol and InputOutputCol columns,
-	   but not for OutputCol columns.  Variable length arrays have a
-	   negative type code value. */
+        /* Allow variable length arrays for InputCol and
+	   InputOutputCol columns, but not for OutputCol/TemporaryCol
+	   columns.  Variable length arrays have a negative type code
+	   value. */
 
-        if ((cols[jj].iotype != OutputCol) && (type<0)) {
+        if ( !((cols[jj].iotype == OutputCol) || (cols[jj].iotype == TemporaryCol))
+	     && (type<0)) {
             type*=-1;
         }
 
+	/* TemporaryCol must have defined datatype and repeat */
+	if (cols[jj].iotype == TemporaryCol &&
+	    (type <= 0 || cols[jj].repeat <= 0)) {
+	  
+	  snprintf(message,FLEN_ERRMSG,
+		   "TemporaryCol column must have defined datatype and repeat for column %d (ffiter)",
+		   jj + 1);
+	  ffpmsg(message);
+	  return(*status = BAD_DATATYPE);
+	}
+
+	/* Check for variable length or illegal data types */
         if (type != 0      && type != TBYTE  &&
             type != TSBYTE && type != TLOGICAL && type != TSTRING &&
             type != TSHORT && type != TINT     && type != TLONG && 
@@ -1108,11 +1280,11 @@ int ffiter(int n_cols,
 	    type != TLONGLONG )
         {
 	    if (type < 0) {
-	      sprintf(message,
+	      snprintf(message,FLEN_ERRMSG,
               "Variable length array not allowed for output column number %d (ffiter)",
                     jj + 1);
 	    } else {
-            sprintf(message,
+            snprintf(message,FLEN_ERRMSG,
                    "Illegal datatype for column number %d: %d  (ffiter)",
                     jj + 1, cols[jj].datatype);
 	    }
@@ -1127,13 +1299,18 @@ int ffiter(int n_cols,
         cols[jj].tunit[0] = '\0';
         cols[jj].tdisp[0] = '\0';
 
-        ffghdt(cols[jj].fptr, &jtype, status);  /* get HDU type */
+	/* Determine HDU type of this table (or BINARY_TBL for TemporaryCol) */
+	if (cols[jj].iotype != TemporaryCol) {
+	  ffghdt(cols[jj].fptr, &jtype, status);  /* get HDU type */
+	} else {
+	  hdutype = BINARY_TBL;
+	}
 
-        if (hdutype == IMAGE_HDU)
+        if (hdutype == IMAGE_HDU) /* operating on FITS images */
         {
             if (jtype != IMAGE_HDU)
             {
-                sprintf(message,
+                snprintf(message,FLEN_ERRMSG,
                 "File %d not positioned to an image extension (ffiter)",
                     jj + 1);
                 return(*status = NOT_IMAGE);
@@ -1145,65 +1322,76 @@ int ffiter(int n_cols,
 
             tstatus = 0;
             ffgkys(cols[jj].fptr, "BUNIT", cols[jj].tunit, 0, &tstatus);
+
+	    if (cols[jj].iotype == TemporaryCol) {
+                snprintf(message,FLEN_ERRMSG,
+			 "Column type TemporaryCol not permitted for IMAGE HDUs (ffiter)");
+                return(*status = BAD_DATATYPE);
+            }
+	      
         }
-        else
+        else  /* operating on FITS tables */
         {
             if (jtype == IMAGE_HDU)
             {
-                sprintf(message,
+                snprintf(message,FLEN_ERRMSG,
                 "File %d not positioned to a table extension (ffiter)",
                     jj + 1);
                 return(*status = NOT_TABLE);
             }
 
-            if (cols[jj].colnum < 1)
-            {
-                /* find the column number for the named column */
-                if (ffgcno(cols[jj].fptr, CASEINSEN, cols[jj].colname,
-                           &cols[jj].colnum, status) )
-                {
-                    sprintf(message,
-                      "Column '%s' not found for column number %d  (ffiter)",
-                       cols[jj].colname, jj + 1);
-                    ffpmsg(message);
-                    return(*status);
-                }
-            }
-
-            if (cols[jj].colnum < 1 || 
-                cols[jj].colnum > ((cols[jj].fptr)->Fptr)->tfield)
-            {
-                sprintf(message,
-                  "Column %d has illegal table position number: %d  (ffiter)",
-                    jj + 1, cols[jj].colnum);
-                ffpmsg(message);
-                return(*status = BAD_COL_NUM);
-            }
-
-            /* look for column description keywords and update structure */
-            tstatus = 0;
-            ffkeyn("TLMIN", cols[jj].colnum, keyname, &tstatus);
-            ffgkyj(cols[jj].fptr, keyname, &cols[jj].tlmin, 0, &tstatus);
-
-            tstatus = 0;
-            ffkeyn("TLMAX", cols[jj].colnum, keyname, &tstatus);
-            ffgkyj(cols[jj].fptr, keyname, &cols[jj].tlmax, 0, &tstatus);
-
-            tstatus = 0;
-            ffkeyn("TTYPE", cols[jj].colnum, keyname, &tstatus);
-            ffgkys(cols[jj].fptr, keyname, cols[jj].colname, 0, &tstatus);
-            if (tstatus)
+	    if (cols[jj].iotype != TemporaryCol)
+	    {
+	      if (cols[jj].colnum < 1)
+		{
+		  /* find the column number for the named column */
+		  if (ffgcno(cols[jj].fptr, CASEINSEN, cols[jj].colname,
+			     &cols[jj].colnum, status) )
+		    {
+		      snprintf(message,FLEN_ERRMSG,
+			       "Column '%s' not found for column number %d  (ffiter)",
+			       cols[jj].colname, jj + 1);
+		      ffpmsg(message);
+		      return(*status);
+		    }
+		}
+	      
+	      /* check that the column number is valid */
+	      if (cols[jj].colnum < 1 || 
+		  cols[jj].colnum > ((cols[jj].fptr)->Fptr)->tfield)
+		{
+		  snprintf(message,FLEN_ERRMSG,
+			   "Column %d has illegal table position number: %d  (ffiter)",
+			   jj + 1, cols[jj].colnum);
+		  ffpmsg(message);
+		  return(*status = BAD_COL_NUM);
+		}
+	      
+	      /* look for column description keywords and update structure */
+	      tstatus = 0;
+	      ffkeyn("TLMIN", cols[jj].colnum, keyname, &tstatus);
+	      ffgkyj(cols[jj].fptr, keyname, &cols[jj].tlmin, 0, &tstatus);
+	      
+	      tstatus = 0;
+	      ffkeyn("TLMAX", cols[jj].colnum, keyname, &tstatus);
+	      ffgkyj(cols[jj].fptr, keyname, &cols[jj].tlmax, 0, &tstatus);
+	      
+	      tstatus = 0;
+	      ffkeyn("TTYPE", cols[jj].colnum, keyname, &tstatus);
+	      ffgkys(cols[jj].fptr, keyname, cols[jj].colname, 0, &tstatus);
+	      if (tstatus)
                 cols[jj].colname[0] = '\0';
-
-            tstatus = 0;
-            ffkeyn("TUNIT", cols[jj].colnum, keyname, &tstatus);
-            ffgkys(cols[jj].fptr, keyname, cols[jj].tunit, 0, &tstatus);
-
-            tstatus = 0;
-            ffkeyn("TDISP", cols[jj].colnum, keyname, &tstatus);
-            ffgkys(cols[jj].fptr, keyname, cols[jj].tdisp, 0, &tstatus);
+	      
+	      tstatus = 0;
+	      ffkeyn("TUNIT", cols[jj].colnum, keyname, &tstatus);
+	      ffgkys(cols[jj].fptr, keyname, cols[jj].tunit, 0, &tstatus);
+	      
+	      tstatus = 0;
+	      ffkeyn("TDISP", cols[jj].colnum, keyname, &tstatus);
+	      ffgkys(cols[jj].fptr, keyname, cols[jj].tdisp, 0, &tstatus);
+	    }
         }
-    }
+    }  /* end of loop over all columns */
 
     /*-----------------------------------------------------------------*/
     /* use the first file to set the total number of values to process */
@@ -1211,6 +1399,7 @@ int ffiter(int n_cols,
 
     offset = maxvalue(offset, 0L);  /* make sure offset is legal */
 
+    felement = 0;
     if (hdutype == IMAGE_HDU)   /* get total number of pixels in the image */
     {
       fits_get_img_dim(cols[0].fptr, &naxis, status);
@@ -1237,9 +1426,32 @@ int ffiter(int n_cols,
     }
     else   /* get total number or rows in the table */
     {
-      ffgkyj(cols[0].fptr, "NAXIS2", &totaln, 0, status);
-      frow = 1 + offset;
-      felement = 1;
+      /* Note the maxvalue here is a special case to deal with
+	 how the calculator treats expressions that have NO 
+	 referenced columns, just constants and other derivable
+	 values like #ROW.  In that case, the calculator creates
+	 a cols[0].fptr even though there is no column for it,
+	 and the iterator is not meant to allocate any space,
+	 etc for the column.  So the maxvalue() here assures
+	 that cols[0] is always checked, even if ncols==0, which
+	 is how the original logic worked.  This is a bit 
+	 dangerous in the sense that, what happens if the user
+	 passes a non-calculator input to this iterator, and
+	 has NOT set fptr to a legitimate FITS handle.  Boom! */
+      for (jj=0; jj < maxvalue(n_cols,1); jj++) {
+	if (cols[jj].iotype != TemporaryCol && cols[jj].fptr) {
+	  ffgkyj(cols[jj].fptr, "NAXIS2", &totaln, 0, status);
+	  frow = 1 + offset;
+	  felement = 1;
+	  break;
+	}
+      }
+      if (felement != 1) {
+	snprintf(message,FLEN_ERRMSG,
+		 "There must be at least one input or output column in iterator (ffiter)");
+	ffpmsg(message);
+	return(*status = BAD_COL_NUM);
+      }
     }
 
     /*  adjust total by the input starting offset value */
@@ -1257,10 +1469,12 @@ int ffiter(int n_cols,
         /* of unique files.                                          */
 
         nfiles = 1;
-        ffgrsz(cols[0].fptr, &n_optimum, status);
+	n_optimum = 0;
+        if (cols[0].iotype != TemporaryCol) ffgrsz(cols[0].fptr, &n_optimum, status);
 
         for (jj = 1; jj < n_cols; jj++)
         {
+	    if (cols[jj].iotype == TemporaryCol) continue;
             for (ii = 0; ii < jj; ii++)
             {
                 if (cols[ii].fptr == cols[jj].fptr)
@@ -1271,10 +1485,15 @@ int ffiter(int n_cols,
             {
                 nfiles++;
                 ffgrsz(cols[jj].fptr, &i_optimum, status);
-                n_optimum = minvalue(n_optimum, i_optimum);
+		if (n_optimum == 0) { /* If first column is TemporaryCol */
+		  n_optimum = i_optimum;
+		} else {
+		  n_optimum = minvalue(n_optimum, i_optimum);
+		}
             }
         }
 
+        /* divid n_optimum by the number of files that will be processed */
         n_optimum = n_optimum / nfiles;
         n_optimum = maxvalue(n_optimum, 1);
     }
@@ -1291,6 +1510,14 @@ int ffiter(int n_cols,
     /* allocate work arrays for each column */
     /* and determine the null pixel value   */
     /*--------------------------------------*/
+
+    col = calloc(n_cols, sizeof(colNulls) ); /* memory for the null values */
+    if (!col)
+    {
+        ffpmsg("ffiter failed to allocate memory for null values");
+        *status = MEMORY_ALLOCATION;  /* memory allocation failed */
+        return(*status);
+    }
 
     for (jj = 0; jj < n_cols; jj++)
     {
@@ -1319,7 +1546,7 @@ int ffiter(int n_cols,
                  break;
             }
         }
-        else
+        else if (cols[jj].iotype != TemporaryCol)
         {
             if (ffgtcl(cols[jj].fptr, cols[jj].colnum, &typecode, &rept,
                   &width, status) > 0)
@@ -1333,7 +1560,7 @@ int ffiter(int n_cols,
 	       negative type code value. */
 
               if (cols[jj].iotype == OutputCol) {
- 	        sprintf(message,
+ 	        snprintf(message,FLEN_ERRMSG,
                 "Variable length array not allowed for output column number %d (ffiter)",
                     jj + 1);
                 ffpmsg(message);
@@ -1341,6 +1568,28 @@ int ffiter(int n_cols,
               }
 	   }
         }
+	else 
+	{
+	    /* TemporaryCol - datatype etc must be defined */
+	    typecode = cols[jj].datatype;
+	    if (typecode <= 0 || typecode == TBIT || typecode == TSTRING) {
+	      snprintf(message,FLEN_ERRMSG,
+		       "Invalid typecode for temporary output column number %d (ffiter)",
+		       jj+1);
+	      ffpmsg(message);
+                return(*status = BAD_DATATYPE);
+	    }
+
+	    rept = cols[jj].repeat;
+	    if (rept <= 0) {
+	      snprintf(message,FLEN_ERRMSG,
+		       "Invalid repeat (%ld) for temporary output column number %d (ffiter)",
+		       rept, jj+1);
+	      ffpmsg(message);
+	      return(*status = BAD_DIMEN);
+	    }
+
+	}
 
         /* special case where sizeof(long) = 8: use TINT instead of TLONG */
         if (abs(typecode) == TLONG && sizeof(long) == 8 && sizeof(int) == 4) {
@@ -1370,11 +1619,15 @@ int ffiter(int n_cols,
         /* calc total number of elements to do on each iteration */
         if (hdutype == IMAGE_HDU || cols[jj].datatype == TSTRING)
         {
-            ntodo = n_optimum; 
+            ntodo = n_optimum;
             cols[jj].repeat = 1;
+            /* handle special case of a 0-width string column */
+            if (hdutype == BINARY_TBL && rept == 0)
+               cols[jj].repeat = 0;
 
             /* get the BLANK keyword value, if it exists */
-            if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+            if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
             {
                 tstatus = 0;
                 ffgkyj(cols[jj].fptr, "BLANK", &tnull, 0, &tstatus);
@@ -1397,12 +1650,13 @@ int ffiter(int n_cols,
 		rept = maxvalue(rept, rowrept);
 	      }
             }
-	    
+
             ntodo = n_optimum * rept;   /* vector columns */
             cols[jj].repeat = rept;
 
             /* get the TNULL keyword value, if it exists */
-            if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+            if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
             {
                 tstatus = 0;
                 if (hdutype == ASCII_TBL) /* TNULLn value is a string */
@@ -1462,7 +1716,8 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(ntodo + 1, sizeof(char));
           col[jj].nullsize  = sizeof(char);  /* number of bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+              || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
               tnull = minvalue(tnull, 255);
               tnull = maxvalue(tnull, 0);
@@ -1478,7 +1733,8 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(ntodo + 1, sizeof(char));
           col[jj].nullsize  = sizeof(char);  /* number of bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+              || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
               tnull = minvalue(tnull, 127);
               tnull = maxvalue(tnull, -128);
@@ -1494,7 +1750,8 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(ntodo + 1, sizeof(short));
           col[jj].nullsize  = sizeof(short);  /* number of bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+              || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
               tnull = minvalue(tnull, SHRT_MAX);
               tnull = maxvalue(tnull, SHRT_MIN);
@@ -1510,9 +1767,10 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(ntodo + 1, sizeof(unsigned short));
           col[jj].nullsize  = sizeof(unsigned short);  /* bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
-              tnull = minvalue(tnull, USHRT_MAX);
+              tnull = minvalue(tnull, (long) USHRT_MAX);
               tnull = maxvalue(tnull, 0);  /* don't allow negative value */
               col[jj].null.ushortnull = (unsigned short) tnull;
           }
@@ -1526,7 +1784,8 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(sizeof(int), ntodo + 1);
           col[jj].nullsize  = sizeof(int);  /* number of bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
               tnull = minvalue(tnull, INT_MAX);
               tnull = maxvalue(tnull, INT_MIN);
@@ -1542,7 +1801,8 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(ntodo + 1, sizeof(unsigned int));
           col[jj].nullsize  = sizeof(unsigned int);  /* bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
               tnull = minvalue(tnull, INT32_MAX);
               tnull = maxvalue(tnull, 0);
@@ -1550,7 +1810,7 @@ int ffiter(int n_cols,
           }
           else
           {
-              col[jj].null.intnull = UINT_MAX;  /* use maximum as null */
+              col[jj].null.uintnull = UINT_MAX;  /* use maximum as null */
           }
           break;
 
@@ -1558,7 +1818,8 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(ntodo + 1, sizeof(long));
           col[jj].nullsize  = sizeof(long);  /* number of bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
               col[jj].null.longnull = tnull;
           }
@@ -1572,7 +1833,8 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(ntodo + 1, sizeof(unsigned long));
           col[jj].nullsize  = sizeof(unsigned long);  /* bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
               if (tnull < 0)  /* can't use a negative null value */
                   col[jj].null.ulongnull = LONG_MAX;
@@ -1589,7 +1851,8 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(ntodo + 1, sizeof(float));
           col[jj].nullsize  = sizeof(float);  /* number of bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
               col[jj].null.floatnull = (float) tnull;
           }
@@ -1609,7 +1872,8 @@ int ffiter(int n_cols,
           cols[jj].array = calloc(ntodo + 1, sizeof(double));
           col[jj].nullsize  = sizeof(double);  /* number of bytes per value */
 
-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG)
+          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
           {
               col[jj].null.doublenull = (double) tnull;
           }
@@ -1636,7 +1900,8 @@ int ffiter(int n_cols,
           {
             /* allocate string to store the null string value */
             col[jj].null.stringnull = calloc(rept + 1, sizeof(char) );
-            col[jj].null.stringnull[1] = 1; /* to make sure string != 0 */
+            if (rept > 0)
+               col[jj].null.stringnull[1] = 1; /* to make sure string != 0 */
 
             /* allocate big block for the array of table column strings */
             stringptr[0] = calloc((ntodo + 1) * (rept + 1), sizeof(char) );
@@ -1678,7 +1943,7 @@ int ffiter(int n_cols,
           col[jj].nullsize  = sizeof(LONGLONG);  /* number of bytes per value */
 
           if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG ||
-	      abs(typecode) == TLONGLONG)
+	      abs(typecode) == TLONGLONG || abs(typecode) == TINT)
           {
               col[jj].null.longlongnull = tnull;
           }
@@ -1689,7 +1954,7 @@ int ffiter(int n_cols,
           break;
 
          default:
-          sprintf(message,
+          snprintf(message,FLEN_ERRMSG,
                   "Column %d datatype currently not supported: %d:  (ffiter)",
                    jj + 1, cols[jj].datatype);
           ffpmsg(message);
@@ -1720,7 +1985,7 @@ int ffiter(int n_cols,
       /*  read input columns from FITS file(s)  */
       for (jj = 0; jj < n_cols; jj++)
       {
-        if (cols[jj].iotype != OutputCol)
+        if (cols[jj].iotype != OutputCol && cols[jj].iotype != TemporaryCol)
         {
           if (cols[jj].datatype == TSTRING)
           {
@@ -1810,7 +2075,7 @@ int ffiter(int n_cols,
       tstatus = 0;
       for (jj = 0; jj < n_cols; jj++)
       {
-        if (cols[jj].iotype != InputCol)
+        if (cols[jj].iotype != InputCol && cols[jj].iotype != TemporaryCol)
         {
           if (cols[jj].datatype == TSTRING)
           {
@@ -1912,7 +2177,8 @@ cleanup:
                 free(col[jj].null.stringnull); /* free the null string */
             }
         }
-        free(cols[jj].array); /* memory for the array of values from the col */
+        if (cols[jj].array)
+            free(cols[jj].array); /* memory for the array of values from the col */
     }
     free(col);   /* the structure containing the null values */
     return(*status);

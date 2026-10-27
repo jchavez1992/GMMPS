@@ -16,7 +16,6 @@
  * pbiereic        17/02/03  Added 'using namespace std'. Removed ::std specs.
  */
 
-using namespace std;
 #include <sys/types.h>
 #include <iostream>
 
@@ -45,7 +44,7 @@ public:
     static ITTInfo* get(char* filename);
 
     // write a list of ITT files
-    static void list(ostream&);
+    static void list(std::ostream&);
 
     // member access
     const char* name() const {return name_;}

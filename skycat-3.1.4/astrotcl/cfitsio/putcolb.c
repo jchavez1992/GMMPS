@@ -356,10 +356,11 @@ int ffpclb( fitsfile *fptr,  /* I - FITS file pointer                       */
   and will be inverse-scaled by the FITS TSCALn and TZEROn values if necessary.
 */
 {
-    int tcode, maxelem, hdutype, writeraw;
+    int writemode;
+    int tcode, maxelem2, hdutype, writeraw;
     long twidth, incre;
     long  ntodo;
-    LONGLONG repeat, startpos, elemnum, wrtptr, rowlen, rownum, remain, next, tnull;
+    LONGLONG repeat, startpos, elemnum, wrtptr, rowlen, rownum, remain, next, tnull, maxelem;
     double scale, zero;
     char tform[20], cform[20];
     char message[FLEN_ERRMSG];
@@ -377,10 +378,19 @@ int ffpclb( fitsfile *fptr,  /* I - FITS file pointer                       */
     /*---------------------------------------------------*/
     /*  Check input and get parameters about the column: */
     /*---------------------------------------------------*/
-    if (ffgcprll( fptr, colnum, firstrow, firstelem, nelem, 1, &scale, &zero,
-        tform, &twidth, &tcode, &maxelem, &startpos,  &elemnum, &incre,
+
+    /* IMPORTANT NOTE: that the special case of using this subroutine
+       to write bytes to a character column are handled internally
+       by the call to ffgcprll() below.  It will adjust the effective
+       *tcode, repeats, etc, to appear as a TBYTE column. */
+
+    writemode = 17; /* Equivalent to writemode = 1 but allow TSTRING -> TBYTE */
+
+    if (ffgcprll( fptr, colnum, firstrow, firstelem, nelem, writemode, &scale, &zero,
+        tform, &twidth, &tcode, &maxelem2, &startpos,  &elemnum, &incre,
         &repeat, &rowlen, &hdutype, &tnull, snull, status) > 0)
         return(*status);
+    maxelem = maxelem2;
 
     if (tcode == TSTRING)   
          ffcfmt(tform, cform);     /* derive C format for writing strings */
@@ -395,8 +405,12 @@ int ffpclb( fitsfile *fptr,  /* I - FITS file pointer                       */
     if (scale == 1. && zero == 0. && tcode == TBYTE)
     {
         writeraw = 1;
-        maxelem = (int) nelem;  /* we can write the entire array at one time */
-    }
+        if (nelem < (LONGLONG)INT32_MAX) {
+            maxelem = nelem;
+        } else {
+            maxelem = INT32_MAX;
+        }
+     }
     else
         writeraw = 0;
 
@@ -476,18 +490,19 @@ int ffpclb( fitsfile *fptr,  /* I - FITS file pointer                       */
 
             case (TSTRING):  /* numerical column in an ASCII table */
 
-                if (strchr(tform,'A'))
+	        if (strchr(tform,'A')) 
                 {
                     /* write raw input bytes without conversion        */
                     /* This case is a hack to let users write a stream */
                     /* of bytes directly to the 'A' format column      */
 
-                    if (incre == twidth)
+		  if (incre == twidth) {
                         ffpbyt(fptr, ntodo, &array[next], status);
-                    else
+		  } else {
                         ffpbytoff(fptr, twidth, ntodo/twidth, incre - twidth, 
                                 &array[next], status);
-                    break;
+		  }
+		  break;
                 }
                 else if (cform[1] != 's')  /*  "%s" format is a string */
                 {
@@ -504,7 +519,7 @@ int ffpclb( fitsfile *fptr,  /* I - FITS file pointer                       */
                 /* can't write to string column, so fall thru to default: */
 
             default:  /*  error trap  */
-                sprintf(message, 
+                snprintf(message, FLEN_ERRMSG,
                        "Cannot write numbers to column %d which has format %s",
                         colnum,tform);
                 ffpmsg(message);
@@ -520,7 +535,7 @@ int ffpclb( fitsfile *fptr,  /* I - FITS file pointer                       */
         /*-------------------------*/
         if (*status > 0)  /* test for error during previous write operation */
         {
-          sprintf(message,
+          snprintf(message,FLEN_ERRMSG,
           "Error writing elements %.0f thru %.0f of input data array (ffpclb).",
               (double) (next+1), (double) (next+ntodo));
           ffpmsg(message);
@@ -575,7 +590,7 @@ int ffpcnb( fitsfile *fptr,  /* I - FITS file pointer                       */
 */
 {
     tcolumn *colptr;
-    long  ngood = 0, nbad = 0, ii;
+    LONGLONG  ngood = 0, nbad = 0, ii;
     LONGLONG repeat, first, fstelm, fstrow;
     int tcode, overflow = 0;
 
@@ -877,7 +892,20 @@ int ffi1fi8(unsigned char *input, /* I - array of values to be converted  */
     long ii;
     double dvalue;
 
-    if (scale == 1. && zero == 0.)
+    if (scale == 1. && zero ==  9223372036854775808.)
+    {       
+        /* Writing to unsigned long long column. */
+        /* Instead of subtracting 9223372036854775808, it is more efficient */
+        /* and more precise to just flip the sign bit with the XOR operator */
+
+        /* no need to check range limits because all unsigned char values */
+	/* are valid ULONGLONG values. */
+
+        for (ii = 0; ii < ntodo; ii++) {
+             output[ii] =  ((LONGLONG) input[ii]) ^ 0x8000000000000000;
+        }
+    }
+    else if (scale == 1. && zero == 0.)
     {       
         for (ii = 0; ii < ntodo; ii++)
                 output[ii] = input[ii];
@@ -977,6 +1005,9 @@ int ffi1fstr(unsigned char *input, /* I - array of values to be converted  */
 {
     long ii;
     double dvalue;
+    char *cptr;
+
+    cptr = output;
 
     if (scale == 1. && zero == 0.)
     {       
@@ -1001,5 +1032,9 @@ int ffi1fstr(unsigned char *input, /* I - array of values to be converted  */
             *status = OVERFLOW_ERR;
         }
     }
+
+    /* replace any commas with periods (e.g., in French locale) */
+    while ((cptr = strchr(cptr, ','))) *cptr = '.';
+    
     return(*status);
 }

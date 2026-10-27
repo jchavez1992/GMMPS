@@ -21,10 +21,23 @@ static char SccsId[] = "%W%  %G%";
 #include "histeq.h"		/* define SubrangeLink, List */
 
 
-static void make_subrange_scalemap();
-static void make_gapped_list(), list_to_map();
-static int first_shortlist_pass();
-static void add_level_to_short_list();
+static void make_subrange_scalemap (int *histogram, SubrangeLink *subrange,
+     unsigned long *scalemap, int baselevel, unsigned long *pixels);
+static void make_gapped_list (int *histogram, SubrangeList *list,
+     int low, int high, int levels);
+static int first_shortlist_pass (int *histogram, SubrangeList *list,
+     int low_entry, int high_entry, int levels, int *range_j, int *max_range);
+static void add_level_to_short_list (SubrangeList *list, int top,
+     int *max_range, int *range_j);
+static void list_to_map (unsigned long *scalemap, SubrangeList *histlist,
+     int baselevel, int levels, unsigned long *pixels);
+
+void generate_scalemap (int *hist, SubrangeLink *subrange,
+     unsigned long *scalemap, unsigned long *pixels);
+
+extern char *calloc_errchk (int count, unsigned int size, char *errmess);
+extern void make_equalized_list (int *histogram, SubrangeList *list,
+     int low_entry, int high_entry, int pixel_area, int color_levels);
 
 
 /*
@@ -38,11 +51,12 @@ static void add_level_to_short_list();
  *		safely be applied.
  * Note:	The original link-list of groups is freed.
  */
-void generate_scalemap ( hist, subrange, scalemap, pixels )
-     int *hist;				/* i: histogram (for signed offsets) */
-     SubrangeLink *subrange;	/* i: linklist of subranges */
-     unsigned long *scalemap;		/* i: scalemap (for signed indexing) */
-     unsigned long *pixels;		/* i: map to hardware entries */
+void generate_scalemap (
+     int *hist,				/* i: histogram (for signed offsets) */
+     SubrangeLink *subrange,	/* i: linklist of subranges */
+     unsigned long *scalemap,		/* i: scalemap (for signed indexing) */
+     unsigned long *pixels		/* i: map to hardware entries */
+)
 {
   int baselevel;
   SubrangeLink *trash;
@@ -64,18 +78,17 @@ void generate_scalemap ( hist, subrange, scalemap, pixels )
  * Called by:	make_HE_scalemap() in HistEqual.c
  */
 static void
-  make_subrange_scalemap ( histogram, subrange, scalemap, baselevel, pixels )
-     int *histogram;
-     SubrangeLink *subrange;
-     unsigned long *scalemap;		/* scalemap (for signed indexing) */
-     int baselevel;
-     unsigned long *pixels;		/* i: map to hardware entries */
+  make_subrange_scalemap (
+     int *histogram,
+     SubrangeLink *subrange,
+     unsigned long *scalemap,		/* scalemap (for signed indexing) */
+     int baselevel,
+     unsigned long *pixels		/* i: map to hardware entries */
+)
 {
   int i, color_levels;
   SubrangeList *list;
   unsigned long dispval;
-  char *calloc_errchk();
-  void make_equalized_list();
 
   /* if only one level, make map section */
   if( subrange->color_levels <= 1 ) {
@@ -116,11 +129,12 @@ static void
  * Purpose:	Make section of map as defined by list
  * Called by:	make_subrange_scalemap() above
  */
-static void list_to_map ( scalemap, histlist, baselevel, levels, pixels )
-     unsigned long *scalemap;		/* scalemap (for signed indexing) */
-     SubrangeList *histlist;
-     int baselevel, levels;
-     unsigned long *pixels;		/* i: map to hardware entries */
+static void list_to_map (
+     unsigned long *scalemap,		/* scalemap (for signed indexing) */
+     SubrangeList *histlist,
+     int baselevel, int levels,
+     unsigned long *pixels		/* i: map to hardware entries */
+)
 {
   int i, level;
   int first, last, imageval;
@@ -143,10 +157,11 @@ static void list_to_map ( scalemap, histlist, baselevel, levels, pixels )
  * Purpose:	Allocate levels for a histogram subrange.  Special process
  * 		for situation when more levels than actually used values.
  */
-static void make_gapped_list ( histogram, list, low, high, levels )
-     int *histogram;
-     SubrangeList *list;
-     int low, high, levels;
+static void make_gapped_list (
+     int *histogram,
+     SubrangeList *list,
+     int low, int high, int levels
+)
 {
   int range_j, max_range;
   int levels_used;
@@ -167,12 +182,11 @@ static void make_gapped_list ( histogram, list, low, high, levels )
  *		at the next actually used value.
  */
 static int
-  first_shortlist_pass ( histogram, list, low_entry, high_entry, levels,
-			 max_range, range_j )
-     int *histogram;
-     SubrangeList *list;
-     int low_entry, high_entry, levels;
-     int *range_j, *max_range;
+  first_shortlist_pass (int *histogram,
+     SubrangeList *list,
+     int low_entry, int high_entry, int levels,
+     int *range_j, int *max_range
+)
 {
   int i, area, level;
 
@@ -215,10 +229,11 @@ static int
 /*
  * Subroutine:	add_level_to_short_list
  */
-static void add_level_to_short_list ( list, top, max_range, range_j )
-     SubrangeList *list;
-     int top;
-     int *max_range, *range_j;
+static void add_level_to_short_list (
+     SubrangeList *list,
+     int top,
+     int *max_range, int *range_j
+)
 {
   int i, j, mark;
 

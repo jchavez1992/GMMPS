@@ -17,7 +17,7 @@ using namespace std;
 #include "error.h"
 #include "WorldCoords.h"
 
-main() 
+int main() 
 {
     // errors will be printed on stderr automatically
     set_error_handler(print_error);

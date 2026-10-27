@@ -54,6 +54,7 @@ static const char* const rcsId="@(#) $Id: rtdClient.c,v 1.1.1.1 2009/03/31 14:11
 #include <sys/ioctl.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <unistd.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

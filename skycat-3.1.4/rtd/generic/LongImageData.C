@@ -28,7 +28,6 @@
  * pbiereic        17/02/03  Added 'using namespace std'.
  */
 
-using namespace std;
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
@@ -49,7 +48,7 @@ using namespace std;
  */
 short LongImageData::convertToShort(FITS_LONG l) 
 {
-    register FITS_LONG v = l + bias_;
+    FITS_LONG v = l + bias_;
     short s;
 
     //  If have blank pixels then test for this as cannot deal with
@@ -57,7 +56,7 @@ short LongImageData::convertToShort(FITS_LONG l)
     //  places).
     if ( haveBlank_ ) {
 	if ( blank_ == l ) {
-	    return LOOKUP_BLANK;
+	    return (short)LOOKUP_BLANK;
 	}
     }
     if (v < LOOKUP_MIN )
@@ -81,7 +80,7 @@ short LongImageData::scaleToShort(FITS_LONG l)
     //  places).
     if ( haveBlank_ ) {
 	if ( blank_ == l ) {
-	    return LOOKUP_BLANK;
+	    return (short)LOOKUP_BLANK;
 	}
     }
 

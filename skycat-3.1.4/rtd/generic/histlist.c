@@ -25,22 +25,31 @@ static char SccsId[] = "%W%  %G%";
 #define HDEBUG
 #endif
 
-static int equalize_simply();
+static int equalize_simply (int *histogram, SubrangeList *histlist,
+     int level, int average_area, int low_entry, int high_entry,
+     int color_levels, int *shrink_level, int *stretch_level,
+     int *end_area, int *min_area, int *max_area, int *min_stretch,
+     int *max_shrink);
 #ifdef JIGGLE
-  static void adjust_list();
+static void adjust_list (int stretch_this_entry, int *histogram,
+     SubrangeList *histlist, int color_levels, int low_entry, int high_entry,
+     int average_area, int *shrink_level, int *stretch_level,
+     int *end_area, int *min_area, int *max_area,
+     int *min_stretch, int *max_shrink);
 #endif
+
 
 
 /*
  * Subroutine:	make_equalized_list
  * Purpose:	Distributing levels for a subrange section of the histogram
  */
-void make_equalized_list ( histogram, list, low_entry, high_entry,
-			   pixel_area, color_levels )
-     int *histogram;
-     SubrangeList *list;
-     int low_entry, high_entry;
-     int pixel_area, color_levels;
+void make_equalized_list (
+     int *histogram,
+     SubrangeList *list,
+     int low_entry, int high_entry,
+     int pixel_area, int color_levels
+)
 {
   int shrink_level, stretch_level;
   int max_shrink, min_stretch;
@@ -228,19 +237,16 @@ void make_equalized_list ( histogram, list, low_entry, high_entry,
  * Purpose:	Make a list to describe map using basic allocation method
  * Note:	Allocate levels from "level" to "color_levels"
  */
-static int equalize_simply ( histogram, histlist,
-			     level, average_area, low_entry, high_entry,
-			     color_levels, shrink_level, stretch_level,
-			     end_area, min_area, max_area,
-			     min_stretch, max_shrink )
-     int *histogram;
-     SubrangeList *histlist;
-     int level, average_area;
-     int low_entry, high_entry;
-     int color_levels;
-     int *shrink_level, *stretch_level;
-     int *end_area, *min_area, *max_area;
-     int *min_stretch, *max_shrink;
+static int equalize_simply (
+     int *histogram,
+     SubrangeList *histlist,
+     int level, int average_area,
+     int low_entry, int high_entry,
+     int color_levels,
+     int *shrink_level, int *stretch_level,
+     int *end_area, int *min_area, int *max_area,
+     int *min_stretch, int *max_shrink
+)
 {
   int entry, neighbor_entry;
   int area, old_area;
@@ -340,18 +346,16 @@ static int equalize_simply ( histogram, histlist,
  * Subroutine:	adjust_list
  * Purpose:	Alter a level of the map and remake section above altered level
  */
-static void adjust_list ( stretch_this_entry, histogram, histlist,
-			  color_levels, low_entry, high_entry,
-			  average_area, stretch_level, shrink_level, end_area,
-			  min_area, max_area, min_stretch, max_shrink )
-     int stretch_this_entry;	/* i: stretch an entry, else shrink one */
-     int *histogram;
-     SubrangeList *histlist;
-     int color_levels;
-     int low_entry, high_entry, average_area;
-     int *shrink_level, *stretch_level;
-     int *end_area, *min_area, *max_area;
-     int *min_stretch, *max_shrink;
+static void adjust_list (
+     int stretch_this_entry,	/* i: stretch an entry, else shrink one */
+     int *histogram,
+     SubrangeList *histlist,
+     int color_levels,
+     int low_entry, int high_entry, int average_area,
+     int *shrink_level, int *stretch_level,
+     int *end_area, int *min_area, int *max_area,
+     int *min_stretch, int *max_shrink
+)
 {
   int level, j, neighbor_entry;
   int equalize_simply();

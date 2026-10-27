@@ -28,7 +28,7 @@
 #define TEST(x) TTEST(x)
 #endif
 
-main() 
+int main() 
 {
     char buf[3*1024];
 

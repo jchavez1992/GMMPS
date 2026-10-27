@@ -13,7 +13,6 @@
 static const char* const rcsId="@(#) $Id: TclQueryUtil.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <cstring>
 #include <cctype>
 #include <cstdio>
@@ -187,15 +186,15 @@ int genAstroQuery(Tcl_Interp* interp, int argc, char* argv[],
 	}
 	else if (strcmp(option, "-nrows") == 0) {
 	    if (Tcl_GetInt(interp, value, &nrows) != TCL_OK)
-		return error("bad value for max number of rows: ", interp->result);;
+		return error("bad value for max number of rows: ", Tcl_GetStringResult(interp));;
 	}
 	else if (strcmp(option, "-width") == 0) {
 	    if (Tcl_GetDouble(interp, value, &width) != TCL_OK) 
-		return error("bad -width value: ", interp->result);
+		return error("bad -width value: ", Tcl_GetStringResult(interp));
 	}
 	else if (strcmp(option, "-height") == 0) {
 	    if (Tcl_GetDouble(interp, value, &height) != TCL_OK) 
-		return error("bad -height value: ", interp->result);
+		return error("bad -height value: ", Tcl_GetStringResult(interp));
 	}
 	else {
 	    // handle options whic<h may have a tcl list of values
@@ -244,11 +243,11 @@ int genAstroQuery(Tcl_Interp* interp, int argc, char* argv[],
 		    break;
 		}
 		if (numValues == 2 && Tcl_GetDouble(interp, values[1], &radius2) != TCL_OK) {
-		    status = error("bad max radius value: ", interp->result);
+		    status = error("bad max radius value: ", Tcl_GetStringResult(interp));
 		    break;
 		}
 		if (Tcl_GetDouble(interp, values[0], &radius1) != TCL_OK) {
-		    status = error("bad min radius value: ", interp->result);
+		    status = error("bad min radius value: ", Tcl_GetStringResult(interp));
 		    break;
 		}
 	    }
@@ -258,11 +257,11 @@ int genAstroQuery(Tcl_Interp* interp, int argc, char* argv[],
 		    break;
 		}
 		if (numValues == 2 && Tcl_GetDouble(interp, values[1], &mag2) != TCL_OK) {
-		    status = error("bad max magnitude value: ", interp->result);
+		    status = error("bad max magnitude value: ", Tcl_GetStringResult(interp));
 		    break;
 		}
 		if (Tcl_GetDouble(interp, values[0], &mag1) != TCL_OK) {
-		    status = error("bad min magnitude value: ", interp->result);
+		    status = error("bad min magnitude value: ", Tcl_GetStringResult(interp));
 		    break;
 		}
 	    }

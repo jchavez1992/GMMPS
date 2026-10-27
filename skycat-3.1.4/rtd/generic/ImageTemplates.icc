@@ -78,15 +78,15 @@ inline DATA_TYPE CLASS_NAME::getVal(DATA_TYPE* p, int idx)
 	    return ((DATA_TYPE)NTOH(*(p + idx)) - 
 		    (DATA_TYPE)((DATA_TYPE)(*((DATA_TYPE*)ImageData::biasInfo_->ptr + idx))));
 
-	register biasINFO* bias = ImageData::biasInfo_;
-	register int x = idx % width_ + startX_; 
-	register int y = idx / width_ + startY_;
+	biasINFO* bias = ImageData::biasInfo_;
+	int x = idx % width_ + startX_; 
+	int y = idx / width_ + startY_;
 
 	// if pixel is not within the boundary of the bias image return pixel value
 	if (x < 0 || x >= bias->width || y < 0 || y >= bias->height)
 	    return NTOH(*(p + idx));
 
-	register int biasIdx = y * bias->width + x;
+	int biasIdx = y * bias->width + x;
     
 	switch (bias->type) {
 	case BYTE_IMAGE:
@@ -111,15 +111,15 @@ inline DATA_TYPE CLASS_NAME::getVal(DATA_TYPE* p, int idx)
 
     else {
 
-	register biasINFO* bias = ImageData::biasInfo_;
-	register int x = idx % width_ + startX_; 
-	register int y = idx / width_ + startY_;
+	biasINFO* bias = ImageData::biasInfo_;
+	int x = idx % width_ + startX_; 
+	int y = idx / width_ + startY_;
 
 	// if pixel is not within the boundary of the bias image return pixel value
 	if (x < 0 || x >= bias->width || y < 0 || y >= bias->height)
 	    return NTOH(*(p + idx));
 
-	register int biasIdx = y * bias->width + x;
+	int biasIdx = y * bias->width + x;
     
 	switch (bias->type) {
 	case BYTE_IMAGE:
@@ -248,7 +248,7 @@ void CLASS_NAME::getMinMax()
 	    if (p >= end)
 		break;
 	    for (int x = x0; x <= x1; x+=xincr, p+=xincr) {
-                register DATA_TYPE value = getVal(rawImage, p);
+                DATA_TYPE value = getVal(rawImage, p);
 		if (ISNAN(value))
 		    continue;
 		if (value < minValue_) 
@@ -277,13 +277,13 @@ char* CLASS_NAME::getValue(char* buf, double x, double y)
 
     int ix, iy;
     if (getIndex(x, y, ix, iy) != 0)
-	sprintf(buf, "%.1f %.1f -", x, y);
+	snprintf(buf, 80, "%.1f %.1f -", x, y);
     else {
 	value = getVal(rawImage, iy*width_+ix);
 	if (haveBlank_ && value == blank_)
-	    sprintf(buf, "%.1f %.1f blank", x, y);
+	    snprintf(buf, 80, "%.1f %.1f blank", x, y);
 	else
-	    sprintf(buf, "%.1f %.1f %g", x, y, scaleValue(value));
+	    snprintf(buf, 80, "%.1f %.1f %g", x, y, scaleValue(value));
     }
     return buf;
 }
@@ -330,8 +330,8 @@ void CLASS_NAME::getValues(double x, double y, double rx, double ry,
     // display chip coords for x and y
     double cx = x, cy = y;
     imageToChipCoords(cx, cy);
-    sprintf(xStr, "%.1f", cx);
-    sprintf(yStr, "%.1f", cy);
+    snprintf(xStr, 80, "%.1f", cx);
+    snprintf(yStr, 80, "%.1f", cy);
 
     *raStr = '\0';
     *decStr = '\0';
@@ -352,7 +352,7 @@ void CLASS_NAME::getValues(double x, double y, double rx, double ry,
 	if (haveBlank_ && value == blank_) 
 	    strcpy(valueStr, "blank");
 	else
-	    sprintf(valueStr, "%g", scaleValue(value));
+	    snprintf(valueStr, 80, "%g", scaleValue(value));
     }
 }
 
@@ -508,16 +508,16 @@ void CLASS_NAME::rawToXImage(int x0, int y0, int x1, int y1,
     //	printf("%s: rawToXImage: %d,%d  %d,%d +(%d,%d), flip: %d,%d, rotate: %d\n", 
     //	       name_, x0, y0, x1, y1, dest_x, dest_y, flipX_, flipY_, rotate_);
 
-    register int i, j;
+    int i, j;
 
     // row/col increments
-    register int src_x_inc, src_y_inc;
-    register int dest_x_inc, dest_y_inc;
+    int src_x_inc, src_y_inc;
+    int dest_x_inc, dest_y_inc;
 
     // source/dest images
-    register DATA_TYPE* rawImage = (DATA_TYPE*)image_.dataPtr();
-    register int src;
-    register byte* dest = xImageData_;
+    DATA_TYPE* rawImage = (DATA_TYPE*)image_.dataPtr();
+    int src;
+    byte* dest = xImageData_;
 
     initGetVal();  // init flag for speeding up bias subtraction
 
@@ -578,8 +578,8 @@ void CLASS_NAME::rawToXImage(int x0, int y0, int x1, int y1,
     else {
 	//  XImage has depth greater than a byte, need to take care with
 	//  these (byte swapping etc. to server format)
-	register int k = dest_x;
-	register int l = dest_y;
+	int k = dest_x;
+	int l = dest_y;
 	for (i=y0; i<=y1; i++) {
 	    for (j=x0; j<=x1; j++) {
 		if ( rotate_ ) {
@@ -610,20 +610,20 @@ void CLASS_NAME::rawToXImage(int x0, int y0, int x1, int y1,
 void CLASS_NAME::grow(int x0, int y0, int x1, int y1, 
 		      int dest_x, int dest_y)
 {
-    register byte *p, *q;
-    register byte c;
-    register int i, j, n, m;
-    register int xs = xScale_, ys = yScale_;
+    byte *p, *q;
+    byte c;
+    int i, j, n, m;
+    int xs = xScale_, ys = yScale_;
 
     // row/col increments
-    register int src_x_inc, src_y_inc;
-    register int dest_x_inc, dest_y_inc;
+    int src_x_inc, src_y_inc;
+    int dest_x_inc, dest_y_inc;
 
     // source/dest images
-    register DATA_TYPE* rawImage = (DATA_TYPE*)image_.dataPtr();
-    register int src;
-    register byte* dest = xImageData_;
-    register byte* end = xImageData_ + xImageSize_;
+    DATA_TYPE* rawImage = (DATA_TYPE*)image_.dataPtr();
+    int src;
+    byte* dest = xImageData_;
+    byte* end = xImageData_ + xImageSize_;
 
     initGetVal();  // init flag for speeding up bias subtraction
 

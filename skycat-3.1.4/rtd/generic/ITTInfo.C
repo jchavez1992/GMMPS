@@ -16,7 +16,6 @@
 static const char* const rcsId="@(#) $Id: ITTInfo.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -90,7 +89,7 @@ ITTInfo* ITTInfo::get(char* filename)
 	return m;
 
     // have to read file
-    ifstream f(filename);
+    std::ifstream f(filename);
     if (! f) {
 	error("could not open ITT file: ", filename);
 	return (ITTInfo*) NULL;
@@ -121,7 +120,7 @@ ITTInfo* ITTInfo::get(char* filename)
  * write a list of loaded itt files to the given stream
  * separated by spaces
  */
-void ITTInfo::list(ostream& os) 
+void ITTInfo::list(std::ostream& os) 
 {
     ITTInfo* m;
     for (m = itts_; m; m = m->next()) 

@@ -59,6 +59,7 @@ static const char* const rcsId="@(#) $Id: rtdCubeDisplay.c,v 1.1.1.1 2009/03/31 
 #include <sys/ioctl.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <unistd.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -159,7 +160,7 @@ static void cleanup()
     exit(0); 
 }
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char               c,camera[RTD_NAMELEN],reqName[RTD_NAMELEN],fileName[256];
     int                count,fileoffset,typeSize=0;

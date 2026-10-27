@@ -191,7 +191,7 @@ int RtdImageCamera::display(const rtdIMAGE_INFO& info, const Mem& data)
     rtdperf->newCycle();  // start performance test if applicable
 
     if (rtdimage_->cameraPreCmd()) {
-	sprintf(buf, "%s %d", rtdimage_->cameraPreCmd(), info.frameId);
+	snprintf(buf, 2048, "%s %d", rtdimage_->cameraPreCmd(), info.frameId);
 	status |= Tcl_Eval(interp_, buf);
 	rtdperf->TCLtime();
     }
@@ -201,7 +201,7 @@ int RtdImageCamera::display(const rtdIMAGE_INFO& info, const Mem& data)
     rtdperf->GENtime();
  
     if (rtdimage_->cameraPostCmd()) {
-	sprintf(buf, "%s %d", rtdimage_->cameraPostCmd(), info.frameId);
+	snprintf(buf, 2048, "%s %d", rtdimage_->cameraPostCmd(), info.frameId);
 	status |= Tcl_Eval(interp_, buf);
 	rtdperf->TCLtime();
     }
@@ -915,6 +915,7 @@ void RtdImage::updateRequests()
 
 // Fix for Tk clipping coordinates to short range: See CanvasWindowCoordsNoClip() below.
 #ifdef HAVE_TKCANVAS_H
+#define MODULE_SCOPE extern __attribute__((__visibility__("hidden")))
 #include "tkCanvas.h"
 #else
 // The structure we need hasn't changed for a long time, so just include a local copy.
@@ -1784,7 +1785,7 @@ void RtdImage::motionNotify(XEvent* eventPtr)
         motionState_ = eventPtr->xmotion.state;
 
         if (!motionPending_) {
-            if ((motionState_ & ShiftMask != ShiftMask) && zoomSpeed_ >= 0) {
+            if ((motionState_ & (ShiftMask != ShiftMask)) && zoomSpeed_ >= 0) {
                 // speed up zoom if no keys or mouse buttons are pressed
                 processMotionEvent();
             }
@@ -1882,11 +1883,11 @@ void RtdImage::processMotionEvent()
 	    image_->getValues(x, y, rx, ry, pixTab_, pixTabRows_, pixTabCols_);
 	    for(int j = 0; j <= pixTabRows_; j++) {
 		for(int i = 0; i <= pixTabCols_; i++) {
-		    sprintf(indexStr, "%d,%d", j, i);
+		    snprintf(indexStr, 32, "%d,%d", j, i);
 		    // not outside image ?
 		    if ((d = pixTab_[j*w+i]) > -HUGE_VAL) {
 			if (i && j) {
-			    sprintf(valueStr, "%g", d);	  // pix value
+			    snprintf(valueStr, 32, "%g", d);	  // pix value
 			    // calculate statistics on pixels
 			    if (npix == 0) {
 				minv = d;
@@ -1901,7 +1902,7 @@ void RtdImage::processMotionEvent()
 				maxv = d;
 			}
 			else
-			    sprintf(valueStr, "%.1f", d); // x,y index
+			    snprintf(valueStr, 32, "%.1f", d); // x,y index
 		    }
 		    else {
 			*valueStr = '\0'; // pixel is outside of image
@@ -1911,13 +1912,13 @@ void RtdImage::processMotionEvent()
 	    }
 	    if (npix > 0) {
 		ave = sum / (double)npix;
-		sprintf(valueStr, "%g", ave);	  // average
+		snprintf(valueStr, 32, "%g", ave);	  // average
 		Tcl_SetVar2(interp_, var, "PIXTAB_AVE", valueStr, TCL_GLOBAL_ONLY);
-		sprintf(valueStr, "%g", minv);	  // min
+		snprintf(valueStr, 32, "%g", minv);	  // min
 		Tcl_SetVar2(interp_, var, "PIXTAB_MIN", valueStr, TCL_GLOBAL_ONLY);
-		sprintf(valueStr, "%g", maxv);	  // max
+		snprintf(valueStr, 32, "%g", maxv);	  // max
 		Tcl_SetVar2(interp_, var, "PIXTAB_MAX", valueStr, TCL_GLOBAL_ONLY);
-		sprintf(valueStr, "%d", npix);	  // npix
+		snprintf(valueStr, 32, "%d", npix);	  // npix
 		Tcl_SetVar2(interp_, var, "PIXTAB_N", valueStr, TCL_GLOBAL_ONLY);
 	    }
 	    else {
@@ -1928,7 +1929,7 @@ void RtdImage::processMotionEvent()
 	    }
 	    if (npix > 1) {
 		rms = sqrt((sumsq - ((sum * sum) / npix)) / (npix -1));
-		sprintf(valueStr, "%g", rms);	  // rms
+		snprintf(valueStr, 32, "%g", rms);	  // rms
 		Tcl_SetVar2(interp_, var, "PIXTAB_RMS", valueStr, TCL_GLOBAL_ONLY);
 	    }
 	    else {
@@ -2032,7 +2033,7 @@ void RtdImage::autoPan(int newImageFlag)
 	}
 
 	char buf[1024];
-	sprintf(buf, "%s %d %d %d %d %d", 
+	snprintf(buf, 1024, "%s %d %d %d %d %d", 
 		panCommand_, x1, y1, x2, y2, newImageFlag);
 	if (Tcl_Eval(interp_, buf) != TCL_OK) {
 	    Tk_BackgroundError(interp_);

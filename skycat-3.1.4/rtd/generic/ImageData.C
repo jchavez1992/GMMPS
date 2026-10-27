@@ -448,7 +448,7 @@ ImageData* ImageData::makeImage(const char* name, const ImageIO& imio, biasINFO*
         break;
     default:
 	char buf[32];
-	sprintf(buf, "%d", imio.bitpix());
+	snprintf(buf, 32, "%d", imio.bitpix());
 	error("unsupported image BITPIX value: ", buf);
     }
 
@@ -1441,7 +1441,7 @@ void ImageData::getDist(int& numValues, double* xyvalues)
     if (n < numValues && dataType() != FLOAT_IMAGE) 
         numValues = int(n);
 
-    register float m = minValue_;
+    float m = minValue_;
     double factor = n/numValues;
 
     // the X values are the pixel values 

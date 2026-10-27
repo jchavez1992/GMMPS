@@ -39,13 +39,13 @@ typedef struct opts {
     int  shmEndian;	// native byte order, big or little Endian data
     int  useFits;	// use Fits file for generating the image
     int  dataType;	// image data type
-};
+} Opts;
 
 void errexit(const char* msg1, const char* msg2 = "");
 void cleanup(int i=0);
 void errprint(const char* buf);
-void usage(opts *opt);
-void parseInput(int argc, char** argv, opts *opt);
+void usage(Opts *opt);
+void parseInput(int argc, char** argv, Opts *opt);
 
 #endif /* tRtd_h */
 

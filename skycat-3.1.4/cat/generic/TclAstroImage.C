@@ -17,7 +17,6 @@
 static const char* const rcsId="@(#) $Id: TclAstroImage.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <cctype>
 #include <cstdio>
 #include <iostream>
@@ -226,15 +225,15 @@ int TclAstroImage::getimageCmd(int argc, char* argv[])
 	    while(*value && !isdigit(*value))
 		value++;	// skip "J" in J 2000, or "B" in B 1950
 	    if (Tcl_GetDouble(interp_, value, &equinox_) != TCL_OK)
-		return error("bad value for equinox: ", interp_->result);
+		return error("bad value for equinox: ", Tcl_GetStringResult(interp_));
 	}
 	else if (strcmp(option, "-width") == 0) {
 	    if (Tcl_GetDouble(interp_, value, &width) != TCL_OK)
-		return error("bad value for width: ", interp_->result);
+		return error("bad value for width: ", Tcl_GetStringResult(interp_));
 	}
 	else if (strcmp(option, "-height") == 0) {
 	    if (Tcl_GetDouble(interp_, value, &height) != TCL_OK)
-		return error("bad value for height: ", interp_->result);
+		return error("bad value for height: ", Tcl_GetStringResult(interp_));
 	}
 	else if (strcmp(option, "-nameserver") == 0) {
 	    nameServer = value;
@@ -271,7 +270,7 @@ int TclAstroImage::getimageCmd(int argc, char* argv[])
  */
 int TclAstroImage::centerposCmd(int argc, char* argv[])
 {
-    ostringstream os;
+    std::ostringstream os;
 
     pos_.print(os, equinox_);	// print coords in given equinox
     if (im_->isWcs())
@@ -432,7 +431,7 @@ int TclAstroImage::authorizeCmd(int argc, char* argv[])
     
     if (argc == 0) {
 	HTTP& http = im_->http();
-	ostringstream os;
+	std::ostringstream os;
 	os << http.authorizationRequired() 
 	   << " " << http.www_auth_realm()
 	   << " " << http.hostname();

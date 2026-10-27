@@ -110,7 +110,7 @@ LookupTableRep::LookupTableRep(int size)
  */
 LookupTableRep::~LookupTableRep() 
 {
-    delete lookup_;
+    delete[] lookup_;
 }
 
 
@@ -209,8 +209,8 @@ void LookupTableRep::linearScale(int lcut, int hcut, int isSigned,
     int maxcolor = ncolors - 1;
     int imageval = lcut;
     int level = 0;
-    register int pixval = colors[0];
-    register int imagelim;
+    int pixval = colors[0];
+    int imagelim;
 
     while( level++ < maxcolor ) {
 	upper_bound += scale;
@@ -245,8 +245,8 @@ void LookupTableRep::logScale(int lcut, int hcut, int isSigned,
 			      double expo)
 {
     int level = 0;
-    register int imagelim;
-    register int pixval = colors[0];
+    int imagelim;
+    int pixval = colors[0];
     int maxcolor = ncolors - 1;
     int imageval = lcut;
     double scale;
@@ -301,8 +301,8 @@ void LookupTableRep::sqrtScale(int lcut, int hcut, int isSigned,
     int imageval = lcut;
     double range = hcut - lcut + 1;
     int level = 0;
-    register int imagelim;
-    register int pixval = colors[0];
+    int imagelim;
+    int pixval = colors[0];
 
     while( level++ < maxcolor ) {
 	imagelim = lcut + (int)

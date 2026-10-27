@@ -18,7 +18,7 @@
 static const char* const rcsId="@(#) $Id: Mem.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
+//using namespace std;
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
@@ -492,7 +492,7 @@ Mem::Mem(int size, int shmId, int owner, int verbose)
     : offset_(0), length_(0)
 {
     // see if we have this Id already
-    if (rep_ = findMemRep(shmId)) {
+    if ((rep_ = findMemRep(shmId))) {
 	rep_->refcnt++;
 	return;
     }
@@ -512,7 +512,7 @@ Mem::Mem(int size, int shmId, int owner, int verbose, int shmNum, int semId)
 : offset_(0), length_(0)
 {
     // see if we have this Id already
-    if (rep_ = findMemRep(shmId)) {
+    if ((rep_ = findMemRep(shmId))) {
 	rep_->refcnt++;
 	return;
     }
@@ -532,7 +532,7 @@ Mem::Mem(const char *filename, int verbose)
     : offset_(0), length_(0)
 {
     // see if we have mapped this file already
-    if (rep_ = findMemRep(filename)) {
+    if ((rep_ = findMemRep(filename))) {
 	rep_->refcnt++;
 	return;
     }
@@ -567,7 +567,7 @@ Mem::Mem(const char *filename, int options, int verbose)
     }
 
     // see if we have mapped this file already
-    if (rep_ = findMemRep(filename)) {
+    if ((rep_ = findMemRep(filename))) {
 	rep_->refcnt++;
 	return;
     }
@@ -588,7 +588,7 @@ Mem::Mem(int size, const char *filename, int owner, int verbose)
     : offset_(0), length_(0)
 {
     // see if we have mapped this file already
-    if (rep_ = findMemRep(filename)) {
+    if ((rep_ = findMemRep(filename))) {
 	rep_->refcnt++;
 	fmt_error("warning: file %s already exists and is already mmapped!", filename);
 	return;

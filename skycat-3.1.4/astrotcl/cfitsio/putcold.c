@@ -354,10 +354,10 @@ int ffpcld( fitsfile *fptr,  /* I - FITS file pointer                       */
   and will be inverse-scaled by the FITS TSCALn and TZEROn values if necessary.
 */
 {
-    int tcode, maxelem, hdutype, writeraw;
+    int tcode, maxelem2, hdutype, writeraw;
     long twidth, incre;
     long ntodo;
-    LONGLONG repeat, startpos, elemnum, wrtptr, rowlen, rownum, remain, next, tnull;
+    LONGLONG repeat, startpos, elemnum, wrtptr, rowlen, rownum, remain, next, tnull, maxelem;
     double scale, zero;
     char tform[20], cform[20];
     char message[FLEN_ERRMSG];
@@ -376,9 +376,10 @@ int ffpcld( fitsfile *fptr,  /* I - FITS file pointer                       */
     /*  Check input and get parameters about the column: */
     /*---------------------------------------------------*/
     if (ffgcprll( fptr, colnum, firstrow, firstelem, nelem, 1, &scale, &zero,
-        tform, &twidth, &tcode, &maxelem, &startpos,  &elemnum, &incre,
+        tform, &twidth, &tcode, &maxelem2, &startpos,  &elemnum, &incre,
         &repeat, &rowlen, &hdutype, &tnull, snull, status) > 0)
         return(*status);
+    maxelem = maxelem2;
 
     if (tcode == TSTRING)   
          ffcfmt(tform, cform);     /* derive C format for writing strings */
@@ -394,8 +395,12 @@ int ffpcld( fitsfile *fptr,  /* I - FITS file pointer                       */
        MACHINE == NATIVE && tcode == TDOUBLE)
     {
         writeraw = 1;
-        maxelem = (int) nelem;  /* we can write the entire array at one time */
-    }
+        if (nelem < (LONGLONG)INT32_MAX) {
+            maxelem = nelem;
+        } else {
+            maxelem = INT32_MAX/8;
+        }
+     }
     else
         writeraw = 0;
 
@@ -492,7 +497,7 @@ int ffpcld( fitsfile *fptr,  /* I - FITS file pointer                       */
                 /* can't write to string column, so fall thru to default: */
 
             default:  /*  error trap  */
-                sprintf(message, 
+                snprintf(message, FLEN_ERRMSG,
                       "Cannot write numbers to column %d which has format %s",
                        colnum,tform);
                 ffpmsg(message);
@@ -508,7 +513,7 @@ int ffpcld( fitsfile *fptr,  /* I - FITS file pointer                       */
         /*-------------------------*/
         if (*status > 0)  /* test for error during previous write operation */
         {
-          sprintf(message,
+          snprintf(message,FLEN_ERRMSG,
           "Error writing elements %.0f thru %.0f of input data array (ffpcld).",
               (double) (next+1), (double) (next+ntodo));
          ffpmsg(message);
@@ -596,7 +601,7 @@ int ffpcnd( fitsfile *fptr,  /* I - FITS file pointer                       */
 */
 {
     tcolumn *colptr;
-    long  ngood = 0, nbad = 0, ii;
+    LONGLONG  ngood = 0, nbad = 0, ii;
     LONGLONG repeat, first, fstelm, fstrow;
     int tcode, overflow = 0;
 
@@ -912,7 +917,27 @@ int ffr8fi8(double *input,     /* I - array of values to be converted  */
     long ii;
     double dvalue;
 
-    if (scale == 1. && zero == 0.)
+    if (scale == 1. && zero ==  9223372036854775808.)
+    {       
+        /* Writing to unsigned long long column. Input values must not be negative */
+        /* Instead of subtracting 9223372036854775808, it is more efficient */
+        /* and more precise to just flip the sign bit with the XOR operator */
+
+        for (ii = 0; ii < ntodo; ii++) {
+            if (input[ii] < -0.49) {
+              *status = OVERFLOW_ERR;
+              output[ii] = LONGLONG_MIN;
+            }
+	    else if (input[ii] > 2.* DLONGLONG_MAX)
+            {
+                *status = OVERFLOW_ERR;
+                output[ii] = LONGLONG_MAX;
+            } else {
+              output[ii] =  ((LONGLONG) input[ii]) ^ 0x8000000000000000;
+            }
+        }
+    }
+    else if (scale == 1. && zero == 0.)
     {       
         for (ii = 0; ii < ntodo; ii++)
         {
@@ -1024,6 +1049,9 @@ int ffr8fstr(double *input,     /* I - array of values to be converted  */
 {
     long ii;
     double dvalue;
+    char *cptr;
+    
+    cptr = output;
 
     if (scale == 1. && zero == 0.)
     {       
@@ -1048,5 +1076,9 @@ int ffr8fstr(double *input,     /* I - array of values to be converted  */
             *status = OVERFLOW_ERR;
         }
     }
+
+    /* replace any commas with periods (e.g., in French locale) */
+    while ((cptr = strchr(cptr, ','))) *cptr = '.';
+    
     return(*status);
 }

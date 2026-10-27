@@ -406,6 +406,284 @@ int ffgics(fitsfile *fptr,    /* I - FITS file pointer           */
     return(*status);
 }
 /*--------------------------------------------------------------------------*/
+int ffgicsa(fitsfile *fptr,    /* I - FITS file pointer           */
+           char version,      /* I - character code of desired version */
+	                      /*     A - Z or blank */
+           double *xrval,     /* O - X reference value           */
+           double *yrval,     /* O - Y reference value           */
+           double *xrpix,     /* O - X reference pixel           */
+           double *yrpix,     /* O - Y reference pixel           */
+           double *xinc,      /* O - X increment per pixel       */
+           double *yinc,      /* O - Y increment per pixel       */
+           double *rot,       /* O - rotation angle (degrees)    */
+           char *type,        /* O - type of projection ('-tan') */
+           int *status)       /* IO - error status               */
+/*
+       read the values of the celestial coordinate system keywords.
+       These values may be used as input to the subroutines that
+       calculate celestial coordinates. (ffxypx, ffwldp)
+
+       Modified in Nov 1999 to convert the CD matrix keywords back
+       to the old CDELTn form, and to swap the axes if the dec-like
+       axis is given first, and to assume default values if any of the
+       keywords are not present.
+*/
+{
+    int tstat = 0, cd_exists = 0, pc_exists = 0;
+    char ctype[FLEN_VALUE], keyname[FLEN_VALUE], alt[2];
+    double cd11 = 0.0, cd21 = 0.0, cd22 = 0.0, cd12 = 0.0;
+    double pc11 = 1.0, pc21 = 0.0, pc22 = 1.0, pc12 = 0.0;
+    double pi =  3.1415926535897932;
+    double phia, phib, temp;
+    double toler = .0002;  /* tolerance for angles to agree (radians) */
+                           /*   (= approximately 0.01 degrees) */
+
+    if (*status > 0)
+       return(*status);
+
+    if (version == ' ') {
+      ffgics(fptr, xrval, yrval, xrpix, yrpix, xinc, yinc, rot, type, status);
+      return (*status);
+    }
+
+    if (version > 'Z' || version < 'A') {
+      ffpmsg("ffgicsa: illegal WCS version code (must be A - Z or blank)");
+      return(*status = WCS_ERROR);
+    }
+
+    alt[0] = version;
+    alt[1] = '\0';
+    
+    tstat = 0;
+    strcpy(keyname, "CRVAL1");
+    strcat(keyname, alt);
+    if (ffgkyd(fptr, keyname, xrval, NULL, &tstat))
+       *xrval = 0.;
+
+    tstat = 0;
+    strcpy(keyname, "CRVAL2");
+    strcat(keyname, alt);
+    if (ffgkyd(fptr, keyname, yrval, NULL, &tstat))
+       *yrval = 0.;
+
+    tstat = 0;
+    strcpy(keyname, "CRPIX1");
+    strcat(keyname, alt);
+    if (ffgkyd(fptr, keyname, xrpix, NULL, &tstat))
+        *xrpix = 0.;
+
+    tstat = 0;
+    strcpy(keyname, "CRPIX2");
+    strcat(keyname, alt);
+     if (ffgkyd(fptr, keyname, yrpix, NULL, &tstat))
+        *yrpix = 0.;
+
+    /* look for CDELTn first, then CDi_j keywords */
+    tstat = 0;
+    strcpy(keyname, "CDELT1");
+    strcat(keyname, alt);
+    if (ffgkyd(fptr, keyname, xinc, NULL, &tstat))
+    {
+        /* CASE 1: no CDELTn keyword, so look for the CD matrix */
+        tstat = 0;
+        strcpy(keyname, "CD1_1");
+        strcat(keyname, alt);
+        if (ffgkyd(fptr, keyname, &cd11, NULL, &tstat))
+            tstat = 0;  /* reset keyword not found error */
+        else
+            cd_exists = 1;  /* found at least 1 CD_ keyword */
+
+        strcpy(keyname, "CD2_1");
+        strcat(keyname, alt);
+        if (ffgkyd(fptr, keyname, &cd21, NULL, &tstat))
+            tstat = 0;  /* reset keyword not found error */
+        else
+            cd_exists = 1;  /* found at least 1 CD_ keyword */
+
+        strcpy(keyname, "CD1_2");
+        strcat(keyname, alt);
+        if (ffgkyd(fptr, keyname, &cd12, NULL, &tstat))
+            tstat = 0;  /* reset keyword not found error */
+        else
+            cd_exists = 1;  /* found at least 1 CD_ keyword */
+
+        strcpy(keyname, "CD2_2");
+        strcat(keyname, alt);
+        if (ffgkyd(fptr, keyname, &cd22, NULL, &tstat))
+            tstat = 0;  /* reset keyword not found error */
+        else
+            cd_exists = 1;  /* found at least 1 CD_ keyword */
+
+        if (cd_exists)  /* convert CDi_j back to CDELTn */
+        {
+            /* there are 2 ways to compute the angle: */
+            phia = atan2( cd21, cd11);
+            phib = atan2(-cd12, cd22);
+
+            /* ensure that phia <= phib */
+            temp = minvalue(phia, phib);
+            phib = maxvalue(phia, phib);
+            phia = temp;
+
+            /* there is a possible 180 degree ambiguity in the angles */
+            /* so add 180 degress to the smaller value if the values  */
+            /* differ by more than 90 degrees = pi/2 radians.         */
+            /* (Later, we may decide to take the other solution by    */
+            /* subtracting 180 degrees from the larger value).        */
+
+            if ((phib - phia) > (pi / 2.))
+               phia += pi;
+
+            if (fabs(phia - phib) > toler) 
+            {
+               /* angles don't agree, so looks like there is some skewness */
+               /* between the axes.  Return with an error to be safe. */
+               *status = APPROX_WCS_KEY;
+            }
+      
+            phia = (phia + phib) /2.;  /* use the average of the 2 values */
+            *xinc = cd11 / cos(phia);
+            *yinc = cd22 / cos(phia);
+            *rot = phia * 180. / pi;
+
+            /* common usage is to have a positive yinc value.  If it is */
+            /* negative, then subtract 180 degrees from rot and negate  */
+            /* both xinc and yinc.  */
+
+            if (*yinc < 0)
+            {
+                *xinc = -(*xinc);
+                *yinc = -(*yinc);
+                *rot = *rot - 180.;
+            }
+        }
+        else   /* no CD matrix keywords either */
+        {
+            *xinc = 1.;
+
+            /* there was no CDELT1 keyword, but check for CDELT2 just in case */
+            tstat = 0;
+            strcpy(keyname, "CDELT2");
+            strcat(keyname, alt);
+            if (ffgkyd(fptr, keyname, yinc, NULL, &tstat))
+                *yinc = 1.;
+
+            tstat = 0;
+            strcpy(keyname, "CROTA2");
+            strcat(keyname, alt);
+            if (ffgkyd(fptr, keyname, rot, NULL, &tstat))
+                *rot=0.;
+        }
+    }
+    else  /* Case 2: CDELTn + optional PC matrix */
+    {
+        strcpy(keyname, "CDELT2");
+        strcat(keyname, alt);
+        if (ffgkyd(fptr, keyname, yinc, NULL, &tstat))
+            *yinc = 1.;
+
+        tstat = 0;
+        strcpy(keyname, "CROTA2");
+        strcat(keyname, alt);
+        if (ffgkyd(fptr, keyname, rot, NULL, &tstat))
+        {
+            *rot=0.;
+
+            /* no CROTA2 keyword, so look for the PC matrix */
+            tstat = 0;
+            strcpy(keyname, "PC1_1");
+            strcat(keyname, alt);
+            if (ffgkyd(fptr, keyname, &pc11, NULL, &tstat))
+                tstat = 0;  /* reset keyword not found error */
+            else
+                pc_exists = 1;  /* found at least 1 PC_ keyword */
+
+            strcpy(keyname, "PC2_1");
+            strcat(keyname, alt);
+            if (ffgkyd(fptr, keyname, &pc21, NULL, &tstat))
+                tstat = 0;  /* reset keyword not found error */
+            else
+                pc_exists = 1;  /* found at least 1 PC_ keyword */
+
+            strcpy(keyname, "PC1_2");
+            strcat(keyname, alt);
+            if (ffgkyd(fptr, keyname, &pc12, NULL, &tstat))
+                tstat = 0;  /* reset keyword not found error */
+            else
+                pc_exists = 1;  /* found at least 1 PC_ keyword */
+
+            strcpy(keyname, "PC2_2");
+            strcat(keyname, alt);
+            if (ffgkyd(fptr, keyname, &pc22, NULL, &tstat))
+                tstat = 0;  /* reset keyword not found error */
+            else
+                pc_exists = 1;  /* found at least 1 PC_ keyword */
+
+            if (pc_exists)  /* convert PCi_j back to CDELTn */
+            {
+                /* there are 2 ways to compute the angle: */
+                phia = atan2( pc21, pc11);
+                phib = atan2(-pc12, pc22);
+
+                /* ensure that phia <= phib */
+                temp = minvalue(phia, phib);
+                phib = maxvalue(phia, phib);
+                phia = temp;
+
+                /* there is a possible 180 degree ambiguity in the angles */
+                /* so add 180 degress to the smaller value if the values  */
+                /* differ by more than 90 degrees = pi/2 radians.         */
+                /* (Later, we may decide to take the other solution by    */
+                /* subtracting 180 degrees from the larger value).        */
+
+                if ((phib - phia) > (pi / 2.))
+                   phia += pi;
+
+                if (fabs(phia - phib) > toler) 
+                {
+                  /* angles don't agree, so looks like there is some skewness */
+                  /* between the axes.  Return with an error to be safe. */
+                  *status = APPROX_WCS_KEY;
+                }
+      
+                phia = (phia + phib) /2.;  /* use the average of the 2 values */
+                *rot = phia * 180. / pi;
+            }
+        }
+    }
+
+    /* get the type of projection, if any */
+    tstat = 0;
+    strcpy(keyname, "CTYPE1");
+    strcat(keyname, alt);
+    if (ffgkys(fptr, keyname, ctype, NULL, &tstat))
+         type[0] = '\0';
+    else
+    {
+        /* copy the projection type string */
+        strncpy(type, &ctype[4], 4);
+        type[4] = '\0';
+
+        /* check if RA and DEC are inverted */
+        if (!strncmp(ctype, "DEC-", 4) || !strncmp(ctype+1, "LAT", 3))
+        {
+            /* the latitudinal axis is given first, so swap them */
+
+            *rot = 90. - (*rot);
+
+            /* Empirical tests with ds9 show the y-axis sign must be negated */
+            /* and the xinc and yinc values must NOT be swapped. */
+            *yinc = -(*yinc);
+
+            temp = *xrval;
+            *xrval = *yrval;
+            *yrval = temp;
+        }   
+    }
+
+    return(*status);
+}
+/*--------------------------------------------------------------------------*/
 int ffgtcs(fitsfile *fptr,    /* I - FITS file pointer           */
            int xcol,          /* I - column containing the RA coordinate  */
            int ycol,          /* I - column containing the DEC coordinate */
@@ -421,37 +699,42 @@ int ffgtcs(fitsfile *fptr,    /* I - FITS file pointer           */
 /*
        read the values of the celestial coordinate system keywords
        from a FITS table where the X and Y or RA and DEC coordinates
-       are stored in separate column.  
+       are stored in separate column.  Do this by converting the
+       table to a temporary FITS image, then reading the keywords
+       from the image file.
        These values may be used as input to the subroutines that
        calculate celestial coordinates. (ffxypx, ffwldp)
 */
 {
-    char comm[FLEN_COMMENT],ctype[FLEN_VALUE],keynam[FLEN_KEYWORD];
-    int tstatus = 0;
+    int colnum[2];
+    long naxes[2];
+    fitsfile *tptr;
 
     if (*status > 0)
        return(*status);
 
-    ffkeyn("TCRVL",xcol,keynam,status);
-    ffgkyd(fptr,keynam,xrval,comm,status);
+    colnum[0] = xcol;
+    colnum[1] = ycol;
+    naxes[0] = 10;
+    naxes[1] = 10;
 
-    ffkeyn("TCRVL",ycol,keynam,status);
-    ffgkyd(fptr,keynam,yrval,comm,status);
+    /* create temporary  FITS file, in memory */
+    ffinit(&tptr, "mem://", status);
+    
+    /* create a temporary image; the datatype and size are not important */
+    ffcrim(tptr, 32, 2, naxes, status);
+    
+    /* now copy the relevant keywords from the table to the image */
+    fits_copy_pixlist2image(fptr, tptr, 9, 2, colnum, status);
 
-    ffkeyn("TCRPX",xcol,keynam,status);
-    ffgkyd(fptr,keynam,xrpix,comm,status);
+    /* write default WCS keywords, if they are not present */
+    fits_write_keys_histo(fptr, tptr, 2, colnum, status);
 
-    ffkeyn("TCRPX",ycol,keynam,status);
-    ffgkyd(fptr,keynam,yrpix,comm,status);
-
-    ffkeyn("TCDLT",xcol,keynam,status);
-    ffgkyd(fptr,keynam,xinc,comm,status);
-
-    ffkeyn("TCDLT",ycol,keynam,status);
-    ffgkyd(fptr,keynam,yinc,comm,status);
-
-    ffkeyn("TCTYP",xcol,keynam,status);
-    ffgkys(fptr,keynam,ctype,comm,status);
+    if (*status > 0)
+       return(*status);
+         
+    /* read the WCS keyword values from the temporary image */
+    ffgics(tptr, xrval, yrval, xrpix, yrpix, xinc, yinc, rot, type, status); 
 
     if (*status > 0)
     {
@@ -460,14 +743,9 @@ int ffgtcs(fitsfile *fptr,    /* I - FITS file pointer           */
       return(*status = NO_WCS_KEY); 
     }
 
-    /* copy the projection type string */
-    strncpy(type, &ctype[4], 4);
-    type[4] = '\0';
-
-    *rot=0.;   /* default rotation is 0  */
-    ffkeyn("TCROT",ycol,keynam,status);
-    ffgkyd(fptr,keynam,rot,comm,&tstatus);  /* keyword may not exist */
-
+    /* delete the temporary file */
+    fits_delete_file(tptr, status);
+    
     return(*status);
 }
 /*--------------------------------------------------------------------------*/

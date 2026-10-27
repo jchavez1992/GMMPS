@@ -13,7 +13,6 @@
 static const char* const rcsId="@(#) $Id: AstroCatalog.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdlib>
@@ -281,7 +280,7 @@ int AstroCatalog::query(const AstroQuery& q, const char* filename, QueryResult& 
     if (! isCatalog(entry_))
 	return wrongServType(entry_);
 
-    // generate the URL for a standard query in buf (using ostringstream)
+    // generate the URL for a standard query in buf (using std::ostringstream)
     char* result_buf =  NULL;
     int nlines = 0;
 
@@ -446,7 +445,7 @@ int AstroCatalog::genHttpQuery(char* buf, int bufsz, const AstroQuery& q, const 
     if (q.pos().status() != 0)
 	return ERROR;
 
-    ostringstream os;
+    std::ostringstream os;
     int i;
     int url_has_id = 0, 
 	url_has_radec = 0, 
@@ -859,7 +858,7 @@ void AstroCatalog::newTempFile()
     if (!tmpfile_ || strncmp(tmpfile_, "/tmp/cat", 8) == 0) {
 	// set default temp file for holding preview data
 	char buf[80];
-	sprintf(buf, "/tmp/cat%d%d.fits", (int)getpid(), count++);
+	snprintf(buf, 80, "/tmp/cat%d%d.fits", (int)getpid(), count++);
 	tmpfile(buf);
     } 
 }
@@ -895,7 +894,7 @@ int AstroCatalog::getPreview(const char* url, char*& ctype)
     newTempFile();
 
     // open the tmp file
-    ofstream f(tmpfile_);
+    std::ofstream f(tmpfile_);
     if (!f) 
 	return sys_error("could not open file for writing: ", tmpfile_);
 	
@@ -913,7 +912,7 @@ int AstroCatalog::getPreview(const char* url, char*& ctype)
     
     if (strcmp(ctype, "text/html") == 0) {
 	// most likely an HTML formatted server error message
-	ifstream is(tmpfile_);
+	std::ifstream is(tmpfile_);
 	unlink(tmpfile_);
 	return http_.html_error(is);
     }

@@ -94,7 +94,7 @@ static char data[MAX_NX * MAX_NY * 4];
 int main(int argc, char** argv) 
 {
     rtdIMAGE_EVT_HNDL eventHndl;	// image event handle
-    struct opts       opt;		// structure holding the options 
+    Opts               opt;		// structure holding the options 
     tRtdEvt           *mainObj;		// object which handles the main frame
     tRtdEvt           *rapidObj;	// object which handles the rapid frame
 
@@ -175,7 +175,7 @@ void errexit(const char* msg1, const char* msg2)
 /*
  * print usage
  */
-void usage(opts *opt)
+void usage(Opts *opt)
 {
     printf("tRtdEvt \n"
 	   "\t -v Verbose flag..................(%d)\n"
@@ -208,7 +208,7 @@ void usage(opts *opt)
 /*
  * parse input
  */    
-void parseInput(int argc, char** argv, opts *opt)
+void parseInput(int argc, char** argv, Opts *opt)
 {
     /*
      * set defaults

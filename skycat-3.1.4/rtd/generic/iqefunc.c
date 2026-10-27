@@ -58,12 +58,32 @@ static     double     w[9];
 static     double    xi[9];
 static     double    yi[9];
 
- 
+
+int iqe (float *pfm, float *pwm, int mx, int my, float *parm, float *sdev);
+int iqebgv (float *pfm, float *pwm, int mx, int my, float *bgm, float *bgs,
+            int *nbg);
+int iqemnt (float *pfm, float *pwm, int mx, int my, float bgv, float bgs,
+            float *amm);
+void index9 (float arrin[], int indx[]);
+int estm9p (float *pfm, float *pwm, int mx, int my, int nx, int ny, float *rm,
+            float *dx, float *dy);
+int iqesec (float *pfm, float *pwm, int mx, int my, float bgv, float *est,
+            float *sec);
+int iqefit (float *pfm, float *pwm, int mx, int my, float bgv, float *est,
+            float *ap, float *cm);
+int g2einit (float *val, float *wght, int nx, int ny);
+int g2efunc (int idx, float *val, float *fval, float *psig, float *a,
+            float *dyda, int ma);
+int g2efit (float *val, float *wght, int nx, int ny, float ap[MA],
+            float cv[MA], double *pchi);
+
+static int g2efunc2(int ndata, int npar, double *p, double *deviates,
+                    double **derivs, void *d);
 /*
 
 */
 
-int iqe(pfm, pwm, mx, my, parm, sdev)
+int iqe (
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   Estimate parameters for the Image Quality using a small
            frame around the object. The following parameters are
@@ -80,16 +100,15 @@ int iqe(pfm, pwm, mx, my, parm, sdev)
            to 'iqebgv', 'iqemnt', 'iqesec' and 'iqefit'.
 .RETURN    status,  0: OK, <0: estimate failed,
 ------------------------------------------------------------------------*/
-float      *pfm;
-float      *pwm;
-int        mx;
-int        my;
-float      *parm;
-float      *sdev;
-
+float      *pfm,
+float      *pwm,
+int        mx,
+int        my,
+float      *parm,
+float      *sdev
+)
 {
 int      n, err, nbg;
-int      iqebgv(), iqemnt(), iqesec(), iqefit();
 float    bgv, bgs, s2f, r2d;
 float    ap[6], cv[6], est[6], sec[6];
 
@@ -142,18 +161,19 @@ static int compar_float(const void *a1, const void *a2) {
 	(*(const float *)a1 > *(const float *)a2)?1:0;
 }
 
-int iqebgv(pfm, pwm, mx, my, bgm, bgs, nbg)
+int iqebgv(
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   Estimate background level for subimage
 .RETURN    status,  0: OK, -1:no buffer space, -2: no points left 
 ------------------------------------------------------------------------*/
-float      *pfm;
-float      *pwm;
-int        mx;
-int        my;
-float      *bgm;
-float      *bgs;
-int        *nbg;
+float      *pfm,
+float      *pwm,
+int        mx,
+int        my,
+float      *bgm,
+float      *bgs,
+int        *nbg
+)
 {
 int      n, m, ns, ms, nt, mt;
 
@@ -275,7 +295,7 @@ pw0 = pw1 = pw2 = pw3 = pws0 = pws1 = pws2 = pws3 = (float *) 0;
 
 */
 
-int iqemnt(pfm, pwm, mx, my, bgv, bgs, amm)
+int iqemnt(
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   Find center of object and do simple moment analysis
 .COMMEMTS  The parameter array 'amm' is as follows:
@@ -285,18 +305,18 @@ int iqemnt(pfm, pwm, mx, my, bgv, bgs, amm)
               amm[5] = angle of major axis
 .RETURN    status,  0: OK,  -1: mean<0.0
 ------------------------------------------------------------------------*/
-float      *pfm;
-float      *pwm;
-int        mx;
-int        my;
-float      bgv;
-float      bgs;
-float      *amm;
+float      *pfm,
+float      *pwm,
+int        mx,
+int        my,
+float      bgv,
+float      bgs,
+float      *amm
+)
 {
 int      n, nx, ny, nt, nxc, nyc, ioff;
 int      ndx=0, ndy=0;
 int      k, ki, ks, kn, psize;
-int      estm9p();
 
 float    av, dx, dy;
 float    *pf, *pw;
@@ -472,13 +492,14 @@ static void heapSortFloat(int array_size, float numbers[], int rank[]) {
     free(a);
 }
 
-void index9(arrin,indx)
+void index9(
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   compute indx[] so that arrin[indx[0..n[ - 1] is ascenting
 .RETURN    none
 ----------------------------------------------------------------------*/
-float   arrin[];
-int     indx[];
+float   arrin[],
+int     indx[]
+)
 {
 
   int   n=9; 
@@ -495,20 +516,21 @@ int     indx[];
 
 */
 
-int estm9p(pfm, pwm, mx, my, nx, ny, rm, dx, dy) 
+int estm9p(
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   Estimate parameters for 3x3 pixel region
 .RETURN    status, 0:OK, -1:out of range, 
 ------------------------------------------------------------------------*/
-float      *pfm;
-float      *pwm;
-int        mx;
-int        my;
-int        nx;
-int        ny;
-float      *rm;
-float      *dx;
-float      *dy;
+float      *pfm,
+float      *pwm,
+int        mx,
+int        my,
+int        nx,
+int        ny,
+float      *rm,
+float      *dx,
+float      *dy
+)
 {
 int      n, nt, ix, iy, idx[9];
 float    a, am;
@@ -592,7 +614,7 @@ return 0;
 
 */
 
-int iqesec(pfm, pwm, mx, my, bgv, est, sec)
+int iqesec(
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   Perform a sector analysis of object. Estimates for center and
            size are given in 'est' which is used for bootstrap.
@@ -603,13 +625,14 @@ int iqesec(pfm, pwm, mx, my, bgv, est, sec)
               sec[5] = angle of major axis
 .RETURN    status, 0:OK, -1: no buffer,
 ------------------------------------------------------------------------*/
-float      *pfm;
-float      *pwm;
-int        mx;
-int        my;
-float      bgv;
-float      *est;
-float      *sec;
+float      *pfm,
+float      *pwm,
+int        mx,
+int        my,
+float      bgv,
+float      *est,
+float      *sec
+)
 {
 int      n, k, ki, ks, kn, nxc, nyc, ioff, idx;
 int      ns[8], psize;
@@ -686,7 +709,7 @@ double    r, rl, rh, sb[8], a1r, a1i, a2r, a2i;
 
 */
 
-int iqefit(pfm, pwm, mx, my, bgv, est, ap, cm)
+int iqefit(
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   Fit 2D Gaussian function to PSF
 .COMMEMTS  The parameter arrays 'est' and 'ap' are as follows
@@ -696,17 +719,17 @@ int iqefit(pfm, pwm, mx, my, bgv, est, ap, cm)
               ap[5] = angle of major axis
 .RETURN    no. of iterations, <0: error, -10: no buffer
 ------------------------------------------------------------------------*/
-float      *pfm;
-float      *pwm;
-int        mx;
-int        my;
-float      bgv;
-float      *est;
-float      *ap;
-float      *cm;
+float      *pfm,
+float      *pwm,
+int        mx,
+int        my,
+float      bgv,
+float      *est,
+float      *ap,
+float      *cm
+)
 {
 int      n, ix, iy, nx, ny, nxs, nys, psize;
-int      g2efit();
 float    *pfb, *pwb, *pf, *pw, *pfmo;
 double   chi;
 
@@ -815,15 +838,16 @@ return n;
 
 */
 
-int g2einit(val, wght, nx, ny)
+int g2einit(
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   Initiate gauss fit function, set pointers to data and weights
 .RETURN    status,  0: OK, -1: error - bad pixel no.
 ------------------------------------------------------------------------*/
-float      *val;
-float      *wght;
-int        nx;
-int        ny;
+float      *val,
+float      *wght,
+int        nx,
+int        ny
+)
 
 {
 double   fh, w1, w2, w3;
@@ -864,18 +888,19 @@ double   fh, w1, w2, w3;
 
 */
 
-int g2efunc(idx, val, fval, psig, a, dyda, ma)
+int g2efunc(
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   evaluate function value for given index
 .RETURN    status,  0: OK, 1: error - bad pixel no.
 ------------------------------------------------------------------------*/
-int        idx;
-float      *val;
-float      *fval;
-float      *psig;
-float      *a;
-float      *dyda;
-int        ma;
+int        idx,
+float      *val,
+float      *fval,
+float      *psig,
+float      *a,
+float      *dyda,
+int        ma
+)
 {
   int      n;
   double   ff, sum, ci, si;
@@ -973,19 +998,20 @@ static int g2efunc2(int ndata, int npar, double *p, double *deviates,
     return 0;
 }
 
-int g2efit(val, wght, nx, ny, ap, cv, pchi)
+int g2efit(
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .PURPOSE   Perform 2D Gauss fit
 .RETURN    status,  no. of iterations, else  -1: error - bad pixel no,
                                              -2: error - iteration.
 ------------------------------------------------------------------------*/
-float      *val;
-float      *wght;
-int        nx;
-int        ny;
-float      ap[MA];
-float      cv[MA];
-double     *pchi;
+float      *val,
+float      *wght,
+int        nx,
+int        ny,
+float      ap[MA],
+float      cv[MA],
+double     *pchi
+)
 {
     int i;
     int status;

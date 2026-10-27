@@ -28,6 +28,13 @@ typedef struct {
     int reserved;		/* Reserved for future use */
 
 } Blt_Vector;
+
+
+extern  int Blt_GetVector(Tcl_Interp* interp, const char *vecName,
+                    Blt_Vector **vecPtrPtr);
+extern  int Blt_ResetVector(Blt_Vector *vecPtr, double *dataArr, int n,
+                      int arraySize, Tcl_FreeProc *freeProc);
+
 #endif
 
 

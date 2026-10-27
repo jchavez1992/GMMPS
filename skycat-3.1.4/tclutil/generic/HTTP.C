@@ -16,7 +16,7 @@
 static const char* const rcsId="@(#) $Id: HTTP.C,v 1.2 2010/07/21 19:42:46 cguirao Exp $";
 
 
-using namespace std;
+//using namespace std;
 #include <cstdio>
 #include <cctype>
 #include <cstdlib>
@@ -281,7 +281,7 @@ int HTTP::openCommand(const char* command)
     char tmpfile[80];
     strcpy(tmpfile, "/tmp/httpXXXXXX"); 
     mkstemp(tmpfile);
-    sprintf(cmd, "%s > %s", command, tmpfile);
+    snprintf(cmd, 2048, "%s > %s", command, tmpfile);
     if (system(cmd) != 0) {
 	error("error executing command: ", command);
 	unlink(tmpfile);
@@ -450,7 +450,7 @@ void HTTP::authorize(const char* username, const char* passwd,
 	auth_info_ = NULL;
     }
     char auth_info[1024];
-    sprintf(auth_info, "%s:%s", username, passwd);
+    snprintf(auth_info, 1024, "%s:%s", username, passwd);
     auth_info_ = encode_base64(auth_info);  // encoded result is allocated
     
     // if realm and server are specified, save an entry to the auth_file_
@@ -513,7 +513,7 @@ int HTTP::addAuthFileEntry(const char* server, const char* realm)
     ifstream is(auth_file_);
     ostringstream os;
     char newentry[1024];
-    sprintf(newentry, "%s:%s:%s", server, realm, auth_info_);
+    snprintf(newentry, 1024, "%s:%s:%s", server, realm, auth_info_);
     char buf[1024];
     int n = strlen(server) + strlen(realm) + 1;
     while(is.getline(buf, sizeof(buf))) {
@@ -546,7 +546,7 @@ int HTTP::findAuthFileEntry(const char* server, const char* realm)
 
     ifstream is(auth_file_);
     char entry[1024];
-    sprintf(entry, "%s:%s:", server, realm);
+    snprintf(entry, 1024, "%s:%s:", server, realm);
     int n = strlen(entry);
     char buf[1024];
     while(is.getline(buf, sizeof(buf))) {
@@ -699,7 +699,7 @@ int HTTP::get(const char* url)
     int n = strlen(req);
     if (writen(req, n) != n) {
 	char buf[255];
-	sprintf(buf, "could not contact http server on %s:%d\n", hostname_, port_);
+	snprintf(buf, 255, "could not contact http server on %s:%d\n", hostname_, port_);
 	if (feedback_) {
 	    fprintf(feedback_, "%s", buf);
 	    fflush(feedback_);
@@ -901,13 +901,13 @@ int HTTP::post(const char* url, const char* data)
     }
 
     // generate the HTTP POST command
-    sprintf(req, "POST %s HTTP/1.0\r\nContent-type: text/plain\r\nContent-length: %d\r\n\r\n%s", 
+    snprintf(req, 1024, "POST %s HTTP/1.0\r\nContent-type: text/plain\r\nContent-length: %zu\r\n\r\n%s", 
 	    args, strlen(data), data);
 
     int n = strlen(req);
     if (writen(req, n) != n) {
 	char buf[255];
-	sprintf(buf, "could not contact http server on %s:%d\n", hostname_, port_);
+	snprintf(buf, 255, "could not contact http server on %s:%d\n", hostname_, port_);
 	if (feedback_) {
 	    fprintf(feedback_, "%s", buf);
 	    fflush(feedback_);

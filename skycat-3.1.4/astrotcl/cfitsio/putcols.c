@@ -52,7 +52,7 @@ int ffpcls( fitsfile *fptr,  /* I - FITS file pointer                       */
     /*---------------------------------------------------*/
     if (colnum < 1 || colnum > (fptr->Fptr)->tfield)
     {
-        sprintf(message, "Specified column number is out of range: %d",
+        snprintf(message, FLEN_ERRMSG,"Specified column number is out of range: %d",
                 colnum);
         ffpmsg(message);
         return(*status = BAD_COL_NUM);
@@ -79,7 +79,7 @@ int ffpcls( fitsfile *fptr,  /* I - FITS file pointer                       */
 
       if (*status > 0)  /* test for error during previous write operation */
       {
-         sprintf(message,
+         snprintf(message,FLEN_ERRMSG,
           "Error writing to variable length string column (ffpcls).");
          ffpmsg(message);
       }
@@ -92,6 +92,15 @@ int ffpcls( fitsfile *fptr,  /* I - FITS file pointer                       */
         tform, &twidth, &tcode, &maxelem, &startpos,  &elemnum, &incre,
         &repeat, &rowlen, &hdutype, &tnull, snull, status) > 0)
         return(*status);
+
+      /* if string length is greater than a FITS block (2880 char) then must */
+      /* only write 1 string at a time, to force writein by ffpbyt instead of */
+      /* ffpbytoff (ffpbytoff can't handle this case) */
+      if (twidth > IOBUFLEN) {
+        maxelem = 1;
+        incre = twidth;
+        repeat = 1;
+      }   
 
       blanks = (char *) malloc(twidth); /* string for blank fill values */
       if (!blanks)
@@ -163,7 +172,7 @@ int ffpcls( fitsfile *fptr,  /* I - FITS file pointer                       */
 
       if (*status > 0)  /* test for error during previous write operation */
       {
-         sprintf(message,
+         snprintf(message,FLEN_ERRMSG,
           "Error writing elements %.0f thru %.0f of input data array (ffpcls).",
              (double) (next+1), (double) (next+ntodo));
          ffpmsg(message);
@@ -209,7 +218,8 @@ int ffpcns( fitsfile *fptr,  /* I - FITS file pointer                       */
   null value in the output FITS file. 
 */
 {
-    long repeat, width, ngood = 0, nbad = 0, ii;
+    long repeat, width;
+    LONGLONG ngood = 0, nbad = 0, ii;
     LONGLONG first, fstelm, fstrow;
 
     if (*status > 0)

@@ -37,6 +37,7 @@ static const char* const rcsId="@(#) $Id: rtd_remote.c,v 1.1.1.1 2009/03/31 14:1
 #include <sys/shm.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <signal.h>
 #include "rtd_remote.h"
 
 

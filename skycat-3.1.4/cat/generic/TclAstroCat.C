@@ -14,7 +14,6 @@
 static const char* const rcsId="@(#) $Id: TclAstroCat.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <cstring>
 #include <cctype>
 #include <cstdio>
@@ -798,7 +797,7 @@ int TclAstroCat::getimageCmd(int argc, char* argv[])
  */
 int TclAstroCat::queryposCmd(int argc, char* argv[])
 {
-    ostringstream os;
+    std::ostringstream os;
 
     if (! pos1_.isNull()) {
 	pos1_.print(os, equinoxStr_);	// print coords in given equinox
@@ -974,7 +973,7 @@ int TclAstroCat::appendKeyListVal(const char* keyword, const char* value)
  *
  * Write the config file format entry value part to the stream.
  */
-int TclAstroCat::tclListToConfigStreamValue(const char* tclList, ostream& os)
+int TclAstroCat::tclListToConfigStreamValue(const char* tclList, std::ostream& os)
 {
     int numValues = 0;
     char** values = NULL;
@@ -1000,7 +999,7 @@ int TclAstroCat::tclListToConfigStreamValue(const char* tclList, ostream& os)
  *
  * keyword; value
  */
-int TclAstroCat::tclListToConfigStreamLine(const char* tclList, ostream& os)
+int TclAstroCat::tclListToConfigStreamLine(const char* tclList, std::ostream& os)
 {
     int numValues = 0;
     char** values = NULL;
@@ -1023,10 +1022,10 @@ int TclAstroCat::tclListToConfigStreamLine(const char* tclList, ostream& os)
 	    Tcl_Free((char *)values);
 	    return TCL_ERROR;
 	}
-	os << endl;
+	os << std::endl;
     }
     else {
-	os << keyword << ": " << value << endl;
+	os << keyword << ": " << value << std::endl;
     }
     Tcl_Free((char *)values);
     return TCL_OK;
@@ -1040,7 +1039,7 @@ int TclAstroCat::tclListToConfigStreamLine(const char* tclList, ostream& os)
  * keyword; value
  * keyword: valuue
  */
-int TclAstroCat::tclListToConfigStream(const char* tclList, ostream& os)
+int TclAstroCat::tclListToConfigStream(const char* tclList, std::ostream& os)
 {
     int numValues = 0;
     char** values = NULL;
@@ -1169,37 +1168,37 @@ int TclAstroCat::entryCmd(int argc, char* argv[])
 	// don't include these values if they are already defaults
 
 	if (e->equinox() != 2000.) {
-	    sprintf(buf, "%lg", e->equinox());
+	    snprintf(buf, 80, "%lg", e->equinox());
 	    appendKeyVal("equinox", buf);
 	}
 
 	if (e->id_col() != 0) {
-	    sprintf(buf, "%d", e->id_col());
+	    snprintf(buf, 80, "%d", e->id_col());
 	    appendKeyVal("id_col", buf);
 	}
 
 	if (e->ra_col() != 1) {
-	    sprintf(buf, "%d", e->ra_col());
+	    snprintf(buf, 80, "%d", e->ra_col());
 	    appendKeyVal("ra_col", buf);
 	}
 
 	if (e->dec_col() != 2) {
-	    sprintf(buf, "%d", e->dec_col());
+	    snprintf(buf, 80, "%d", e->dec_col());
 	    appendKeyVal("dec_col", buf);
 	}
 
 	if (e->x_col() != -1) {
-	    sprintf(buf, "%d", e->x_col());
+	    snprintf(buf, 80, "%d", e->x_col());
 	    appendKeyVal("x_col", buf);
 	}
 
 	if (e->y_col() != -1) {
-	    sprintf(buf, "%d", e->y_col());
+	    snprintf(buf, 80, "%d", e->y_col());
 	    appendKeyVal("y_col", buf);
 	}
 
 	if (e->is_tcs()) {
-	    sprintf(buf, "%d", e->is_tcs());
+	    snprintf(buf, 80, "%d", e->is_tcs());
 	    appendKeyVal("is_tcs", buf);
 	}
     }
@@ -1233,7 +1232,7 @@ int TclAstroCat::entryCmd(int argc, char* argv[])
 	if (argc < 2)
 	    return error("missing catalog entry argument");
 
-	ostringstream os;
+	std::ostringstream os;
 
 	// convert tcl list entry to config file format
 	if (tclListToConfigStream(argv[1], os) != TCL_OK)
@@ -1243,7 +1242,7 @@ int TclAstroCat::entryCmd(int argc, char* argv[])
 	if (! os)
 	    return error("internal error writing config entry");
 
-	istringstream is(os.str());
+	std::istringstream is(os.str());
 	
 	if (update || set) {
 	    if (argc == 2) {
@@ -1293,7 +1292,7 @@ int TclAstroCat::entryCmd(int argc, char* argv[])
  */
 int TclAstroCat::loadCmd(int argc, char* argv[])
 {
-    ifstream is(argv[0]);
+    std::ifstream is(argv[0]);
     if (!is)
 	return sys_error("can't open file: ", argv[0]);
 
@@ -1306,7 +1305,7 @@ int TclAstroCat::loadCmd(int argc, char* argv[])
     dir->servType("directory");
 
     char url[2048+5];
-    sprintf(url, "file:%s", argv[0]);
+    snprintf(url, 2053, "file:%s", argv[0]);
     dir->url(url);
 
     const char* s = fileBasename(argv[0]);
@@ -1816,7 +1815,7 @@ int TclAstroCat::authorizeCmd(int argc, char* argv[])
     
     if (argc == 0) {
 	HTTP& http = cat_->http();
-	ostringstream os;
+	std::ostringstream os;
 	os << http.authorizationRequired() 
 	   << " " << http.www_auth_realm()
 	   << " " << http.hostname();
@@ -1917,17 +1916,17 @@ int TclAstroCat::plotCmd(int argc, char* argv[])
     for (int row = 0; row < nrows; row++) {
 	if (tab.get(row, 0, xyvalues[n=row*2]) != 0 
 	    || tab.get(row, 1, xyvalues[++n]) != 0) {
-	    delete xyvalues;
+	    delete[] xyvalues;
 	    return TCL_ERROR;
 	}
     }
 
     if (Blt_GraphElement(interp_, graph, elem, nvalues, xyvalues, 
 			 argv[3], argv[4]) != TCL_OK) {
-	delete xyvalues;
+	delete[] xyvalues;
 	return TCL_ERROR;
     }
-    delete xyvalues;
+    delete[] xyvalues;
 
     return set_result(nrows);
 }
@@ -1988,7 +1987,7 @@ int TclAstroCat::shortnameCmd(int argc, char* argv[])
 int TclAstroCat::getQueryResult(int numCols, char** colNames, const char* list, 
 				const char* equinoxStr, QueryResult& r)
 {
-    ostringstream os;
+    std::ostringstream os;
     int numRows = 0;
     char** rows = NULL;
     char raStr[32], decStr[32];

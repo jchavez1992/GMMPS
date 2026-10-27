@@ -17,7 +17,7 @@
 static const char* const rcsId="@(#) $Id: util.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
+//using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -333,7 +333,7 @@ int localSockListen(int& sock, int& port)
 	return sys_error("socket");
 
     // Bind the listen address to the socket. 
-    if (::bind(sock, (struct sockaddr *)&addr, addrSize) == -1)
+    if (bind(sock, (struct sockaddr *)&addr, addrSize) == -1) 
 	return sys_error("bind");
 
     // note the port number (in case it was 0 and is generated)

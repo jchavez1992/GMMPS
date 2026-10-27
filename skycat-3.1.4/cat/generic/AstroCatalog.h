@@ -18,7 +18,6 @@
  */
 
 
-using namespace std;
 #include <iostream>
 #include "CatalogInfo.h"
 #include "AstroQuery.h"

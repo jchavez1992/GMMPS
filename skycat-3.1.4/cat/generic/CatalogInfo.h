@@ -17,7 +17,6 @@
  */
 
 
-using namespace std;
 #include <iostream>
 #include <cstdio>
 #include <stdio.h>
@@ -54,7 +53,7 @@ private:
  
     // read a line from the stream into buf and return the stream. 
     // Lines ending with backslash are continued on the next line
-    static istream& getline(istream& f, char* buf, int size);
+    static std::istream& getline(std::istream& f, char* buf, int size);
 
     // Remove the given entry from the given catalog directory list. 
     static void remove(CatalogInfoEntry* e, CatalogInfoEntry* dir);
@@ -77,7 +76,7 @@ public:
     static int reload(CatalogInfoEntry* oldEntry, CatalogInfoEntry* newEntry);
 
     // load config file info from the given stream (filename for error reporting)
-    static CatalogInfoEntry* load(istream&, const char* filename = "internal");
+    static CatalogInfoEntry* load(std::istream&, const char* filename = "internal");
 
     // return a pointer to the catalog config file entry for the given catalog
     static CatalogInfoEntry* lookup(const char* catalogName);
@@ -90,7 +89,7 @@ public:
 
     // Read config keyword entries from the given stream and update the given
     // entry values  
-    static void updateConfigEntry(istream& is, CatalogInfoEntry* entry);
+    static void updateConfigEntry(std::istream& is, CatalogInfoEntry* entry);
 
     // Append the given entry to the end of the main catalog list
     static int append(CatalogInfoEntry* e);
@@ -242,7 +241,7 @@ public:
     void next(CatalogInfoEntry*e) {next_ = e;}
 
     // output operator (output in format similar to input config file)
-    friend ostream& operator<<(ostream&, const CatalogInfoEntry&);
+    friend std::ostream& operator<<(std::ostream&, const CatalogInfoEntry&);
 };
 
 

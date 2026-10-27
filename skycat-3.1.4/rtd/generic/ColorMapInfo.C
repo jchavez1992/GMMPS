@@ -17,7 +17,6 @@
 static const char* const rcsId="@(#) $Id: ColorMapInfo.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
@@ -84,7 +83,7 @@ ColorMapInfo* ColorMapInfo::get(char* filename)
 	return m;
 
     // have to read in file
-    ifstream f(filename);
+    std::ifstream f(filename);
     if (! f) {
 	error("could not open colormap file: ", filename);
 	return (ColorMapInfo*) NULL;
@@ -115,7 +114,7 @@ ColorMapInfo* ColorMapInfo::get(char* filename)
  * write a list of loaded colormap files to the given stream
  * separated by spaces
  */
-void ColorMapInfo::list(ostream& os) 
+void ColorMapInfo::list(std::ostream& os) 
 {
     ColorMapInfo* m;
     for (m = cmaps_; m; m = m->next()) 

@@ -202,7 +202,7 @@ int RtdCamera::start(const char* cameraName)
 	dbl_->log("Connecting to %s: RTD name=%s\n", RTD_SERVICE, name_);
 	if (rtdInitImageEvt(name_, eventHndl_, buffer_) != RTD_OK) {
 	    disconnect();
-	    sprintf(buffer_, 
+	    snprintf(buffer_, 2048,
 		    "could not initialize image event: check if %s is running!\n",
 		    RTD_SERVICE);
 	    dbl_->log(buffer_);
@@ -213,7 +213,7 @@ int RtdCamera::start(const char* cameraName)
 
     if (rtdAttachImageEvt(eventHndl_, camera(), buffer_) != RTD_OK) {
 	disconnect();
-	sprintf(buffer_, "detach image event: check if %s is running!\n", RTD_SERVICE);
+	snprintf(buffer_, 2048, "detach image event: check if %s is running!\n", RTD_SERVICE);
 	dbl_->log("%s\n", buffer_);
 	return error(buffer_);
     }
@@ -302,7 +302,7 @@ int RtdCamera::updateGlobals()
 {
     if (was_attached_ != attached()) {
 	was_attached_ = attached();
-	sprintf(buffer_, "%d %s", attached(), camera());
+	snprintf(buffer_, 2048, "%d %s", attached(), camera());
 	Tcl_SetVar2(interp_, image_, "ATTACHED", buffer_, TCL_GLOBAL_ONLY);
     }
     return TCL_OK;

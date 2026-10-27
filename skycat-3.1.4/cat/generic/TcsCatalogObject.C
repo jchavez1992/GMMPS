@@ -14,7 +14,6 @@
 static const char* const rcsId="@(#) $Id: TcsCatalogObject.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -170,7 +169,7 @@ TcsCatalogObject::~TcsCatalogObject()
 /*
  * output operator (Tcl list format)
  */
-ostream& operator<<(ostream& os, const TcsCatalogObject& t)
+std::ostream& operator<<(std::ostream& os, const TcsCatalogObject& t)
 {
     os << '{' << t.id_ << '}';
 
@@ -236,7 +235,7 @@ ostream& operator<<(ostream& os, const TcsCatalogObject& t)
 /*
  * print this object as a tab separated row
  */
-int TcsCatalogObject::printTableRow(ostream& os)
+int TcsCatalogObject::printTableRow(std::ostream& os)
 {
     char t = '\t';
       
@@ -256,7 +255,7 @@ int TcsCatalogObject::printTableRow(ostream& os)
        << ( preview() ? preview() : "" ) << t
        << distance() << t
        << pa()
-       << endl;
+       << std::endl;
     return 0;
 }
  
@@ -266,17 +265,17 @@ int TcsCatalogObject::printTableRow(ostream& os)
  */
 void TcsCatalogObject::print(char* buf, int bufsize) 
 {
-    ostringstream os;
+    std::ostringstream os;
     os << *this;
     strncpy(buf, os.str().c_str(), bufsize);
 }
 
 
 /*
- * print the headings to the given ostream 
+ * print the headings to the given std::ostream 
  * to match the output of the above output operator (<<).
  */
-void TcsCatalogObject::printHeadings(ostream& os) 
+void TcsCatalogObject::printHeadings(std::ostream& os) 
 {
     for (int i = 0; i < numCols_; i++) {
 	os << colNames_[i];
@@ -292,7 +291,7 @@ void TcsCatalogObject::printHeadings(ostream& os)
  */
 void TcsCatalogObject::printHeadings(char* buf, int bufsize) 
 {
-    ostringstream os;
+    std::ostringstream os;
     printHeadings(os);
     strncpy(buf, os.str().c_str(), bufsize);
 }

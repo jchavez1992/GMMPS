@@ -14,7 +14,7 @@
 static const char* const rcsId="@(#) $Id: ShellCommand.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
+//using namespace std;
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <sys/wait.h>

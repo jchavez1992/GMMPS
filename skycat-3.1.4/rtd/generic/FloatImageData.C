@@ -33,14 +33,14 @@
  */
 short FloatImageData::scaleToShort(float d) 
 {
-    if (std::isnan(d))
-	return LOOKUP_BLANK;
+    if (isnan(d))
+	return (short)LOOKUP_BLANK;
 
     //  Blank pixel value is is special lookup table position. Note
     //  Starlink uses a special value for floating point too (not a NaN).
     if ( haveBlank_ ) {
         if ( blank_ == d ) {
-            return LOOKUP_BLANK;
+            return (short)LOOKUP_BLANK;
 	}
     }
 
@@ -99,7 +99,7 @@ void FloatImageData::initShortConversion()
 #endif
 
 // return true is the value x is a NAN (define to 0 for non-float types)
-#define ISNAN(x) std::isnan(x)
+#define ISNAN(x) isnan(x)
 
 #include "ImageTemplates.icc"
 #undef CLASS_NAME

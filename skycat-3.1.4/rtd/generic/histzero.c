@@ -18,7 +18,7 @@ static char SccsId[] = "%W%  %G%";
 #include <stdlib.h>
 #include "histeq.h"		/* define SubrangeLink */
 
-static void merge_links();
+static void merge_links (SubrangeLink *subrange);
 
 /*
  * Subroutine:	resolve_zeroes
@@ -26,9 +26,10 @@ static void merge_links();
  * Note:	Adjoining groups are large count single level groups
  * Called by:	histrogram_equalize() above
  */
-void resolve_zeroes ( PriorLink, zeroes )
-     SubrangeLink *PriorLink;
-     int zeroes;
+void resolve_zeroes (
+     SubrangeLink *PriorLink,
+     int zeroes
+)
 {
   SubrangeLink *ThisLink, *NextLink;
   int a_count, b_count, z1count, z2count;
@@ -99,8 +100,9 @@ void resolve_zeroes ( PriorLink, zeroes )
  * Subroutine:	merge_links
  * Purpose:	Combine two links of histogram group list
  */
-static void merge_links ( subrange )
-     SubrangeLink *subrange;
+static void merge_links (
+     SubrangeLink *subrange
+)
 {
   SubrangeLink *lostlink;
 

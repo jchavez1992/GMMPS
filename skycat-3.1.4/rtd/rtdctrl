@@ -16,7 +16,7 @@
 
 # Make sure the shared libraries can be found 
 # The next line is executed by sh, the rest by tcl: \
-LD_LIBRARY_PATH="/home/abrighto/work/eso/skycat/src/install/lib:${LD_LIBRARY_PATH}" TCLLIBPATH="/home/abrighto/work/eso/skycat/src/install/lib" exec /usr/bin/wish8.4 "$0" ${1+"$@"}
+LD_LIBRARY_PATH="/home/abrighto/work/eso/skycat/src/install/lib:${LD_LIBRARY_PATH}" TCLLIBPATH="/home/abrighto/work/eso/skycat/src/install/lib" exec /usr/bin/wish8.6 "$0" ${1+"$@"}
 
 # -*-tcl-*-
 

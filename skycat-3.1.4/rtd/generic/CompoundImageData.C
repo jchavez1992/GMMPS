@@ -571,7 +571,7 @@ char* CompoundImageData::getValue(char* buf, double x, double y)
 	    return images_[i]->getValue(buf, x-x0, y-y0);
 	}
     }
-    sprintf(buf, "%.1f %.1f -", x, y);
+    snprintf(buf, 32, "%.1f %.1f -", x, y);
     return buf;
 }
 
@@ -632,8 +632,8 @@ void CompoundImageData::getValues(double x, double y, double rx, double ry,
 	    // display global chip coords for x and y
 	    double cx = x, cy = y;
 	    imageToChipCoords(cx, cy);
-	    sprintf(xStr, "%.1f", cx);
-	    sprintf(yStr, "%.1f", cy);
+	    snprintf(xStr, 32, "%.1f", cx);
+	    snprintf(yStr, 32, "%.1f", cy);
 	    return;
 	}
     }

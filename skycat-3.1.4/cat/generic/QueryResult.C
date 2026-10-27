@@ -13,7 +13,6 @@
 static const char* const rcsId="@(#) $Id: QueryResult.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -132,7 +131,7 @@ int QueryResult::circularSearch(
 	return 0;
 
     // search rows and put matching rows in "os"
-    ostringstream os;
+    std::ostringstream os;
     int n = 0;
     int i = 0;
     
@@ -326,7 +325,7 @@ int QueryResult::query(const AstroQuery& q, const TabTable& table, const char* o
  * print the table title (and any other info preceding the column headings)
  * (may be redefined in a derived class to add more info)
  */
-void QueryResult::printTableTop(ostream& os, const char* title) 
+void QueryResult::printTableTop(std::ostream& os, const char* title) 
 {
     if (! title)
 	title = "QueryResult";
@@ -354,7 +353,7 @@ void QueryResult::entry(CatalogInfoEntry* e, const char* result)
     entry_ = e;
 
     if (result) {
-	istringstream is(result);
+	std::istringstream is(result);
 	CatalogInfo::updateConfigEntry(is, e);
     }
 }

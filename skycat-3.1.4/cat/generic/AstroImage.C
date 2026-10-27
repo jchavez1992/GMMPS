@@ -16,7 +16,6 @@
 static const char* const rcsId="@(#) $Id: AstroImage.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <iostream>
@@ -41,7 +40,7 @@ AstroImage::AstroImage(CatalogInfoEntry* e)
 {
     // set default temp file for holding images
     char buf[32];
-    sprintf(buf, "/tmp/img%d.fits", (int)getpid());
+    snprintf(buf, 32, "/tmp/img%d.fits", (int)getpid());
     tmpfile_ = strdup(buf);
 }
 
@@ -131,7 +130,7 @@ int AstroImage::getImage(const WorldOrImageCoords& pos, double width, double hei
     for (int i = 0; i < 3 && urls[i]; i++) {
 
 	// generate the http url command
-	ostringstream os;
+	std::ostringstream os;
 
 	// expand the variables in the http server command
 	const char* p = urls[i];
@@ -193,7 +192,7 @@ int AstroImage::getImage(const WorldOrImageCoords& pos, double width, double hei
 int AstroImage::getImage(const char* url)
 {
     // open the tmp file
-    ofstream f(tmpfile_);
+    std::ofstream f(tmpfile_);
     if (!f) {
 	return error("could not open file for writing", tmpfile_);
     }
@@ -211,7 +210,7 @@ int AstroImage::getImage(const char* url)
     // if the Content-type is not recognized...
     if (strncmp(ctype, "image/", 6) != 0) {
 	// check if it might still be a FITS file:
-	ifstream is(tmpfile_);
+	std::ifstream is(tmpfile_);
 	char buf[81];
 	if (is && is.get(buf, 80) && strncmp(buf, "SIMPLE", 6) == 0)
 	    return 0;

@@ -20,8 +20,20 @@ static char SccsId[] = "%W%  %G%";
 #include <stdio.h>
 #include "histeq.h"		/* define SubrangeLink */
 
-static int count_nonzero_histogram_entries(), rescan_histogram();
-static void unmark_peak_links();
+static int rescan_histogram (SubrangeLink *subrange, int *histogram,
+     int *pixel_area, int *map_levels, int *average_area);
+static void unmark_peak_links (SubrangeLink *subrange, int nlevels);
+static int count_nonzero_histogram_entries (register int *histogram,
+     int pmin, register int pmax);
+
+extern void scan_histogram_for_peaks (SubrangeLink *subrange, int *histogram,
+     int *pixel_area, int *map_levels, int *average);
+extern void generate_scalemap (int *hist, SubrangeLink *subrange,
+     unsigned long *scalemap, unsigned long *pixels);
+extern char *calloc_errchk (int count, unsigned int size, char *errmess);
+extern void resolve_zeroes (SubrangeLink *PriorLink, int zeroes);
+extern int distribute_levels (SubrangeLink *linklist, int pixel_area,
+     int color_levels, int pmin, int pmax, int ncolor);
 
 /*
  * Subroutine:	histogram_equalize
@@ -29,14 +41,14 @@ static void unmark_peak_links();
  *		output level optimization accounts for large cell counts
  *		for single levels (e.g. half of all pixels with value 0)
  */
-void histogram_equalize ( scalemap, histogram, area, pmin, pmax,
-			  color_levels, pixels )
-     unsigned long *scalemap;	/* i/o: scalemap (for signed indexing) */
-     int *histogram;		/* i: histogram (for signed indexing) */
-     int area;			/* i: area in pixels when histogram was made */
-     int pmin, pmax;		/* i: min and max values in histogram */
-     int color_levels;		/* i: number of levels in color map */
-     unsigned long *pixels;	/* i: map to hardware entries */
+void histogram_equalize (
+     unsigned long *scalemap,	/* i/o: scalemap (for signed indexing) */
+     int *histogram,		/* i: histogram (for signed indexing) */
+     int area,			/* i: area in pixels when histogram was made */
+     int pmin, int pmax,		/* i: min and max values in histogram */
+     int color_levels,		/* i: number of levels in color map */
+     unsigned long *pixels	/* i: map to hardware entries */
+)
 {
   SubrangeLink *linklist;	/* l: beginning of subrange linklist */
   int average_area;		/* l: average area covered by each level */
@@ -44,7 +56,6 @@ void histogram_equalize ( scalemap, histogram, area, pmin, pmax,
   int map_levels;
   int nz_entries;		/* l: non-zero entries in histogram */
   int empties;			/* l: subranges with no alloted levels */
-  char *calloc_errchk();
   int distribute_levels();
   void generate_scalemap(), scan_histogram_for_peaks(), resolve_zeroes();
 
@@ -96,13 +107,13 @@ void histogram_equalize ( scalemap, histogram, area, pmin, pmax,
  *		marked and residual is stable
  * Returns:	1 if a range was modified, 0 if nothing was changed
  */
-static int rescan_histogram ( subrange, histogram,
-			      pixel_area, map_levels, average_area )
-     SubrangeLink *subrange;
-     int *histogram;
-     int *pixel_area;
-     int *map_levels;
-     int *average_area;
+static int rescan_histogram (
+     SubrangeLink *subrange,
+     int *histogram,
+     int *pixel_area,
+     int *map_levels,
+     int *average_area
+)
 {
   int process;
   void scan_histogram_for_peaks();
@@ -127,9 +138,10 @@ static int rescan_histogram ( subrange, histogram,
  *		check count against reference
  * Called by:	histogram_equalize() above
  */
-static void unmark_peak_links ( subrange, nlevels )
-     SubrangeLink *subrange;
-     int nlevels;
+static void unmark_peak_links (
+     SubrangeLink *subrange,
+     int nlevels
+)
 {
 #ifdef DEBUG
   int levels = 0;
@@ -160,10 +172,11 @@ static void unmark_peak_links ( subrange, nlevels )
  * Subroutine:	count_nonzero_histogram_entries
  * Called by:	histogram_equalize() in HistEqual.c
  */
-static int count_nonzero_histogram_entries ( histogram, pmin, pmax )
-     register int *histogram;
-     int pmin;
-     register int pmax;
+static int count_nonzero_histogram_entries (
+     register int *histogram,
+     int pmin,
+     register int pmax
+)
 {
   register int i, npix;
 

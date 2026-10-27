@@ -14,6 +14,8 @@
 #ifndef  TRIGO_DEF
 #define  TRIGO_DEF	0
 
+# define _TEMPLATES_    1
+
 #include <math.h>	/* Use system Math Library */
 #include "compiler.h"	/* If function templates are allowed */
 
@@ -41,8 +43,8 @@ double asind(double x);
 double atand(double x);
 double atan2d(double x, double y);    
 #else
-double acosd(), asind(), atand(), atan2d(); 
-double cosd(), sind(), tand();
+double acosd(double x), asind(double x), atand(double x), atan2d(double x); 
+double cosd(double x), sind(double x), tand(double x);
 #endif
 
 /*=========================================================================
@@ -50,7 +52,9 @@ double cosd(), sind(), tand();
  *=========================================================================*/
 
 #if _TEMPLATES_
+int 	tr_Euler(double Euler_angles[3] , double R[3][3]);
 int 	tr_ou 	(double o[2] , double u[3]);
+int 	tr_uu 	(double u1[3] , double u2[3], double R[3][3]);
 int 	tr_uo 	(double u[3] , double o[2]);
 	/* Surface of a `rectangle' on the sphere */
 double	surf_o	(double o1[2], double o2[2]);		/* Pos. in degrees */
@@ -83,8 +87,8 @@ double acosh(double x);
 double asinh(double x);
 double atanh(double x);
 #else
-double sinc(), asinc();
-double acosh(), asinh(), atanh();
+double sinc(double x), asinc(double x);
+double acosh(double x), asinh(double x), atanh(double x);
 #endif
 
 
@@ -109,7 +113,3 @@ double acosh(), asinh(), atanh();
 						sign as x		*/
 						
 #endif
-                                                
-
-                                                               
-                                        

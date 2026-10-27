@@ -197,7 +197,7 @@ int RtdImage::alloccolorsCmd(int argc, char* argv[])
 {
     if (argc == 0) {
 	char buf[80];
-	sprintf(buf, "%d %d", colors_->colorCount(), colors_->freeCount());
+	snprintf(buf, 80, "%d %d", colors_->colorCount(), colors_->freeCount());
 	return set_result(buf);
     }
     
@@ -275,7 +275,7 @@ int RtdImage::autocutCmd(int argc, char* argv[])
     // keep status in a global Tcl variable which can be traced by the Tcl code
     char* var = (viewMaster_ ? viewMaster_->instname_ : instname_);
     char sts[100];
-    sprintf(sts, "%g %g",  image_->lowCut(), image_->highCut());
+    snprintf(sts, 100, "%g %g",  image_->lowCut(), image_->highCut());
     Tcl_SetVar2(interp_, var, "CUT", sts, TCL_GLOBAL_ONLY);
 
     return updateViews(1) || updateImage(); 
@@ -315,13 +315,13 @@ int RtdImage::biasimageCmd(int argc, char* argv[])
     else if (strcmp(argv[0], "update") == 0) {
     }
     else if (strcmp(argv[0], "status") == 0) {
-        sprintf(buf, "%d", biasimage_->status());
+        snprintf(buf, 1024, "%d", biasimage_->status());
         return set_result(buf);
     }
     else if (strcmp(argv[0], "off") == 0)
         biasimage_->off();
     else if (strcmp(argv[0], "maxbias") == 0) {
-        sprintf(buf, "%d", MAXBIAS);
+        snprintf(buf, 1024, "%d", MAXBIAS);
         return set_result(buf);
     }
     else if (strcmp(argv[0], "clear") == 0) {
@@ -338,13 +338,13 @@ int RtdImage::biasimageCmd(int argc, char* argv[])
     }
     else if (strcmp(argv[0], "select") == 0) {
         if (argc < 2) {
-            sprintf(buf, "%d", biasimage_->select());
+            snprintf(buf, 1024, "%d", biasimage_->select());
             return set_result(buf);
         }
         if (Tcl_GetInt(interp_, argv[1], &nr) != TCL_OK)
             return error("usage: $image biasimage select nr");
         if (biasimage_->select(nr) != 0) {
-            sprintf(buf, "biasimage select: number must be in range 0-%d", MAXBIAS-1);
+            snprintf(buf, 1024, "biasimage select: number must be in range 0-%d", MAXBIAS-1);
             return error(buf);
         }
     }
@@ -389,7 +389,7 @@ int RtdImage::biasimageCmd(int argc, char* argv[])
     // keep status in a global Tcl variable which can be traced by the Tcl code
     char* var = (viewMaster_ ? viewMaster_->instname_ : instname_);
     char sts[10];
-    sprintf(sts, "%d", biasimage_->status());
+    snprintf(sts, 10, "%d", biasimage_->status());
     Tcl_SetVar2(interp_, var, "BIAS", sts, TCL_GLOBAL_ONLY);
 
     return TCL_OK;
@@ -439,7 +439,7 @@ int RtdImage::cameraCmd(int argc, char* argv[])
 	stat = camera_->cont();
     else if (strcmp(argv[0],"attach") == 0 || strcmp(argv[0],"start") == 0) {
 	if (argc < 2) {
-	    sprintf(buf, "%d", camera_->attached());
+	    snprintf(buf, 128, "%d", camera_->attached());
 	    stat = set_result(buf);
 	}
 	else{
@@ -897,14 +897,14 @@ int RtdImage::cutCmd(int argc, char* argv[])
     else if (argc == 0) {
 	// return the current cut levels
 	char buf[80];
-	sprintf(buf, "%g %g", image_->lowCut(), image_->highCut());
+	snprintf(buf, 80, "%g %g", image_->lowCut(), image_->highCut());
 	return set_result(buf);
     }
 
     // keep status in a global Tcl variable which can be traced by the Tcl code
     char* var = (viewMaster_ ? viewMaster_->instname_ : instname_);
     char sts[100];
-    sprintf(sts, "%g %g",  image_->lowCut(), image_->highCut());
+    snprintf(sts, 100, "%g %g",  image_->lowCut(), image_->highCut());
     Tcl_SetVar2(interp_, var, "CUT", sts, TCL_GLOBAL_ONLY);
 
     return stat;
@@ -930,7 +930,7 @@ int RtdImage::infoCmd(int argc, char* argv[])
 	double x0, y0, x1, y1;
 	char buf[80];
 	image_->getBbox(&x0, &y0, &x1, &y1);
-	sprintf(buf, "%.1f %.1f %.1f %.1f", x0, y0, x1, y1);
+	snprintf(buf, 80, "%.1f %.1f %.1f %.1f", x0, y0, x1, y1);
 	return set_result(buf);
     }
 
@@ -951,7 +951,7 @@ int RtdImage::infoCmd(int argc, char* argv[])
 	image_->getMinMax(x0, y0, w, h, &minv, &maxv);
 	// return the min/max values
 	char buf[80];
-	sprintf(buf, "%g %g", minv, maxv);
+	snprintf(buf, 80, "%g %g", minv, maxv);
 	return set_result(buf);
     }
     return error(msg);
@@ -1078,7 +1078,7 @@ int RtdImage::flipCmd(int argc, char* argv[])
 
     if (argc == 0) {
 	char buf[80];
-	sprintf(buf, "%d %d", image_->flipX(), image_->flipY());
+	snprintf(buf, 80, "%d %d", image_->flipX(), image_->flipY());
 	return set_result(buf);
     }
 
@@ -1149,7 +1149,7 @@ int RtdImage::flipCmd(int argc, char* argv[])
     // keep status in a global Tcl variable which can be traced by the Tcl code
     char* var = (viewMaster_ ? viewMaster_->instname_ : instname_);
     char sts[10];
-    sprintf(sts, "%d %d", image_->flipX(), image_->flipY());
+    snprintf(sts, 10, "%d %d", image_->flipX(), image_->flipY());
     Tcl_SetVar2(interp_, var, "FLIP", sts, TCL_GLOBAL_ONLY);
     return TCL_OK;
 }
@@ -1268,7 +1268,7 @@ int RtdImage::getvalsCmd(int argc, char* argv[])
                 strcpy(buf, "- ");
             else {
                 val = image_->getValue(x+i, y+j);
-                sprintf(buf, "%g ", val);
+                snprintf(buf, 80, "%g ", val);
             }
             Tcl_AppendResult(interp_, buf, NULL);
         }
@@ -1709,67 +1709,67 @@ int RtdImage::mbandCmd(int argc, char* argv[])
     const char* canvas = canvasName_;
 
     // set diagonal line coords
-    sprintf(buf, "%s coords mband_line %g %g %g %g\n", 
+    snprintf(buf, 1024, "%s coords mband_line %g %g %g %g\n", 
 	    canvas, x0, y0, x1, y1);
     Tcl_Eval(interp_, buf);
 
     // adjust labels
-    sprintf(buf, "%s coords mband_diag_text %g %g\n", 
+    snprintf(buf, 1024, "%s coords mband_diag_text %g %g\n", 
 	    canvas, mx+diag_xoffset, my+diag_yoffset);
     Tcl_Eval(interp_, buf);
 
-    sprintf(buf, "%s itemconfig mband_diag_text -text %s -anchor %s\n", 
+    snprintf(buf, 1024, "%s itemconfig mband_diag_text -text %s -anchor %s\n", 
 	    canvas, distStr, diag_anchor);
     Tcl_Eval(interp_, buf);
 
-    sprintf(buf, "%s bbox mband_diag_text\n", canvas);
+    snprintf(buf, 1024, "%s bbox mband_diag_text\n", canvas);
     Tcl_Eval(interp_, buf);
 
     double rx0, ry0, rx1, ry1;
-    if (sscanf(interp_->result, "%lf %lf %lf %lf", &rx0, &ry0, &rx1, &ry1) != 4) 
+    if (sscanf(Tcl_GetStringResult(interp_), "%lf %lf %lf %lf", &rx0, &ry0, &rx1, &ry1) != 4) 
 	return TCL_OK;
 
-    sprintf(buf, "%s coords mband_diag_rect %g %g %g %g\n", 
+    snprintf(buf, 1024, "%s coords mband_diag_rect %g %g %g %g\n", 
 	    canvas,  rx0, ry0, rx1, ry1);
     Tcl_Eval(interp_, buf);
 
     if (show_angle) {
 	// set angle line coords
-	sprintf(buf, "%s coords mband_angle %g %g %g %g %g %g\n", 
+	snprintf(buf, 1024, "%s coords mband_angle %g %g %g %g %g %g\n", 
 		canvas, x0, y0, x1, y0, x1, y1);
 	Tcl_Eval(interp_, buf);
     
-	sprintf(buf, "%s coords mband_width_text %g %g\n",
+	snprintf(buf, 1024, "%s coords mband_width_text %g %g\n",
 		canvas, mx, y0+width_yoffset);
 	Tcl_Eval(interp_, buf);
 
-	sprintf(buf, "%s itemconfig mband_width_text -text %s -anchor %s\n",
+	snprintf(buf, 1024, "%s itemconfig mband_width_text -text %s -anchor %s\n",
 		canvas, widthStr, width_anchor);
 	Tcl_Eval(interp_, buf);
 
-	sprintf(buf, "%s bbox mband_width_text\n", canvas);
+	snprintf(buf, 1024, "%s bbox mband_width_text\n", canvas);
 	Tcl_Eval(interp_, buf);
 
-	if (sscanf(interp_->result, "%lf %lf %lf %lf", &rx0, &ry0, &rx1, &ry1) != 4) 
+	if (sscanf(Tcl_GetStringResult(interp_), "%lf %lf %lf %lf", &rx0, &ry0, &rx1, &ry1) != 4) 
 	    return TCL_OK;
-	sprintf(buf, "%s coords mband_width_rect %g %g %g %g\n", 
+	snprintf(buf, 1024, "%s coords mband_width_rect %g %g %g %g\n", 
 		canvas,  rx0, ry0, rx1, ry1);
 	Tcl_Eval(interp_, buf);
 
-	sprintf(buf, "%s coords mband_height_text %g %g\n",
+	snprintf(buf, 1024, "%s coords mband_height_text %g %g\n",
 		canvas, x1+height_xoffset, my);
 	Tcl_Eval(interp_, buf);
 
-	sprintf(buf, "%s itemconfig mband_height_text -text %s -anchor %s\n",
+	snprintf(buf, 1024, "%s itemconfig mband_height_text -text %s -anchor %s\n",
 		canvas, heightStr, height_anchor);
 	Tcl_Eval(interp_, buf);
 
-	sprintf(buf, "%s bbox mband_height_text\n", canvas);
+	snprintf(buf, 1024, "%s bbox mband_height_text\n", canvas);
 	Tcl_Eval(interp_, buf);
 
-	if (sscanf(interp_->result, "%lf %lf %lf %lf", &rx0, &ry0, &rx1, &ry1) != 4) 
+	if (sscanf(Tcl_GetStringResult(interp_), "%lf %lf %lf %lf", &rx0, &ry0, &rx1, &ry1) != 4) 
 	    return TCL_OK;
-	sprintf(buf, "%s coords mband_height_rect %g %g %g %g\n", 
+	snprintf(buf, 1024, "%s coords mband_height_rect %g %g %g %g\n", 
 		canvas,  rx0, ry0, rx1, ry1);
 	Tcl_Eval(interp_, buf);
     } 
@@ -1777,19 +1777,19 @@ int RtdImage::mbandCmd(int argc, char* argv[])
 	// hide the width and height labels and lines
 	x1 = x0 + 1;
 	y1 = y0 + 1;
-	sprintf(buf, "%s coords mband_angle %g %g %g %g\n", canvas, x0, y0, x1, y1);
+	snprintf(buf, 1024, "%s coords mband_angle %g %g %g %g\n", canvas, x0, y0, x1, y1);
 	Tcl_Eval(interp_, buf);
 
-	sprintf(buf, "%s itemconfig mband_width_text -text {}\n", canvas);
+	snprintf(buf, 1024, "%s itemconfig mband_width_text -text {}\n", canvas);
 	Tcl_Eval(interp_, buf);
 
-	sprintf(buf, "%s coords mband_width_rect %g %g %g %g\n", canvas, x0, y0, x1, y1);
+	snprintf(buf, 1024, "%s coords mband_width_rect %g %g %g %g\n", canvas, x0, y0, x1, y1);
 	Tcl_Eval(interp_, buf);
 
-	sprintf(buf, "%s itemconfig mband_height_text -text {}\n", canvas);
+	snprintf(buf, 1024, "%s itemconfig mband_height_text -text {}\n", canvas);
 	Tcl_Eval(interp_, buf);
 
-	sprintf(buf, "%s coords mband_height_rect %g %g %g %g", canvas, x0, y0, x1, y1);
+	snprintf(buf, 1024, "%s coords mband_height_rect %g %g %g %g", canvas, x0, y0, x1, y1);
 	Tcl_Eval(interp_, buf);
     }
     return TCL_OK;
@@ -2017,6 +2017,7 @@ int RtdImage::motioneventCmd(int argc, char* argv[])
 	return error("invalid argument, expected 0 or 1");
     }
     saveMotion_ = value;
+    return value;
 }
 
 
@@ -2333,7 +2334,7 @@ int RtdImage::remoteCmd(int argc, char* argv[])
 int RtdImage::remoteTclCmd(int argc, char* argv[])
 {
     Tcl_Eval(interp_, argv[0]);
-    return set_result(interp_->result);
+    return set_result(Tcl_GetStringResult(interp_));
 }
 
 /*
@@ -2381,7 +2382,7 @@ int RtdImage::rotateCmd(int argc, char* argv[])
     // keep status in a global Tcl variable which can be traced by the Tcl code
     char* var = (viewMaster_ ? viewMaster_->instname_ : instname_);
     char sts[10];
-    sprintf(sts, "%d", image_->rotate());
+    snprintf(sts, 10, "%d", image_->rotate());
     Tcl_SetVar2(interp_, var, "ROTATE", sts, TCL_GLOBAL_ONLY);
     return TCL_OK;
 }
@@ -2441,7 +2442,7 @@ int RtdImage::scaleCmd(int argc, char* argv[])
     // keep status in a global Tcl variable which can be traced by the Tcl code
     char* var = (viewMaster_ ? viewMaster_->instname_ : instname_);
     char sts[100];
-    sprintf(sts, "%d %d", image_->xScale(), image_->yScale());
+    snprintf(sts, 100, "%d %d", image_->xScale(), image_->yScale());
     Tcl_SetVar2(interp_, var, "SCALE", sts, TCL_GLOBAL_ONLY);
 
     return stat;
@@ -2569,14 +2570,14 @@ int RtdImage::shmCmd(int argc, char* argv[])
 	    if (!image_->data().shared())
 		return error("rtd was not started with the -shm_data option");
 	    Mem m = image_->data();
-	    sprintf(buf, "%d %d %d %d", m.shmId(), m.offset(), m.length(), m.size());
+	    snprintf(buf, 80, "%d %ld %d %d", m.shmId(), m.offset(), m.length(), m.size());
 	    return set_result(buf);
 	}
 	else if (strcmp(argv[1], "header") == 0) {
 	    if (!image_->header().shared())
 		return error("rtd was not started with the -shm_header option");
 	    Mem m = image_->header();
-	    sprintf(buf, "%d %d %d %d", m.shmId(), m.offset(), m.length(), m.size());
+	    snprintf(buf, 80, "%d %ld %d %d", m.shmId(), m.offset(), m.length(), m.size());
 	    return set_result(buf);
 	}
 	else {
@@ -2675,10 +2676,10 @@ int RtdImage::spectrumCmd(int argc, char* argv[])
     int numValues = image_->getSpectrum(xyvalues, x0, y0, x1, y1);
     assert(numValues <= dist);
     if (Blt_GraphElement(interp_, argv[0], argv[1], numValues*2, xyvalues, argv[7], argv[8]) != TCL_OK) {
-	delete xyvalues;
+	delete[] xyvalues;
 	return TCL_ERROR;
     }
-    delete xyvalues;
+    delete[] xyvalues;
     return set_result(numValues);
 }
 
@@ -2816,7 +2817,7 @@ int RtdImage::statisticsCmd(int argc, char* argv[])
 	n = image_->noiseStatistics(x0, y0, int(nx), int(ny), 
 				    &dmin, &dmax, &av, &rms,
 				    &xs, &xe, &ys, &ye);
-	sprintf (buf, "%g %g %g %g %d %d %d %d %d", 
+	snprintf (buf, 1024, "%g %g %g %g %d %d %d %d %d", 
 		 dmin, dmax, av, rms, n, xs, xe, ys, ye);
 	return set_result(buf);
     }
@@ -2871,7 +2872,7 @@ int RtdImage::bltgraphCmd(int argc, char* argv[])
 	int numValues = image_->getYline4((int)x, (int)y0, (int)y1, xyvalues);
 	stat = Blt_GraphElement(interp_, argv[1], argv[2], numValues*4, xyvalues, 
 				argv[3], argv[4]);
-	delete xyvalues;
+	delete[] xyvalues;
 	return stat;
     }
 
@@ -2906,7 +2907,7 @@ int RtdImage::bltgraphCmd(int argc, char* argv[])
 	}
 	stat = Blt_GraphElement(interp_, argv[1], argv[2], numValues*4, xyvalues, 
 				argv[3], argv[4]);
-	delete xyvalues;
+	delete[] xyvalues;
 	return stat;
     }
     return error(msg);
@@ -3306,7 +3307,7 @@ int RtdImage::wcsequinoxCmd(int argc, char* argv[])
     double equinox = image_->wcs().equinox();
     if (equinox != 0.0) {
 	char buf[32];
-	sprintf(buf, "%.2f", equinox);
+	snprintf(buf, 32, "%.2f", equinox);
 	return set_result(buf);
     }
     return TCL_OK;
@@ -3403,7 +3404,7 @@ int RtdImage::wcssetCmd(int argc, char* argv[])
 	    pos.print(raStr, decStr, wcs.equinox());
 
 	    // make the result list
-	    sprintf(buf, "%s %s %g %g %g %d %d %g %g %g %s", 
+	    snprintf(buf, 256, "%s %s %g %g %g %d %d %g %g %g %s", 
 		    raStr, decStr, wcs.secPix(), 
 		    wcs.xRefPix(), wcs.yRefPix(),
 		    wcs.pixWidth(), wcs.pixHeight(), 
@@ -3414,7 +3415,7 @@ int RtdImage::wcssetCmd(int argc, char* argv[])
 	}
 	else {
 	    // no WCS, return default info
-	    sprintf(buf, "{} {} {} {} {} %d %d 0 2000 2000 {}", 
+	    snprintf(buf, 256, "{} {} {} {} {} %d %d 0 2000 2000 {}", 
 		    image_->width(), image_->height());
 	    return set_result(buf);
 	}

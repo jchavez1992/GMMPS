@@ -9,6 +9,26 @@
 #include <stddef.h>  /* apparently needed to define size_t */
 #include "fitsio2.h"
 
+#if HAVE_BZIP2
+#include "bzlib.h"
+#endif
+
+/* prototype for .Z file uncompression function in zuncompress.c */
+int zuncompress2mem(char *filename, 
+             FILE *diskfile, 
+             char **buffptr, 
+             size_t *buffsize, 
+             void *(*mem_realloc)(void *p, size_t newsize),
+             size_t *filesize,
+             int *status);
+
+#if HAVE_BZIP2
+/* prototype for .bz2 uncompression function (in this file) */
+void bzip2uncompress2mem(char *filename, FILE *diskfile, int hdl,
+                         size_t* filesize, int* status);
+#endif
+
+
 #define RECBUFLEN 1000
 
 static char stdin_outfile[FLEN_FILENAME];
@@ -261,6 +281,7 @@ int mem_truncate(int handle, LONGLONG filesize)
         *(memTable[handle].memsizeptr) = (size_t) (filesize);
     }
 
+    memTable[handle].currentpos = filesize;
     memTable[handle].fitsfilesize = filesize;
     return(0);
 }
@@ -272,7 +293,8 @@ int stdin_checkfile(char *urltype, char *infile, char *outfile)
 {
     if (strlen(outfile))
     {
-        strcpy(stdin_outfile,outfile); /* an output file is specified */
+        stdin_outfile[0] = '\0';
+        strncat(stdin_outfile,outfile,FLEN_FILENAME-1); /* an output file is specified */
 	strcpy(urltype,"stdinfile://");
     }
     else
@@ -287,7 +309,7 @@ int stdin_open(char *filename, int rwmode, int *handle)
   The file name is ignored in this case.
 */
 {
-    int status = 0;
+    int status;
     char cbuff;
 
     if (*stdin_outfile)
@@ -455,9 +477,9 @@ int stdin2file(int handle)  /* handle number */
   Copy the stdin stream to a file.  .
 */
 {
-    size_t nread = 0;
+    size_t nread;
     char simple[] = "SIMPLE";
-    int c, ii, jj, status = 0;
+    int c, ii, jj, status;
     char recbuf[RECBUFLEN];
 
     ii = 0;
@@ -546,7 +568,9 @@ int mem_compress_open(char *filename, int rwmode, int *hdl)
     FILE *diskfile;
     int status, estimated = 1;
     unsigned char buffer[4];
-    size_t finalsize;
+    size_t finalsize, filesize;
+    LONGLONG llsize = 0;
+    unsigned int modulosize;
     char *ptr;
 
     if (rwmode != READONLY)
@@ -574,17 +598,49 @@ int mem_compress_open(char *filename, int rwmode, int *hdl)
 
     if (memcmp(buffer, "\037\213", 2) == 0)  /* GZIP */
     {
-        /* the uncompressed file size is give at the end of the file */
+        /* the uncompressed file size is give at the end */
+        /* of the file in the ISIZE field  (modulo 2^32) */
 
         fseek(diskfile, 0, 2);            /* move to end of file */
+        filesize = ftell(diskfile);       /* position = size of file */
         fseek(diskfile, -4L, 1);          /* move back 4 bytes */
         fread(buffer, 1, 4L, diskfile);   /* read 4 bytes */
 
         /* have to worry about integer byte order */
-	finalsize  = buffer[0];
-	finalsize |= buffer[1] << 8;
-	finalsize |= buffer[2] << 16;
-	finalsize |= buffer[3] << 24;
+	modulosize  = buffer[0];
+	modulosize |= buffer[1] << 8;
+	modulosize |= buffer[2] << 16;
+	modulosize |= buffer[3] << 24;
+
+/*
+  the field ISIZE in the gzipped file header only stores 4 bytes and contains
+  the uncompressed file size modulo 2^32.  If the uncompressed file size
+  is less than the compressed file size (filesize), then one probably needs to
+  add 2^32 = 4294967296 to the uncompressed file size, assuming that the gzip
+  produces a compressed file that is smaller than the original file.
+
+  But one must allow for the case of very small files, where the
+  gzipped file may actually be larger then the original uncompressed file.
+  Therefore, only perform the modulo 2^32 correction test if the compressed 
+  file is greater than 10,000 bytes in size.  (Note: this threhold would
+  fail only if the original file was greater than 2^32 bytes in size AND gzip 
+  was able to compress it by more than a factor of 400,000 (!) which seems
+  highly unlikely.)
+  
+  Also, obviously, this 2^32 modulo correction cannot be performed if the
+  finalsize variable is only 32-bits long.  Typically, the 'size_t' integer
+  type must be 8 bytes or larger in size to support data files that are 
+  greater than 2 GB (2^31 bytes) in size.  
+*/
+        finalsize = modulosize;
+
+        if (sizeof(size_t) > 4 && filesize > 10000) {
+	    llsize = (LONGLONG) finalsize;  
+	    /* use LONGLONG variable to suppress compiler warning */
+            while (llsize <  (LONGLONG) filesize) llsize += 4294967296;
+
+            finalsize = (size_t) llsize;
+        }
 
         estimated = 0;  /* file size is known, not estimated */
     }
@@ -596,10 +652,11 @@ int mem_compress_open(char *filename, int rwmode, int *hdl)
         fread(buffer, 1, 4L, diskfile);   /* read 4 bytes */
 
         /* have to worry about integer byte order */
-	finalsize  = buffer[0];
-	finalsize |= buffer[1] << 8;
-	finalsize |= buffer[2] << 16;
-	finalsize |= buffer[3] << 24;
+	modulosize  = buffer[0];
+	modulosize |= buffer[1] << 8;
+	modulosize |= buffer[2] << 16;
+	modulosize |= buffer[3] << 24;
+        finalsize = modulosize;
 
         estimated = 0;  /* file size is known, not estimated */
     }
@@ -609,6 +666,10 @@ int mem_compress_open(char *filename, int rwmode, int *hdl)
         finalsize = 0;  /* for most methods we can't determine final size */
     else if (memcmp(buffer, "\037\240", 2) == 0)  /* LZH */
         finalsize = 0;  /* for most methods we can't determine final size */
+#if HAVE_BZIP2
+    else if (memcmp(buffer, "BZ", 2) == 0)        /* BZip2 */
+        finalsize = 0;  /* for most methods we can't determine final size */
+#endif
     else
     {
         /* not a compressed file; this should never happen */
@@ -1007,11 +1068,25 @@ int mem_uncompress2mem(char *filename, FILE *diskfile, int hdl)
   int status;
   /* uncompress file into memory */
   status = 0;
-  uncompress2mem(filename, diskfile,
+
+    if (strstr(filename, ".Z")) {
+         zuncompress2mem(filename, diskfile,
 		 memTable[hdl].memaddrptr,   /* pointer to memory address */
 		 memTable[hdl].memsizeptr,   /* pointer to size of memory */
 		 realloc,                     /* reallocation function */
 		 &finalsize, &status);        /* returned file size nd status*/
+#if HAVE_BZIP2
+    } else if (strstr(filename, ".bz2")) {
+        bzip2uncompress2mem(filename, diskfile, hdl, &finalsize, &status);
+#endif
+    } else {
+         uncompress2mem(filename, diskfile,
+		 memTable[hdl].memaddrptr,   /* pointer to memory address */
+		 memTable[hdl].memsizeptr,   /* pointer to size of memory */
+		 realloc,                     /* reallocation function */
+		 &finalsize, &status);        /* returned file size nd status*/
+    } 
+
   memTable[hdl].currentpos = 0;           /* save starting position */
   memTable[hdl].fitsfilesize=finalsize;   /* and initial file size  */
   return status;
@@ -1161,3 +1236,97 @@ int mem_write(int hdl, void *buffer, long nbytes)
                         memTable[hdl].currentpos);
     return(0);
 }
+
+/*--------------------------------------------------------------------------*/
+int mem_zuncompress_and_write(int hdl, void *buffer, long nbytes)
+/*
+  uncompress input buffer, length nbytes and write bytes to current
+  position in file.  output buffer needs to be at position 0 to start.
+*/
+{
+  size_t newsize;
+  int status = 0;
+
+  if (memTable[hdl].currentpos != 0) {
+      ffpmsg("cannot append uncompressed data (mem_uncompress_and_write)");
+      return(WRITE_ERROR);
+  }
+
+  uncompress2mem_from_mem(buffer, nbytes,
+			  memTable[hdl].memaddrptr,
+			  memTable[hdl].memsizeptr,
+			  memTable[hdl].mem_realloc, 
+			  &newsize, &status);
+  
+  if (status) {
+    ffpmsg("unabled to uncompress memory file (mem_uncompress_and_write)");
+    return(WRITE_ERROR);
+  }
+
+  memTable[hdl].currentpos += newsize;
+  memTable[hdl].fitsfilesize = newsize;
+  return(0);
+}
+
+
+#if HAVE_BZIP2
+void bzip2uncompress2mem(char *filename, FILE *diskfile, int hdl,
+                        size_t* filesize, int* status) {
+    BZFILE* b;
+    int  bzerror;
+    char buf[8192];
+    size_t total_read = 0;
+    char* errormsg = NULL;
+
+    *filesize = 0;
+    *status = 0;
+    b = BZ2_bzReadOpen(&bzerror, diskfile, 0, 0, NULL, 0);
+    if (bzerror != BZ_OK) {
+        BZ2_bzReadClose(&bzerror, b);
+        if (bzerror == BZ_MEM_ERROR)
+            ffpmsg("failed to open a bzip2 file: out of memory\n");
+        else if (bzerror == BZ_CONFIG_ERROR)
+            ffpmsg("failed to open a bzip2 file: miscompiled bzip2 library\n");
+        else if (bzerror == BZ_IO_ERROR)
+            ffpmsg("failed to open a bzip2 file: I/O error");
+        else
+            ffpmsg("failed to open a bzip2 file");
+        *status = READ_ERROR;
+        return;
+    }
+    bzerror = BZ_OK;
+    while (bzerror == BZ_OK) {
+        int nread;
+        nread = BZ2_bzRead(&bzerror, b, buf, sizeof(buf));
+        if (bzerror == BZ_OK || bzerror == BZ_STREAM_END) {
+            *status = mem_write(hdl, buf, nread);
+            if (*status) {
+                BZ2_bzReadClose(&bzerror, b);
+                if (*status == MEMORY_ALLOCATION)
+                    ffpmsg("Failed to reallocate memory while uncompressing bzip2 file");
+                return;
+            }
+            total_read += nread;
+        } else {
+            if (bzerror == BZ_IO_ERROR)
+                errormsg = "failed to read bzip2 file: I/O error";
+            else if (bzerror == BZ_UNEXPECTED_EOF)
+                errormsg = "failed to read bzip2 file: unexpected end-of-file";
+            else if (bzerror == BZ_DATA_ERROR)
+                errormsg = "failed to read bzip2 file: data integrity error";
+            else if (bzerror == BZ_MEM_ERROR)
+                errormsg = "failed to read bzip2 file: insufficient memory";
+        }
+    }
+    BZ2_bzReadClose(&bzerror, b);
+    if (bzerror != BZ_OK) {
+        if (errormsg)
+            ffpmsg(errormsg);
+        else
+            ffpmsg("failure closing bzip2 file after reading\n");
+        *status = READ_ERROR;
+        return;
+    }
+    *filesize = total_read;
+}
+#endif

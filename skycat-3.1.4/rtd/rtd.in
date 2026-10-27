@@ -54,5 +54,5 @@ PATH=$RTD_BASE/bin:$PATH
 export PATH
 
 test -d $HOME/.rtd || mkdir $HOME/.rtd
-exec wish8.4 $RTD_BASE/lib/rtd@PACKAGE_VERSION@/main.tcl ${1+"$@"} | tee $HOME/.skycat/log 2>&1
+exec wish8.6 $RTD_BASE/lib/rtd@PACKAGE_VERSION@/main.tcl ${1+"$@"} | tee $HOME/.skycat/log 2>&1
 

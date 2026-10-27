@@ -10,7 +10,6 @@
  * pbiereic        12/08/07  Created
  */
 
-using namespace std;
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
@@ -27,7 +26,7 @@ using namespace std;
  */
 short LongLongImageData::convertToShort(FITS_LONGLONG l) 
 {
-    register FITS_LONGLONG v = l + bias_;
+    FITS_LONGLONG v = l + bias_;
     short s;
 
     //  If have blank pixels then test for this as cannot deal with
@@ -35,7 +34,7 @@ short LongLongImageData::convertToShort(FITS_LONGLONG l)
     //  places).
     if ( haveBlank_ ) {
 	if ( blank_ == l ) {
-	    return LOOKUP_BLANK;
+	    return (short)LOOKUP_BLANK;
 	}
     }
     if (v < LOOKUP_MIN )
@@ -59,7 +58,7 @@ short LongLongImageData::scaleToShort(FITS_LONGLONG l)
     //  places).
     if ( haveBlank_ ) {
 	if ( blank_ == l ) {
-	    return LOOKUP_BLANK;
+	    return (short)LOOKUP_BLANK;
 	}
     }
 

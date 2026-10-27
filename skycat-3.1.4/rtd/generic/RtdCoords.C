@@ -149,9 +149,9 @@ int RtdImage::convertCoordsStr(int dist_flag, const char* inx_buf, const char* i
     }
     else {
 	if (outx_buf)
-	    sprintf(outx_buf, "%.17g", x);
+	    snprintf(outx_buf, 32, "%.17g", x);
 	if (outy_buf)
-	    sprintf(outy_buf, "%.17g", y);
+	    snprintf(outy_buf, 32, "%.17g", y);
     }
     return TCL_OK;
 }
@@ -340,6 +340,8 @@ int RtdImage::convertCoords(int dist_flag, double& x, double& y,
 	    return error(msg);
 	}
 	break;
+    case CT_NONE:
+	break;
     }
 
     return TCL_OK;
@@ -358,7 +360,7 @@ void RtdImage::changeEquinox(int dist_flag, double& ra, double& dec,
                              const char* in_equinox, const char* out_equinox)
 {
     if (!dist_flag) {
-        if (in_equinox && out_equinox && !strcmp(in_equinox, out_equinox) == 0) {
+        if (in_equinox && out_equinox && !(strcmp(in_equinox, out_equinox) == 0)) {
             WorldCoords wcs(ra, dec, in_equinox);
             wcs.get(ra, dec, out_equinox);
         }

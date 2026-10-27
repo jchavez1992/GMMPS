@@ -30,7 +30,8 @@ int ffghsp(fitsfile *fptr,  /* I - FITS file pointer                     */
     if (fptr->HDUposition != (fptr->Fptr)->curhdu)
         ffmahd(fptr, (fptr->HDUposition) + 1, NULL, status);
 
-    *nexist = (int) (( ((fptr->Fptr)->headend) - 
+    if (nexist)
+        *nexist = (int) (( ((fptr->Fptr)->headend) - 
                 ((fptr->Fptr)->headstart[(fptr->Fptr)->curhdu]) ) / 80);
 
     if ((fptr->Fptr)->datastart == DATA_UNDEFINED)
@@ -63,9 +64,13 @@ int ffghps(fitsfile *fptr, /* I - FITS file pointer                     */
     if (fptr->HDUposition != (fptr->Fptr)->curhdu)
         ffmahd(fptr, (fptr->HDUposition) + 1, NULL, status);
 
-  *nexist = (int) (( ((fptr->Fptr)->headend) - ((fptr->Fptr)->headstart[(fptr->Fptr)->curhdu]) ) / 80);
-  *position = (int) (( ((fptr->Fptr)->nextkey) - ((fptr->Fptr)->headstart[(fptr->Fptr)->curhdu]) ) / 80 + 1);
-  return(*status);
+    if (nexist)
+      *nexist = (int) (( ((fptr->Fptr)->headend) - ((fptr->Fptr)->headstart[(fptr->Fptr)->curhdu]) ) / 80);
+
+    if (position)
+      *position = (int) (( ((fptr->Fptr)->nextkey) - ((fptr->Fptr)->headstart[(fptr->Fptr)->curhdu]) ) / 80 + 1);
+
+    return(*status);
 }
 /*--------------------------------------------------------------------------*/
 int ffnchk(fitsfile *fptr,  /* I - FITS file pointer                     */
@@ -189,7 +194,7 @@ int ffgnky(fitsfile *fptr,  /* I - FITS file pointer     */
         bytepos < (fptr->Fptr)->headstart[(fptr->Fptr)->curhdu] ) 
     {
         nrec= (int) ((bytepos - (fptr->Fptr)->headstart[(fptr->Fptr)->curhdu]) / 80 + 1);
-        sprintf(message, "Cannot get keyword number %d.  It does not exist.",
+        snprintf(message, FLEN_ERRMSG,"Cannot get keyword number %d.  It does not exist.",
                 nrec);
         ffpmsg(message);
         return(*status = KEY_OUT_BOUNDS);
@@ -271,7 +276,7 @@ int ffgnxk( fitsfile *fptr,     /* I - FITS file pointer              */
 /*--------------------------------------------------------------------------*/
 int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
            int  datatype,      /* I - datatype of the value    */
-           char *keyname,      /* I - name of keyword to read  */
+           const char *keyname,      /* I - name of keyword to read  */
            void *value,        /* O - keyword value            */
            char *comm,         /* O - keyword comment          */
            int  *status)       /* IO - error status            */
@@ -280,7 +285,8 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
   Reads a keyword value with the datatype specified by the 2nd argument.
 */
 {
-    long longval;
+    LONGLONG longval;
+    ULONGLONG ulongval;
     double doubleval;
 
     if (*status > 0)           /* inherit input status value if > 0 */
@@ -292,7 +298,7 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
     }
     else if (datatype == TBYTE)
     {
-        if (ffgkyj(fptr, keyname, &longval, comm, status) <= 0)
+        if (ffgkyjj(fptr, keyname, &longval, comm, status) <= 0)
         {
             if (longval > UCHAR_MAX || longval < 0)
                 *status = NUM_OVERFLOW;
@@ -302,7 +308,7 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
     }
     else if (datatype == TSBYTE)
     {
-        if (ffgkyj(fptr, keyname, &longval, comm, status) <= 0)
+        if (ffgkyjj(fptr, keyname, &longval, comm, status) <= 0)
         {
             if (longval > 127 || longval < -128)
                 *status = NUM_OVERFLOW;
@@ -312,9 +318,9 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
     }
     else if (datatype == TUSHORT)
     {
-        if (ffgkyj(fptr, keyname, &longval, comm, status) <= 0)
+        if (ffgkyjj(fptr, keyname, &longval, comm, status) <= 0)
         {
-            if (longval > USHRT_MAX || longval < 0)
+            if (longval > (unsigned short) USHRT_MAX || longval < 0)
                 *status = NUM_OVERFLOW;
             else
                 *(unsigned short *) value = (unsigned short) longval;
@@ -322,7 +328,7 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
     }
     else if (datatype == TSHORT)
     {
-        if (ffgkyj(fptr, keyname, &longval, comm, status) <= 0)
+        if (ffgkyjj(fptr, keyname, &longval, comm, status) <= 0)
         {
             if (longval > SHRT_MAX || longval < SHRT_MIN)
                 *status = NUM_OVERFLOW;
@@ -332,9 +338,9 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
     }
     else if (datatype == TUINT)
     {
-        if (ffgkyj(fptr, keyname, &longval, comm, status) <= 0)
+        if (ffgkyjj(fptr, keyname, &longval, comm, status) <= 0)
         {
-            if (longval > (long) UINT_MAX || longval < 0)
+            if (longval > (unsigned int) UINT_MAX || longval < 0)
                 *status = NUM_OVERFLOW;
             else
                 *(unsigned int *) value = longval;
@@ -342,7 +348,7 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
     }
     else if (datatype == TINT)
     {
-        if (ffgkyj(fptr, keyname, &longval, comm, status) <= 0)
+        if (ffgkyjj(fptr, keyname, &longval, comm, status) <= 0)
         {
             if (longval > INT_MAX || longval < INT_MIN)
                 *status = NUM_OVERFLOW;
@@ -356,17 +362,28 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
     }
     else if (datatype == TULONG)
     {
-        if (ffgkyd(fptr, keyname, &doubleval, comm, status) <= 0)
+        if (ffgkyujj(fptr, keyname, &ulongval, comm, status) <= 0)
         {
-            if (doubleval > (double) ULONG_MAX || doubleval < 0)
+            if (ulongval > ULONG_MAX)
                 *status = NUM_OVERFLOW;
             else
-                 *(unsigned long *) value = (unsigned long) doubleval;
+                 *(unsigned long *) value = ulongval;
         }
     }
     else if (datatype == TLONG)
     {
+        if (ffgkyjj(fptr, keyname, &longval, comm, status) <= 0)
+        {
+            if (longval > LONG_MAX || longval < LONG_MIN)
+                *status = NUM_OVERFLOW;
+            else
+                *(int *) value = longval;
+        }
         ffgkyj(fptr, keyname, (long *) value, comm, status);
+    }
+    else if (datatype == TULONGLONG)
+    {
+        ffgkyujj(fptr, keyname, (ULONGLONG *) value, comm, status);
     }
     else if (datatype == TLONGLONG)
     {
@@ -395,7 +412,7 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
 } 
 /*--------------------------------------------------------------------------*/
 int ffgkey( fitsfile *fptr,     /* I - FITS file pointer        */
-            char *keyname,      /* I - name of keyword to read  */
+            const char *keyname,      /* I - name of keyword to read  */
             char *keyval,       /* O - keyword value            */
             char *comm,         /* O - keyword comment          */
             int  *status)       /* IO - error status            */
@@ -444,7 +461,8 @@ int ffgrec( fitsfile *fptr,     /* I - FITS file pointer          */
     if (nrec == 0)
     {
         ffmaky(fptr, 1, status);  /* simply move to beginning of header */
-        card[0] = '\0';           /* and return null card */
+        if (card)
+            card[0] = '\0';           /* and return null card */
     }
     else if (nrec > 0)
     {
@@ -456,12 +474,12 @@ int ffgrec( fitsfile *fptr,     /* I - FITS file pointer          */
 }
 /*--------------------------------------------------------------------------*/
 int ffgcrd( fitsfile *fptr,     /* I - FITS file pointer        */
-            char *name,         /* I - name of keyword to read  */
+            const char *name,         /* I - name of keyword to read  */
             char *card,         /* O - keyword card             */
             int  *status)       /* IO - error status            */
 /*
   Read (get) the named keyword, returning the entire keyword card up to
-  80 characters long.  The first keyword in the header has nrec = 1, not 0.
+  80 characters long.  
   The returned card value is null terminated with any trailing blank 
   characters removed.
 
@@ -601,6 +619,11 @@ int ffgcrd( fitsfile *fptr,     /* I - FITS file pointer        */
                   return(*status);   /* found the matching keyword */
                 }
               }
+	      else if (namelen == 0 && cardlen == 0)
+	      {
+	         /* matched a blank keyword */
+		 return(*status);
+	      }
             }
           }
         }
@@ -608,6 +631,48 @@ int ffgcrd( fitsfile *fptr,     /* I - FITS file pointer        */
 
       if (wild || jj == 1)
             break;  /* stop at end of header if template contains wildcards */
+
+      ffmaky(fptr, 1, status);  /* reset pointer to beginning of header */
+      ntodo = nextkey - 1;      /* number of keyword to read */ 
+    }
+
+    return(*status = KEY_NO_EXIST);  /* couldn't find the keyword */
+}
+/*--------------------------------------------------------------------------*/
+int ffgstr( fitsfile *fptr,     /* I - FITS file pointer        */
+            const char *string, /* I - string to match  */
+            char *card,         /* O - keyword card             */
+            int  *status)       /* IO - error status            */
+/*
+  Read (get) the next keyword record that contains the input character string,
+  returning the entire keyword card up to 80 characters long.
+  The returned card value is null terminated with any trailing blank 
+  characters removed.
+*/
+{
+    int nkeys, nextkey, ntodo, stringlen;
+    int jj, kk;
+
+    if (*status > 0)
+        return(*status);
+
+    stringlen = strlen(string);
+    if (stringlen > 80) {
+        return(*status = KEY_NO_EXIST);  /* matching string is too long to exist */
+    }
+
+    ffghps(fptr, &nkeys, &nextkey, status); /* get no. keywords and position */
+    ntodo = nkeys - nextkey + 1;  /* first, read from next keyword to end */
+
+    for (jj=0; jj < 2; jj++)
+    {
+      for (kk = 0; kk < ntodo; kk++)
+      {
+        ffgnky(fptr, card, status);     /* get next keyword */
+        if (strstr(card, string) != 0) {
+            return(*status);   /* found the matching string */
+        }
+      }
 
       ffmaky(fptr, 1, status);  /* reset pointer to beginning of header */
       ntodo = nextkey - 1;      /* number of keyword to read */ 
@@ -627,8 +692,9 @@ int ffgknm( char *card,         /* I - keyword card                   */
 */
 {
     char *ptr1, *ptr2;
-    int ii;
+    int ii, namelength;
 
+    namelength = FLEN_KEYWORD - 1;
     *name = '\0';
     *length = 0;
 
@@ -661,10 +727,10 @@ int ffgknm( char *card,         /* I - keyword card                   */
     }
     else
     {
-        for (ii = 0; ii < 8; ii++)
+        for (ii = 0; ii < namelength; ii++)
         {
            /* look for string terminator, or a blank */
-           if (*(card+ii) != ' ' && *(card+ii) !='\0')
+           if (*(card+ii) != ' ' && *(card+ii) != '=' && *(card+ii) !='\0')
            {
                *(name+ii) = *(card+ii);
            }
@@ -676,16 +742,16 @@ int ffgknm( char *card,         /* I - keyword card                   */
            }
         }
 
-        /* if we got here, keyword is 8 characters long */
-        name[8] = '\0';
-        *length = 8;
+        /* if we got here, keyword is namelength characters long */
+        name[namelength] = '\0';
+        *length = namelength;
     }
 
     return(*status);
 }
 /*--------------------------------------------------------------------------*/
 int ffgunt( fitsfile *fptr,     /* I - FITS file pointer         */
-            char *keyname,      /* I - name of keyword to read   */
+            const char *keyname,      /* I - name of keyword to read   */
             char *unit,         /* O - keyword units             */
             int  *status)       /* IO - error status             */
 /*
@@ -721,7 +787,7 @@ int ffgunt( fitsfile *fptr,     /* I - FITS file pointer         */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkys( fitsfile *fptr,     /* I - FITS file pointer         */
-            char *keyname,      /* I - name of keyword to read   */
+            const char *keyname,      /* I - name of keyword to read   */
             char *value,        /* O - keyword value             */
             char *comm,         /* O - keyword comment           */
             int  *status)       /* IO - error status             */
@@ -746,12 +812,55 @@ int ffgkys( fitsfile *fptr,     /* I - FITS file pointer         */
     return(*status);
 }
 /*--------------------------------------------------------------------------*/
-int ffgkls( fitsfile *fptr,     /* I - FITS file pointer         */
-            char *keyname,      /* I - name of keyword to read   */
-            char **value,       /* O - pointer to keyword value  */
-            char *comm,         /* O - keyword comment           */
-            int  *status)       /* IO - error status             */
+int ffgksl( fitsfile *fptr,     /* I - FITS file pointer             */
+           const char *keyname, /* I - name of keyword to read       */
+           int *length,         /* O - length of the string value    */
+           int  *status)        /* IO - error status                 */
 /*
+  Get the length of the keyword value string.
+  This routine explicitly supports the CONTINUE convention for long string values.
+*/
+{
+    int dummy=0;
+    
+    if (*status > 0)
+        return(*status);
+ 
+    ffgkcsl(fptr, keyname, length, &dummy, status);
+    
+    return(*status);
+}
+/*--------------------------------------------------------------------------*/
+int ffgkcsl( fitsfile *fptr,     /* I - FITS file pointer             */
+           const char *keyname, /* I - name of keyword to read       */
+           int *length,         /* O - length of the string value    */
+           int *comlength,      /* O - length of comment string      */
+           int  *status)        /* IO - error status                 */
+/*
+  Get the length of the keyword value string and comment string.
+  This routine explicitly supports the CONTINUE convention for long string values.
+*/
+{
+   if (*status > 0)
+      return(*status);
+      
+   ffglkut(fptr, keyname, 0, 0, 0, (char *)0, length, (char *)0,
+           comlength, status); 
+       
+   return(*status);
+}
+/*--------------------------------------------------------------------------*/
+int ffgkls( fitsfile *fptr,     /* I - FITS file pointer             */
+           const char *keyname, /* I - name of keyword to read       */
+           char **value,        /* O - pointer to keyword value      */
+           char *comm,          /* O - keyword comment (may be NULL) */
+           int  *status)        /* IO - error status                 */
+/*
+  This is the original routine for reading long string keywords that use
+  the CONTINUE keyword convention.  In 2016 a new routine called
+  ffgsky / fits_read_string_key was added, which may provide a more 
+  convenient user interface  for most applications.
+
   Get Keyword with possible Long String value:
   Read (get) the named keyword, returning the value and comment.
   The returned value string may be arbitrarily long (by using the HEASARC
@@ -762,20 +871,32 @@ int ffgkls( fitsfile *fptr,     /* I - FITS file pointer         */
   characters long.
 */
 {
-    char valstring[FLEN_VALUE];
-    int contin;
+    char valstring[FLEN_VALUE], nextcomm[FLEN_COMMENT], card[FLEN_CARD];
+    int contin, commSpace = 0, addCommDelim=0, keynum=0;
     size_t len;
 
     if (*status > 0)
         return(*status);
 
     *value = NULL;  /* initialize a null pointer in case of error */
-
-    ffgkey(fptr, keyname, valstring, comm, status);  /* read the keyword */
-
+    card[0] = '\0';
+    if (comm)
+       comm[0] = '\0';
+    ffgcrd(fptr, keyname, card, status);
+    if (*status > 0)
+       return(*status);
+    if (strlen(card) < FLEN_CARD-1)
+       addCommDelim=1;
+    ffpsvc(card,valstring, comm, status);    
     if (*status > 0)
         return(*status);
 
+    if (comm)
+    {
+        /* remaining space in comment string */
+        commSpace = FLEN_COMMENT-1 - strlen(comm);
+    }
+    
     if (!valstring[0])   /* null value string? */
     {
       *value = (char *) malloc(1);  /* allocate and return a null string */
@@ -793,28 +914,405 @@ int ffgkls( fitsfile *fptr,     /* I - FITS file pointer         */
       contin = 1;
       while (contin)  
       {
-        if (len && *(*value+len-1) == '&')  /*  is last char an anpersand?  */
+        if (len && *(*value+len-1) == '&')  /*  is last char an ampersand?  */
         {
-            ffgcnt(fptr, valstring, status);
-            if (*valstring)    /* a null valstring indicates no continuation */
+            valstring[0] = '\0';
+            nextcomm[0] = '\0';
+            ffgcnt(fptr, valstring, nextcomm, status);
+            if (*valstring || *nextcomm) /* If either valstring or nextcom
+                                  is filled, this must be a CONTINUE line */
             {
-               *(*value+len-1) = '\0';         /* erase the trailing & char */
-               len += strlen(valstring) - 1;
-               *value = (char *) realloc(*value, len + 1); /* increase size */
-               strcat(*value, valstring);     /* append the continued chars */
+               *(*value+len-1) = '\0'; /* erase the trailing & char */
+               if (*valstring)    
+               {
+                  len += strlen(valstring) - 1;
+                  *value = (char *) realloc(*value, len + 1); /* increase size */
+                  strcat(*value, valstring);     /* append the continued chars */
+               }
+               if (*nextcomm)
+               {
+	          if ((commSpace > 0) && (*nextcomm != 0)) 
+	          {
+                      /* If in here, input 'comm' cannot be 0 */
+                      /* concantenate comment strings (if any) */
+                      if (strlen(comm) && addCommDelim)
+                      {
+                         strcat(comm, " ");
+                         commSpace -=1;
+                      }
+		      strncat(comm, nextcomm, commSpace);
+                      commSpace = FLEN_COMMENT-1 - strlen(comm);
+                  }
+               }
+               /* Determine if a space delimiter is needed for next
+                  comment concatenation (if any).  Assume it is if card length
+                  of the most recently read keyword is less than max. 
+                  keynum is 1-based. */
+               ffghps(fptr,0,&keynum,status);
+               ffgrec(fptr, keynum-1, card, status);
+               addCommDelim = (strlen(card) < FLEN_CARD-1) ? 1 : 0;
             }
             else
+	    {
                 contin = 0;
+            }
+
         }
         else
+	{
             contin = 0;
+	}
       }
     }
     return(*status);
 }
 /*--------------------------------------------------------------------------*/
+int ffgsky( fitsfile *fptr,     /* I - FITS file pointer             */
+           const char *keyname, /* I - name of keyword to read       */
+           int firstchar,       /* I - first character of string to return */
+           int maxchar,         /* I - maximum length of string to return */
+	                        /*    (string will be null terminated)  */      
+           char *value,         /* O - pointer to keyword value      */
+           int *valuelen,       /* O - total length of the keyword value string */
+                                /*     The returned 'value' string may only */
+				/*     contain a piece of the total string, depending */
+				/*     on the value of firstchar and maxchar */
+           char *comm,          /* O - keyword comment (may be NULL) */
+           int  *status)        /* IO - error status                 */
+/*
+  Read and return the value of the specified string-valued keyword.
+  
+  This new routine was added in 2016 to provide a more convenient user
+  interface than the older ffgkls routine.
+
+  Read a string keyword, returning up to 'naxchars' characters of the value
+  starting with the 'firstchar' character.
+  The input 'value' string must be allocated at least 1 char bigger to
+  allow for the terminating null character.
+  
+  This routine may be used to read continued string keywords that use 
+  the CONTINUE keyword convention, as well as normal string keywords
+  that are contained within a single header record.
+  
+  This routine differs from the ffkls routine in that it does not
+  internally allocate memory for the returned value string, and consequently
+  the calling routine does not need to call fffree to free the memory.
+*/
+{
+    char valstring[FLEN_VALUE], nextcomm[FLEN_COMMENT], card[FLEN_CARD];
+    char *tempstring;
+    int contin, commSpace = 0, addCommDelim=0, keynum=0;
+    size_t len;
+
+    if (*status > 0)
+        return(*status);
+
+    tempstring = NULL;  /* initialize in case of error */
+    *value = '\0';
+    if (valuelen) *valuelen = 0;
+    
+    card[0] = '\0';
+    if (comm)
+       comm[0] = '\0';
+    ffgcrd(fptr, keyname, card, status);
+    if (*status > 0)
+       return(*status);
+    if (strlen(card) < FLEN_CARD-1)
+       addCommDelim=1;
+    ffpsvc(card,valstring, comm, status);    
+    if (*status > 0)
+        return(*status);
+
+    if (comm)
+    {
+        /* remaining space in comment string */
+        commSpace = FLEN_COMMENT-1 - strlen(comm);
+    }
+    
+    if (!valstring[0])   /* null value string? */
+    {
+      tempstring = (char *) malloc(1);  /* allocate and return a null string */
+      *tempstring = '\0';
+    }
+    else
+    {
+      /* allocate space,  plus 1 for null */
+      tempstring = (char *) malloc(strlen(valstring) + 1);
+
+      ffc2s(valstring, tempstring, status);   /* convert string to value */
+      len = strlen(tempstring);
+
+      /* If last character is a & then value may be continued on next keyword */
+      contin = 1;
+      while (contin && *status <= 0)  
+      {
+        if (len && *(tempstring+len-1) == '&')  /*  is last char an ampersand?  */
+        {
+            valstring[0] = '\0';
+            nextcomm[0] = '\0';
+            ffgcnt(fptr, valstring, nextcomm, status);
+            if (*valstring || *nextcomm)  /* If either valstring or nextcom
+                                  is filled, this must be a CONTINUE line */  
+            {
+               *(tempstring+len-1) = '\0';         /* erase the trailing & char */
+               if (*valstring)
+               {
+                  len += strlen(valstring) - 1;
+                  tempstring = (char *) realloc(tempstring, len + 1); /* increase size */
+                  strcat(tempstring, valstring);     /* append the continued chars */
+               }
+               if (*nextcomm)
+               {
+	          if ((commSpace > 0) && (*nextcomm != 0)) 
+	          {
+                     /* If in here, input 'comm' cannot be 0 */
+                     /* concantenate comment strings (if any) */
+                     if (strlen(comm) && addCommDelim)
+                     {
+                        strcat(comm, " ");
+                        commSpace -=1;
+                     }
+		     strncat(comm, nextcomm, commSpace);
+                     commSpace = FLEN_COMMENT-1 - strlen(comm);
+                  }
+               }
+               /* Determine if a space delimiter is needed for next
+                  comment concatenation (if any).  Assume it is if card length
+                  of the most recently read keyword is less than max. 
+                  keynum is 1-based. */
+               ffghps(fptr,0,&keynum,status);
+               ffgrec(fptr, keynum-1, card, status);
+               addCommDelim = (strlen(card) < FLEN_CARD-1) ? 1 : 0;
+            }
+            else
+	    {
+                contin = 0;
+            }
+        }
+        else
+	{
+            contin = 0;
+	}
+      }
+    }
+    
+    if (tempstring) 
+    {
+        len = strlen(tempstring);
+	if (firstchar <= len)
+            strncat(value, tempstring + (firstchar - 1), maxchar);
+        free(tempstring);
+	if (valuelen) *valuelen = len;  /* total length of the keyword value */
+    }
+    
+    return(*status);
+}
+/*--------------------------------------------------------------------------*/
+int ffgskyc( fitsfile *fptr,     /* I - FITS file pointer             */
+           const char *keyname, /* I - name of keyword to read       */
+           int firstchar,       /* I - first character of string to return */
+           int maxchar,         /* I - maximum length of string to return */
+	                        /*    (string will be null terminated)  */ 
+           int maxcomchar,      /* I - maximum length of comment to return */     
+           char *value,         /* O - pointer to keyword value      */
+           int *valuelen,       /* O - total length of the keyword value string */
+                                /*     The returned 'value' string may only */
+				/*     contain a piece of the total string, depending */
+				/*     on the value of firstchar and maxchar */
+           char *comm,          /* O - keyword comment (may be NULL) */
+           int *comlen,        /* O - total length of the comment string */
+           int  *status)        /* IO - error status                 */
+{
+   if (*status > 0)
+      return(*status);
+
+   ffglkut(fptr,keyname,firstchar,maxchar,maxcomchar,value,valuelen,
+             comm,comlen,status);      
+      
+   return(*status);
+}
+/*--------------------------------------------------------------------------*/
+int ffglkut( fitsfile *fptr,     /* I - FITS file pointer             */
+           const char *keyname, /* I - name of keyword to read       */
+           int firstchar,       /* I - first character of string to return */
+           int maxvalchar,         /* I - maximum length of string to return */
+	                        /*    (string will be null terminated)  */      
+           int maxcomchar,      /* I - maximum length of comment to return */
+           char *value,         /* O - pointer to keyword value (may be NULL) */
+           int *valuelen,       /* O - total length of the keyword value string */
+                                /*     The returned 'value' string may only */
+				/*     contain a piece of the total string, depending */
+				/*     on the value of firstchar and maxvalchar */
+           char *comm,          /* O - keyword comment (may be NULL) */
+           int *comlen,         /* O - total length of comment string */
+           int  *status)        /* IO - error status                 */
+{
+    char valstring[FLEN_VALUE], comstring[FLEN_COMMENT], card[FLEN_CARD];
+    char *dynValStr=0, *dynComStr=0;
+    int contin, addCommDelim=0, keynum=0;
+    int lenOnly=0, savedKeyPos=1;
+    size_t len=0, lenc=0;
+
+    if (*status > 0)
+        return(*status);
+
+    if (maxvalchar==0 && maxcomchar==0)
+       lenOnly = 1;
+    
+    if (value)
+       *value = '\0';
+    if (comm)
+       *comm = '\0';
+    /* If lenOnly, 'value' and 'comm' should not be accessed after this point.*/
+    
+    *valuelen = 0; 
+    *comlen = 0;   
+    card[0] = '\0';
+    valstring[0] = '\0';
+    comstring[0] = '\0';
+       
+    ffgcrd(fptr, keyname, card, status);
+    if (*status > 0)
+       return(*status);
+    ffpsvc(card,valstring, comstring, status);    
+    if (*status > 0)
+        return(*status);
+    if (strlen(card) < FLEN_CARD-1 && *comstring)
+       addCommDelim=1;
+        
+    /* If called in lenOnly mode, there's a good chance the user will soon call
+       this again to read the value string.  Therefore we'll save and later restore
+       the original keyword position. */
+    if (lenOnly)
+    {
+       ffghps(fptr, 0, &savedKeyPos, status);
+       if (savedKeyPos > 1)
+          savedKeyPos -= 1;
+    }
+
+    if (!valstring[0])   /* null value string? */
+    {
+      dynValStr = (char *) malloc(1);  /* allocate and return a null string */
+      *dynValStr = '\0';      
+      dynComStr = (char *)malloc(1);
+      *dynComStr= '\0';
+    }
+    else
+    {
+      /* allocate space,  plus 1 for null */
+      dynValStr = (char *) malloc(strlen(valstring) + 1);
+
+      ffc2s(valstring, dynValStr, status);   /* convert string to value */
+      len = strlen(dynValStr);
+      
+      dynComStr = (char *) malloc(strlen(comstring)+1);
+      dynComStr[0]=0;
+      strcpy(dynComStr, comstring);
+      lenc = strlen(dynComStr);
+
+      /* If last character is a & then value may be continued on next keyword */
+      contin = 1;
+      while (contin && *status <= 0)  
+      {
+        if (len && *(dynValStr+len-1) == '&')  /*  is last char an ampersand?  */
+        {
+            valstring[0] = '\0';
+            comstring[0] = '\0';
+            ffgcnt(fptr, valstring, comstring, status);
+            if (*valstring || *comstring)  /* If either valstring or comstring
+                                  is filled, this must be a CONTINUE line */  
+            {
+               *(dynValStr+len-1) = '\0';         /* erase the trailing & char */
+               len -= 1;
+               if (*valstring)
+               {
+                  len += strlen(valstring);
+                  dynValStr = (char *) realloc(dynValStr, len + 1); /* increase size */
+                  strcat(dynValStr, valstring);     /* append the continued chars */
+               }
+               if (*comstring)
+               {
+                  /* concantenate comment strings */
+                  if (addCommDelim)
+                  {
+                     lenc += strlen(comstring) + 1;
+                     dynComStr = (char *) realloc(dynComStr, lenc + 1);
+                     strcat(dynComStr, " ");
+                     strcat(dynComStr, comstring);
+                  }
+                  else
+                  {
+                     lenc += strlen(comstring);
+                     dynComStr = (char *) realloc(dynComStr, lenc + 1);
+                     strcat(dynComStr, comstring);                     
+                  }
+               }
+               /* Determine if a space delimiter is needed for next
+                  comment concatenation (if any).  Assume it is if card length
+                  of the most recently read keyword is less than max. 
+                  keynum is 1-based. */
+               ffghps(fptr,0,&keynum,status);
+               ffgrec(fptr, keynum-1, card, status);
+               addCommDelim = ((strlen(card) < FLEN_CARD-1) && lenc) ? 1 : 0;
+            }
+            else
+	    {
+                contin = 0;
+            }
+        }
+        else
+	{
+            contin = 0;
+	}
+      }
+    }
+    
+    /* Resetting len and lenc really shouldn't be necessary here, but
+       just to make sure ... */
+    len = strlen(dynValStr);
+    lenc = strlen(dynComStr);
+    *valuelen = len;
+    *comlen = lenc;
+    if (lenOnly)
+       ffmaky(fptr, savedKeyPos, status);
+    else
+    {
+       if (value)
+       {
+          if (firstchar <= len)
+             strncat(value,dynValStr+firstchar-1,maxvalchar);
+       }
+       if (comm)
+       {
+          strncat(comm,dynComStr,maxcomchar);
+       }
+    }
+    
+    free(dynValStr);
+    free(dynComStr);
+        
+    return(*status);
+}
+/*--------------------------------------------------------------------------*/
+int fffree( void *value,       /* I - pointer to keyword value  */
+            int  *status)      /* IO - error status             */
+/*
+  Free the memory that was previously allocated by CFITSIO, 
+  such as by ffgkls or fits_hdr2str
+*/
+{
+    if (*status > 0)
+        return(*status);
+
+    if (value)
+        free(value);
+
+    return(*status);
+}
+ /*--------------------------------------------------------------------------*/
 int ffgcnt( fitsfile *fptr,     /* I - FITS file pointer         */
             char *value,        /* O - continued string value    */
+            char *comm,         /* O - continued comment string  */
             int  *status)       /* IO - error status             */
 /*
   Attempt to read the next keyword, returning the string value
@@ -828,7 +1326,7 @@ int ffgcnt( fitsfile *fptr,     /* I - FITS file pointer         */
 */
 {
     int tstatus;
-    char card[FLEN_CARD], strval[FLEN_VALUE], comm[FLEN_COMMENT];
+    char card[FLEN_CARD], strval[FLEN_VALUE];
 
     if (*status > 0)
         return(*status);
@@ -842,7 +1340,7 @@ int ffgcnt( fitsfile *fptr,     /* I - FITS file pointer         */
     if (strncmp(card, "CONTINUE  ", 10) == 0)  /* a continuation card? */
     {
         strncpy(card, "D2345678=  ", 10); /* overwrite a dummy keyword name */
-        ffpsvc(card, strval, comm, &tstatus);  /*  get the string value  */
+        ffpsvc(card, strval, comm, &tstatus);  /*  get the string value & comment */
         ffc2s(strval, value, &tstatus);    /* remove the surrounding quotes */
 
         if (tstatus)       /*  return null if error status was returned  */
@@ -855,7 +1353,7 @@ int ffgcnt( fitsfile *fptr,     /* I - FITS file pointer         */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkyl( fitsfile *fptr,     /* I - FITS file pointer         */
-            char *keyname,      /* I - name of keyword to read   */
+            const char *keyname,      /* I - name of keyword to read   */
             int  *value,        /* O - keyword value             */
             char *comm,         /* O - keyword comment           */
             int  *status)       /* IO - error status             */
@@ -877,7 +1375,7 @@ int ffgkyl( fitsfile *fptr,     /* I - FITS file pointer         */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkyj( fitsfile *fptr,     /* I - FITS file pointer         */
-            char *keyname,      /* I - name of keyword to read   */
+            const char *keyname,      /* I - name of keyword to read   */
             long *value,        /* O - keyword value             */
             char *comm,         /* O - keyword comment           */
             int  *status)       /* IO - error status             */
@@ -899,13 +1397,13 @@ int ffgkyj( fitsfile *fptr,     /* I - FITS file pointer         */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkyjj( fitsfile *fptr,     /* I - FITS file pointer         */
-            char *keyname,      /* I - name of keyword to read   */
+            const char *keyname,      /* I - name of keyword to read   */
             LONGLONG *value,    /* O - keyword value             */
             char *comm,         /* O - keyword comment           */
             int  *status)       /* IO - error status             */
 /*
   Read (get) the named keyword, returning the value and comment.
-  The value will be implicitly converted to a (long) integer if it not
+  The value will be implicitly converted to a (LONGLONG) integer if it not
   already of this datatype.  The comment may be up to 69 characters long.
 */
 {
@@ -920,8 +1418,30 @@ int ffgkyjj( fitsfile *fptr,     /* I - FITS file pointer         */
     return(*status);
 }
 /*--------------------------------------------------------------------------*/
+int ffgkyujj( fitsfile *fptr,     /* I - FITS file pointer         */
+            const char *keyname,      /* I - name of keyword to read   */
+            ULONGLONG *value,    /* O - keyword value             */
+            char *comm,         /* O - keyword comment           */
+            int  *status)       /* IO - error status             */
+/*
+  Read (get) the named keyword, returning the value and comment.
+  The value will be implicitly converted to a (ULONGLONG) integer if it not
+  already of this datatype.  The comment may be up to 69 characters long.
+*/
+{
+    char valstring[FLEN_VALUE];
+
+    if (*status > 0)
+        return(*status);
+
+    ffgkey(fptr, keyname, valstring, comm, status);  /* read the keyword */
+    ffc2uj(valstring, value, status);   /* convert string to value */
+
+    return(*status);
+}
+/*--------------------------------------------------------------------------*/
 int ffgkye( fitsfile *fptr,     /* I - FITS file pointer         */
-            char  *keyname,     /* I - name of keyword to read   */
+            const char  *keyname,     /* I - name of keyword to read   */
             float *value,       /* O - keyword value             */
             char  *comm,        /* O - keyword comment           */
             int   *status)      /* IO - error status             */
@@ -943,7 +1463,7 @@ int ffgkye( fitsfile *fptr,     /* I - FITS file pointer         */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkyd( fitsfile *fptr,      /* I - FITS file pointer         */
-            char   *keyname,     /* I - name of keyword to read   */
+            const char   *keyname,     /* I - name of keyword to read   */
             double *value,       /* O - keyword value             */
             char   *comm,        /* O - keyword comment           */
             int    *status)      /* IO - error status             */
@@ -965,7 +1485,7 @@ int ffgkyd( fitsfile *fptr,      /* I - FITS file pointer         */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkyc( fitsfile *fptr,     /* I - FITS file pointer         */
-            char  *keyname,     /* I - name of keyword to read   */
+            const char  *keyname,     /* I - name of keyword to read   */
             float *value,       /* O - keyword value (real,imag) */
             char  *comm,        /* O - keyword comment           */
             int   *status)      /* IO - error status             */
@@ -975,7 +1495,7 @@ int ffgkyc( fitsfile *fptr,     /* I - FITS file pointer         */
   will be performed.
 */
 {
-    char valstring[FLEN_VALUE], message[81];
+    char valstring[FLEN_VALUE], message[FLEN_ERRMSG];
     int len;
 
     if (*status > 0)
@@ -985,7 +1505,7 @@ int ffgkyc( fitsfile *fptr,     /* I - FITS file pointer         */
 
     if (valstring[0] != '(' )   /* test that this is a complex keyword */
     {
-      sprintf(message, "keyword %s does not have a complex value (ffgkyc):",
+      snprintf(message, FLEN_ERRMSG, "keyword %s does not have a complex value (ffgkyc):",
               keyname);
       ffpmsg(message);
       ffpmsg(valstring);
@@ -1005,7 +1525,7 @@ int ffgkyc( fitsfile *fptr,     /* I - FITS file pointer         */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkym( fitsfile *fptr,     /* I - FITS file pointer         */
-            char  *keyname,     /* I - name of keyword to read   */
+            const char  *keyname,     /* I - name of keyword to read   */
             double *value,      /* O - keyword value (real,imag) */
             char  *comm,        /* O - keyword comment           */
             int   *status)      /* IO - error status             */
@@ -1015,7 +1535,7 @@ int ffgkym( fitsfile *fptr,     /* I - FITS file pointer         */
   will be performed.
 */
 {
-    char valstring[FLEN_VALUE], message[81];
+    char valstring[FLEN_VALUE], message[FLEN_ERRMSG];
     int len;
 
     if (*status > 0)
@@ -1025,7 +1545,7 @@ int ffgkym( fitsfile *fptr,     /* I - FITS file pointer         */
 
     if (valstring[0] != '(' )   /* test that this is a complex keyword */
     {
-      sprintf(message, "keyword %s does not have a complex value (ffgkym):",
+      snprintf(message, FLEN_ERRMSG, "keyword %s does not have a complex value (ffgkym):",
               keyname);
       ffpmsg(message);
       ffpmsg(valstring);
@@ -1046,7 +1566,7 @@ int ffgkym( fitsfile *fptr,     /* I - FITS file pointer         */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkyt( fitsfile *fptr,      /* I - FITS file pointer                 */
-            char   *keyname,     /* I - name of keyword to read           */
+            const char   *keyname,     /* I - name of keyword to read           */
             long   *ivalue,      /* O - integer part of keyword value     */
             double *fraction,    /* O - fractional part of keyword value  */
             char   *comm,        /* O - keyword comment                   */
@@ -1124,7 +1644,7 @@ int ffgkyn( fitsfile *fptr,      /* I - FITS file pointer             */
 
     if (fftrec(keyname, status) > 0)  /* test keyword name; catches no END */
     {
-     sprintf(sbuff,"Name of keyword no. %d contains illegal character(s): %s",
+     snprintf(sbuff, FLEN_CARD, "Name of keyword no. %d contains illegal character(s): %s",
               nkey, keyname);
      ffpmsg(sbuff);
 
@@ -1135,7 +1655,7 @@ int ffgkyn( fitsfile *fptr,      /* I - FITS file pointer             */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkns( fitsfile *fptr,     /* I - FITS file pointer                    */
-            char *keyname,      /* I - root name of keywords to read        */
+            const char *keyname,      /* I - root name of keywords to read        */
             int  nstart,        /* I - starting index number                */
             int  nmax,          /* I - maximum number of keywords to return */
             char *value[],      /* O - array of pointers to keyword values  */
@@ -1150,7 +1670,7 @@ int ffgkns( fitsfile *fptr,     /* I - FITS file pointer                    */
     int nend, lenroot, ii, nkeys, mkeys, tstatus, undefinedval;
     long ival;
     char keyroot[FLEN_KEYWORD], keyindex[8], card[FLEN_CARD];
-    char svalue[FLEN_VALUE], comm[FLEN_COMMENT];
+    char svalue[FLEN_VALUE], comm[FLEN_COMMENT], *equalssign;
 
     if (*status > 0)
         return(*status);
@@ -1159,10 +1679,11 @@ int ffgkns( fitsfile *fptr,     /* I - FITS file pointer                    */
     nend = nstart + nmax - 1;
 
     keyroot[0] = '\0';
-    strncat(keyroot, keyname, 8);
+    strncat(keyroot, keyname, FLEN_KEYWORD - 1);
      
     lenroot = strlen(keyroot);
-    if (lenroot == 0 || lenroot > 7)     /*  root must be 1 - 7 chars long  */
+    
+    if (lenroot == 0)     /*  root must be at least 1 char long  */
         return(*status);
 
     for (ii=0; ii < lenroot; ii++)           /*  make sure upper case  */
@@ -1179,8 +1700,14 @@ int ffgkns( fitsfile *fptr,     /* I - FITS file pointer                    */
        if (strncmp(keyroot, card, lenroot) == 0)  /* see if keyword matches */
        {
           keyindex[0] = '\0';
-          strncat(keyindex, &card[lenroot], 8-lenroot);  /*  copy suffix */
+          equalssign = strchr(card, '=');
+	  if (equalssign == 0) continue;  /* keyword has no value */
 
+          if (equalssign - card - lenroot > 7)
+          {
+             return (*status=BAD_KEYCHAR);
+          }
+          strncat(keyindex, &card[lenroot], equalssign - card  - lenroot);  /*  copy suffix  */
           tstatus = 0;
           if (ffc2ii(keyindex, &ival, &tstatus) <= 0)     /*  test suffix  */
           {
@@ -1207,7 +1734,7 @@ int ffgkns( fitsfile *fptr,     /* I - FITS file pointer                    */
 }
 /*--------------------------------------------------------------------------*/
 int ffgknl( fitsfile *fptr,     /* I - FITS file pointer                    */
-            char *keyname,      /* I - root name of keywords to read        */
+            const char *keyname,      /* I - root name of keywords to read        */
             int  nstart,        /* I - starting index number                */
             int  nmax,          /* I - maximum number of keywords to return */
             int  *value,        /* O - array of keyword values              */
@@ -1222,7 +1749,7 @@ int ffgknl( fitsfile *fptr,     /* I - FITS file pointer                    */
     int nend, lenroot, ii, nkeys, mkeys, tstatus, undefinedval;
     long ival;
     char keyroot[FLEN_KEYWORD], keyindex[8], card[FLEN_CARD];
-    char svalue[FLEN_VALUE], comm[FLEN_COMMENT];
+    char svalue[FLEN_VALUE], comm[FLEN_COMMENT], *equalssign;
 
     if (*status > 0)
         return(*status);
@@ -1231,12 +1758,13 @@ int ffgknl( fitsfile *fptr,     /* I - FITS file pointer                    */
     nend = nstart + nmax - 1;
 
     keyroot[0] = '\0';
-    strncat(keyroot, keyname, 8);
+    strncat(keyroot, keyname, FLEN_KEYWORD - 1);
 
     lenroot = strlen(keyroot);
-    if (lenroot == 0 || lenroot > 7)     /*  root must be 1 - 7 chars long  */
+    
+    if (lenroot == 0)     /*  root must be at least 1 char long  */
         return(*status);
-
+ 
     for (ii=0; ii < lenroot; ii++)           /*  make sure upper case  */
         keyroot[ii] = toupper(keyroot[ii]);
 
@@ -1253,7 +1781,14 @@ int ffgknl( fitsfile *fptr,     /* I - FITS file pointer                    */
        if (strncmp(keyroot, card, lenroot) == 0)  /* see if keyword matches */
        {
           keyindex[0] = '\0';
-          strncat(keyindex, &card[lenroot], 8-lenroot);  /*  copy suffix */
+          equalssign = strchr(card, '=');
+	  if (equalssign == 0) continue;  /* keyword has no value */
+
+          if (equalssign - card - lenroot > 7)
+          {
+             return (*status=BAD_KEYCHAR);
+          }
+          strncat(keyindex, &card[lenroot], equalssign - card  - lenroot);  /*  copy suffix  */
 
           tstatus = 0;
           if (ffc2ii(keyindex, &ival, &tstatus) <= 0)    /*  test suffix  */
@@ -1281,7 +1816,7 @@ int ffgknl( fitsfile *fptr,     /* I - FITS file pointer                    */
 }
 /*--------------------------------------------------------------------------*/
 int ffgknj( fitsfile *fptr,     /* I - FITS file pointer                    */
-            char *keyname,      /* I - root name of keywords to read        */
+            const char *keyname,      /* I - root name of keywords to read        */
             int  nstart,        /* I - starting index number                */
             int  nmax,          /* I - maximum number of keywords to return */
             long *value,        /* O - array of keyword values              */
@@ -1295,7 +1830,7 @@ int ffgknj( fitsfile *fptr,     /* I - FITS file pointer                    */
     int nend, lenroot, ii, nkeys, mkeys, tstatus, undefinedval;
     long ival;
     char keyroot[FLEN_KEYWORD], keyindex[8], card[FLEN_CARD];
-    char svalue[FLEN_VALUE], comm[FLEN_COMMENT];
+    char svalue[FLEN_VALUE], comm[FLEN_COMMENT], *equalssign;
 
     if (*status > 0)
         return(*status);
@@ -1304,12 +1839,13 @@ int ffgknj( fitsfile *fptr,     /* I - FITS file pointer                    */
     nend = nstart + nmax - 1;
 
     keyroot[0] = '\0';
-    strncat(keyroot, keyname, 8);
+    strncat(keyroot, keyname, FLEN_KEYWORD - 1);
 
     lenroot = strlen(keyroot);
-    if (lenroot == 0 || lenroot > 7)     /* root must be 1 - 7 chars long */
+    
+    if (lenroot == 0)     /*  root must be at least 1 char long  */
         return(*status);
-
+ 
     for (ii=0; ii < lenroot; ii++)           /*  make sure upper case  */
         keyroot[ii] = toupper(keyroot[ii]);
 
@@ -1326,7 +1862,14 @@ int ffgknj( fitsfile *fptr,     /* I - FITS file pointer                    */
        if (strncmp(keyroot, card, lenroot) == 0)  /* see if keyword matches */
        {
           keyindex[0] = '\0';
-          strncat(keyindex, &card[lenroot], 8-lenroot);  /*  copy suffix */
+          equalssign = strchr(card, '=');
+	  if (equalssign == 0) continue;  /* keyword has no value */
+
+          if (equalssign - card - lenroot > 7)
+          {
+             return (*status=BAD_KEYCHAR);
+          }
+          strncat(keyindex, &card[lenroot], equalssign - card  - lenroot);  /*  copy suffix  */
 
           tstatus = 0;
           if (ffc2ii(keyindex, &ival, &tstatus) <= 0)     /*  test suffix  */
@@ -1354,7 +1897,7 @@ int ffgknj( fitsfile *fptr,     /* I - FITS file pointer                    */
 }
 /*--------------------------------------------------------------------------*/
 int ffgknjj( fitsfile *fptr,    /* I - FITS file pointer                    */
-            char *keyname,      /* I - root name of keywords to read        */
+            const char *keyname,      /* I - root name of keywords to read        */
             int  nstart,        /* I - starting index number                */
             int  nmax,          /* I - maximum number of keywords to return */
             LONGLONG *value,    /* O - array of keyword values              */
@@ -1368,7 +1911,7 @@ int ffgknjj( fitsfile *fptr,    /* I - FITS file pointer                    */
     int nend, lenroot, ii, nkeys, mkeys, tstatus, undefinedval;
     long ival;
     char keyroot[FLEN_KEYWORD], keyindex[8], card[FLEN_CARD];
-    char svalue[FLEN_VALUE], comm[FLEN_COMMENT];
+    char svalue[FLEN_VALUE], comm[FLEN_COMMENT], *equalssign;
 
     if (*status > 0)
         return(*status);
@@ -1377,10 +1920,11 @@ int ffgknjj( fitsfile *fptr,    /* I - FITS file pointer                    */
     nend = nstart + nmax - 1;
 
     keyroot[0] = '\0';
-    strncat(keyroot, keyname, 8);
+    strncat(keyroot, keyname, FLEN_KEYWORD - 1);
 
     lenroot = strlen(keyroot);
-    if (lenroot == 0 || lenroot > 7)     /* root must be 1 - 7 chars long */
+    
+    if (lenroot == 0)     /*  root must be at least 1 char long  */
         return(*status);
 
     for (ii=0; ii < lenroot; ii++)           /*  make sure upper case  */
@@ -1399,7 +1943,14 @@ int ffgknjj( fitsfile *fptr,    /* I - FITS file pointer                    */
        if (strncmp(keyroot, card, lenroot) == 0)  /* see if keyword matches */
        {
           keyindex[0] = '\0';
-          strncat(keyindex, &card[lenroot], 8-lenroot);  /*  copy suffix */
+          equalssign = strchr(card, '=');
+	  if (equalssign == 0) continue;  /* keyword has no value */
+
+          if (equalssign - card - lenroot > 7)
+          {
+             return (*status=BAD_KEYCHAR);
+          }
+          strncat(keyindex, &card[lenroot], equalssign - card  - lenroot);  /*  copy suffix  */
 
           tstatus = 0;
           if (ffc2ii(keyindex, &ival, &tstatus) <= 0)     /*  test suffix  */
@@ -1427,7 +1978,7 @@ int ffgknjj( fitsfile *fptr,    /* I - FITS file pointer                    */
 }
 /*--------------------------------------------------------------------------*/
 int ffgkne( fitsfile *fptr,     /* I - FITS file pointer                    */
-            char *keyname,      /* I - root name of keywords to read        */
+            const char *keyname,      /* I - root name of keywords to read        */
             int  nstart,        /* I - starting index number                */
             int  nmax,          /* I - maximum number of keywords to return */
             float *value,       /* O - array of keyword values              */
@@ -1441,7 +1992,7 @@ int ffgkne( fitsfile *fptr,     /* I - FITS file pointer                    */
     int nend, lenroot, ii, nkeys, mkeys, tstatus, undefinedval;
     long ival;
     char keyroot[FLEN_KEYWORD], keyindex[8], card[FLEN_CARD];
-    char svalue[FLEN_VALUE], comm[FLEN_COMMENT];
+    char svalue[FLEN_VALUE], comm[FLEN_COMMENT], *equalssign;
 
     if (*status > 0)
         return(*status);
@@ -1450,10 +2001,11 @@ int ffgkne( fitsfile *fptr,     /* I - FITS file pointer                    */
     nend = nstart + nmax - 1;
 
     keyroot[0] = '\0';
-    strncat(keyroot, keyname, 8);
+    strncat(keyroot, keyname, FLEN_KEYWORD - 1);
 
     lenroot = strlen(keyroot);
-    if (lenroot == 0 || lenroot > 7)     /*  root must be 1 - 7 chars long  */
+    
+    if (lenroot == 0)     /*  root must be at least 1 char long  */
         return(*status);
 
     for (ii=0; ii < lenroot; ii++)           /*  make sure upper case  */
@@ -1472,7 +2024,14 @@ int ffgkne( fitsfile *fptr,     /* I - FITS file pointer                    */
        if (strncmp(keyroot, card, lenroot) == 0)  /* see if keyword matches */
        {
           keyindex[0] = '\0';
-          strncat(keyindex, &card[lenroot], 8-lenroot);  /*  copy suffix */
+          equalssign = strchr(card, '=');
+	  if (equalssign == 0) continue;  /* keyword has no value */
+
+          if (equalssign - card - lenroot > 7)
+          {
+             return (*status=BAD_KEYCHAR);
+          }
+          strncat(keyindex, &card[lenroot], equalssign - card  - lenroot);  /*  copy suffix  */
 
           tstatus = 0;
           if (ffc2ii(keyindex, &ival, &tstatus) <= 0)     /*  test suffix  */
@@ -1500,7 +2059,7 @@ int ffgkne( fitsfile *fptr,     /* I - FITS file pointer                    */
 }
 /*--------------------------------------------------------------------------*/
 int ffgknd( fitsfile *fptr,     /* I - FITS file pointer                    */
-            char *keyname,      /* I - root name of keywords to read        */
+            const char *keyname,      /* I - root name of keywords to read        */
             int  nstart,        /* I - starting index number                */
             int  nmax,          /* I - maximum number of keywords to return */
             double *value,      /* O - array of keyword values              */
@@ -1514,7 +2073,7 @@ int ffgknd( fitsfile *fptr,     /* I - FITS file pointer                    */
     int nend, lenroot, ii, nkeys, mkeys, tstatus, undefinedval;
     long ival;
     char keyroot[FLEN_KEYWORD], keyindex[8], card[FLEN_CARD];
-    char svalue[FLEN_VALUE], comm[FLEN_COMMENT];
+    char svalue[FLEN_VALUE], comm[FLEN_COMMENT], *equalssign;
 
     if (*status > 0)
         return(*status);
@@ -1523,10 +2082,11 @@ int ffgknd( fitsfile *fptr,     /* I - FITS file pointer                    */
     nend = nstart + nmax - 1;
 
     keyroot[0] = '\0';
-    strncat(keyroot, keyname, 8);
+    strncat(keyroot, keyname, FLEN_KEYWORD - 1);
 
     lenroot = strlen(keyroot);
-    if (lenroot == 0 || lenroot > 7)     /*  root must be 1 - 7 chars long  */
+
+    if (lenroot == 0)     /*  root must be at least 1 char long  */
         return(*status);
 
     for (ii=0; ii < lenroot; ii++)           /*  make sure upper case  */
@@ -1541,12 +2101,17 @@ int ffgknd( fitsfile *fptr,     /* I - FITS file pointer                    */
     {
        if (ffgnky(fptr, card, status) > 0)     /*  get next keyword  */
            return(*status);
-
        if (strncmp(keyroot, card, lenroot) == 0)   /* see if keyword matches */
        {
           keyindex[0] = '\0';
-          strncat(keyindex, &card[lenroot], 8-lenroot);  /*  copy suffix */
+          equalssign = strchr(card, '=');
+	  if (equalssign == 0) continue;  /* keyword has no value */
 
+          if (equalssign - card - lenroot > 7)
+          {
+             return (*status=BAD_KEYCHAR);
+          }
+          strncat(keyindex, &card[lenroot], equalssign - card  - lenroot);  /*  copy suffix  */
           tstatus = 0;
           if (ffc2ii(keyindex, &ival, &tstatus) <= 0)      /*  test suffix */
           {
@@ -1632,43 +2197,47 @@ int ffdtdm(fitsfile *fptr,  /* I - FITS file pointer                        */
 /*
   decode the TDIMnnn keyword to get the dimensionality of a column.
   Check that the value is legal and consistent with the TFORM value.
+  If colnum = 0, then the validity checking is disabled.
 */
 {
     long dimsize, totalpix = 1;
-    char *loc, *lastloc, message[81];
-    tcolumn *colptr;
+    char *loc, *lastloc, message[FLEN_ERRMSG];
+    tcolumn *colptr = 0;
 
     if (*status > 0)
         return(*status);
 
-    if (fptr->HDUposition != (fptr->Fptr)->curhdu)
-        ffmahd(fptr, (fptr->HDUposition) + 1, NULL, status);
+    if (colnum != 0) {
+        if (fptr->HDUposition != (fptr->Fptr)->curhdu)
+            ffmahd(fptr, (fptr->HDUposition) + 1, NULL, status);
 
-    if (colnum < 1 || colnum > (fptr->Fptr)->tfield)
-        return(*status = BAD_COL_NUM);
+        if (colnum < 1 || colnum > (fptr->Fptr)->tfield)
+            return(*status = BAD_COL_NUM);
 
-    colptr = (fptr->Fptr)->tableptr;   /* set pointer to the first column */
-    colptr += (colnum - 1);    /* increment to the correct column */
+        colptr = (fptr->Fptr)->tableptr;   /* set pointer to the first column */
+        colptr += (colnum - 1);    /* increment to the correct column */
 
-    if (!tdimstr[0])   /* TDIMn keyword doesn't exist? */
-    {
-        *naxis = 1;                   /* default = 1 dimensional */
-        if (maxdim > 0)
-            naxes[0] = (long) colptr->trepeat; /* default length = repeat */
-    }
-    else
-    {
-        *naxis = 0;
-
-        loc = strchr(tdimstr, '(' );  /* find the opening quote */
-        if (!loc)
+        if (!tdimstr[0])   /* TDIMn keyword doesn't exist? */
         {
-            sprintf(message, "Illegal TDIM keyword value: %s", tdimstr);
-            return(*status = BAD_TDIM);
+            *naxis = 1;                   /* default = 1 dimensional */
+            if (maxdim > 0)
+                naxes[0] = (long) colptr->trepeat; /* default length = repeat */
+
+            return(*status);
         }
+    }
 
-        while (loc)
-        {
+    *naxis = 0;
+
+    loc = strchr(tdimstr, '(' );  /* find the opening quote */
+    if (!loc)
+    {
+            snprintf(message, FLEN_ERRMSG, "Illegal dimensions format: %s", tdimstr);
+            return(*status = BAD_TDIM);
+    }
+
+    while (loc)
+    {
             loc++;
             dimsize = strtol(loc, &loc, 10);  /* read size of next dimension */
             if (*naxis < maxdim)
@@ -1676,7 +2245,7 @@ int ffdtdm(fitsfile *fptr,  /* I - FITS file pointer                        */
 
             if (dimsize < 0)
             {
-                ffpmsg("one or more TDIM values are less than 0 (ffdtdm)");
+                ffpmsg("one or more dimension are less than 0 (ffdtdm)");
                 ffpmsg(tdimstr);
                 return(*status = BAD_TDIM);
             }
@@ -1685,18 +2254,19 @@ int ffdtdm(fitsfile *fptr,  /* I - FITS file pointer                        */
             (*naxis)++;
             lastloc = loc;
             loc = strchr(loc, ',');  /* look for comma before next dimension */
-        }
+    }
 
-        loc = strchr(lastloc, ')' );  /* check for the closing quote */
-        if (!loc)
-        {
-            sprintf(message, "Illegal TDIM keyword value: %s", tdimstr);
+    loc = strchr(lastloc, ')' );  /* check for the closing quote */
+    if (!loc)
+    {
+            snprintf(message, FLEN_ERRMSG, "Illegal dimensions format: %s", tdimstr);
             return(*status = BAD_TDIM);
-        }
+    }
 
+    if (colnum != 0) {
         if ((colptr->tdatatype > 0) && ((long) colptr->trepeat != totalpix))
         {
-          sprintf(message,
+          snprintf(message, FLEN_ERRMSG,
           "column vector length, %ld, does not equal TDIMn array size, %ld",
           (long) colptr->trepeat, totalpix);
           ffpmsg(message);
@@ -1721,7 +2291,7 @@ int ffdtdmll(fitsfile *fptr,  /* I - FITS file pointer                        */
 {
     LONGLONG dimsize;
     LONGLONG totalpix = 1;
-    char *loc, *lastloc, message[81];
+    char *loc, *lastloc, message[FLEN_ERRMSG];
     tcolumn *colptr;
     double doublesize;
 
@@ -1750,7 +2320,7 @@ int ffdtdmll(fitsfile *fptr,  /* I - FITS file pointer                        */
         loc = strchr(tdimstr, '(' );  /* find the opening quote */
         if (!loc)
         {
-            sprintf(message, "Illegal TDIM keyword value: %s", tdimstr);
+            snprintf(message, FLEN_ERRMSG, "Illegal TDIM keyword value: %s", tdimstr);
             return(*status = BAD_TDIM);
         }
 
@@ -1784,13 +2354,13 @@ int ffdtdmll(fitsfile *fptr,  /* I - FITS file pointer                        */
         loc = strchr(lastloc, ')' );  /* check for the closing quote */
         if (!loc)
         {
-            sprintf(message, "Illegal TDIM keyword value: %s", tdimstr);
+            snprintf(message, FLEN_ERRMSG, "Illegal TDIM keyword value: %s", tdimstr);
             return(*status = BAD_TDIM);
         }
 
         if ((colptr->tdatatype > 0) && (colptr->trepeat != totalpix))
         {
-          sprintf(message,
+          snprintf(message, FLEN_ERRMSG,
           "column vector length, %.0f, does not equal TDIMn array size, %.0f",
           (double) (colptr->trepeat), (double) totalpix);
           ffpmsg(message);
@@ -1884,7 +2454,7 @@ int ffghtb(fitsfile *fptr,  /* I - FITS file pointer                        */
     int ii, maxf, nfound, tstatus;
     long fields;
     char name[FLEN_KEYWORD], value[FLEN_VALUE], comm[FLEN_COMMENT];
-    char xtension[FLEN_VALUE], message[81];
+    char xtension[FLEN_VALUE], message[FLEN_ERRMSG];
     LONGLONG llnaxis1, llnaxis2, pcount;
 
     if (*status > 0)
@@ -1907,7 +2477,7 @@ int ffghtb(fitsfile *fptr,  /* I - FITS file pointer                        */
             if ( (value[0] != '\'')   ||  /* first char must be a quote */
                  ( strcmp(xtension, "TABLE") ) )
             {
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "This is not a TABLE extension: %s", value);
                 ffpmsg(message);
                 return(*status = NOT_ATABLE);
@@ -1916,7 +2486,7 @@ int ffghtb(fitsfile *fptr,  /* I - FITS file pointer                        */
 
     else  /* error: 1st keyword of extension != XTENSION */
     {
-        sprintf(message,
+        snprintf(message, FLEN_ERRMSG,
         "First keyword of the extension is not XTENSION: %s", name);
         ffpmsg(message);
         return(*status = NO_XTENSION);
@@ -1933,7 +2503,7 @@ int ffghtb(fitsfile *fptr,  /* I - FITS file pointer                        */
 
     if (pcount != 0)
     {
-       sprintf(message, "PCOUNT = %.0f is illegal in ASCII table; must = 0",
+       snprintf(message, FLEN_ERRMSG, "PCOUNT = %.0f is illegal in ASCII table; must = 0",
                (double) pcount);
        ffpmsg(message);
        return(*status = BAD_PCOUNT);
@@ -2027,7 +2597,7 @@ int ffghtbll(fitsfile *fptr, /* I - FITS file pointer                        */
     int ii, maxf, nfound, tstatus;
     long fields;
     char name[FLEN_KEYWORD], value[FLEN_VALUE], comm[FLEN_COMMENT];
-    char xtension[FLEN_VALUE], message[81];
+    char xtension[FLEN_VALUE], message[FLEN_ERRMSG];
     LONGLONG llnaxis1, llnaxis2, pcount;
 
     if (*status > 0)
@@ -2050,7 +2620,7 @@ int ffghtbll(fitsfile *fptr, /* I - FITS file pointer                        */
             if ( (value[0] != '\'')   ||  /* first char must be a quote */
                  ( strcmp(xtension, "TABLE") ) )
             {
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "This is not a TABLE extension: %s", value);
                 ffpmsg(message);
                 return(*status = NOT_ATABLE);
@@ -2059,7 +2629,7 @@ int ffghtbll(fitsfile *fptr, /* I - FITS file pointer                        */
 
     else  /* error: 1st keyword of extension != XTENSION */
     {
-        sprintf(message,
+        snprintf(message, FLEN_ERRMSG,
         "First keyword of the extension is not XTENSION: %s", name);
         ffpmsg(message);
         return(*status = NO_XTENSION);
@@ -2076,7 +2646,7 @@ int ffghtbll(fitsfile *fptr, /* I - FITS file pointer                        */
 
     if (pcount != 0)
     {
-       sprintf(message, "PCOUNT = %.0f is illegal in ASCII table; must = 0",
+       snprintf(message, FLEN_ERRMSG, "PCOUNT = %.0f is illegal in ASCII table; must = 0",
              (double) pcount);
        ffpmsg(message);
        return(*status = BAD_PCOUNT);
@@ -2169,7 +2739,7 @@ int ffghbn(fitsfile *fptr,  /* I - FITS file pointer                        */
     int ii, maxf, nfound, tstatus;
     long  fields;
     char name[FLEN_KEYWORD], value[FLEN_VALUE], comm[FLEN_COMMENT];
-    char xtension[FLEN_VALUE], message[81];
+    char xtension[FLEN_VALUE], message[FLEN_ERRMSG];
     LONGLONG naxis1ll, naxis2ll, pcountll;
 
     if (*status > 0)
@@ -2195,7 +2765,7 @@ int ffghbn(fitsfile *fptr,  /* I - FITS file pointer                        */
                    strcmp(xtension, "3DTABLE")
                  ) )
             {
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "This is not a BINTABLE extension: %s", value);
                 ffpmsg(message);
                 return(*status = NOT_BTABLE);
@@ -2204,7 +2774,7 @@ int ffghbn(fitsfile *fptr,  /* I - FITS file pointer                        */
 
     else  /* error: 1st keyword of extension != XTENSION */
     {
-        sprintf(message,
+        snprintf(message, FLEN_ERRMSG,
         "First keyword of the extension is not XTENSION: %s", name);
         ffpmsg(message);
         return(*status = NO_XTENSION);
@@ -2292,7 +2862,7 @@ int ffghbnll(fitsfile *fptr,  /* I - FITS file pointer                        */
     int ii, maxf, nfound, tstatus;
     long  fields;
     char name[FLEN_KEYWORD], value[FLEN_VALUE], comm[FLEN_COMMENT];
-    char xtension[FLEN_VALUE], message[81];
+    char xtension[FLEN_VALUE], message[FLEN_ERRMSG];
     LONGLONG naxis1ll, naxis2ll, pcountll;
 
     if (*status > 0)
@@ -2318,7 +2888,7 @@ int ffghbnll(fitsfile *fptr,  /* I - FITS file pointer                        */
                    strcmp(xtension, "3DTABLE")
                  ) )
             {
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "This is not a BINTABLE extension: %s", value);
                 ffpmsg(message);
                 return(*status = NOT_BTABLE);
@@ -2327,7 +2897,7 @@ int ffghbnll(fitsfile *fptr,  /* I - FITS file pointer                        */
 
     else  /* error: 1st keyword of extension != XTENSION */
     {
-        sprintf(message,
+        snprintf(message, FLEN_ERRMSG,
         "First keyword of the extension is not XTENSION: %s", name);
         ffpmsg(message);
         return(*status = NO_XTENSION);
@@ -2455,7 +3025,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
 
         else
         {
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
                    "First keyword of the file is not SIMPLE: %s", name);
             ffpmsg(message);
             return(*status = NO_SIMPLE);
@@ -2481,7 +3051,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
                     strcmp(xtension, "IUEIMAGE") ) )
             {
                 unknown = 1;  /* unknown type of extension; press on anyway */
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                    "This is not an IMAGE extension: %s", value);
                 ffpmsg(message);
             }
@@ -2489,7 +3059,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
 
         else  /* error: 1st keyword of extension != XTENSION */
         {
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
             "First keyword of the extension is not XTENSION: %s", name);
             ffpmsg(message);
             return(*status = NO_XTENSION);
@@ -2547,7 +3117,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
 
         if (strcmp(name, "BITPIX"))
         {
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
             "Second keyword of the extension is not BITPIX: %s", name);
             ffpmsg(message);
             return(*status = NO_BITPIX);
@@ -2555,7 +3125,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
 
         if (ffc2ii(value,  &longbitpix, status) > 0)
         {
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
             "Value of BITPIX keyword is not an integer: %s", value);
             ffpmsg(message);
             return(*status = BAD_BITPIX);
@@ -2564,7 +3134,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
              longbitpix != LONG_IMG && longbitpix != LONGLONG_IMG &&
              longbitpix != FLOAT_IMG && longbitpix != DOUBLE_IMG)
         {
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
             "Illegal value for BITPIX keyword: %s", value);
             ffpmsg(message);
             return(*status = BAD_BITPIX);
@@ -2581,7 +3151,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
             return(*status = NO_NAXIS);
         else if (*status == NOT_POS_INT || longnaxis > 999)
         {
-            sprintf(message,"NAXIS = %ld is illegal", longnaxis);
+            snprintf(message,FLEN_ERRMSG,"NAXIS = %ld is illegal", longnaxis);
             ffpmsg(message);
             return(*status = BAD_NAXIS);
         }
@@ -2655,7 +3225,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
 
         if (fftrec(name, status) > 0)  /* test keyword name; catches no END */
         {
-          sprintf(message,
+          snprintf(message, FLEN_ERRMSG,
               "Name of keyword no. %d contains illegal character(s): %s",
               nextkey, name);
           ffpmsg(message);
@@ -2675,7 +3245,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
                 *status = tstatus;
                 *bscale = 1.0;
 
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "Error reading BSCALE keyword value as a double: %s", value);
                 ffpmsg(message);
             }
@@ -2692,7 +3262,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
                 *status = tstatus;
                 *bzero = 0.0;
 
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "Error reading BZERO keyword value as a double: %s", value);
                 ffpmsg(message);
             }
@@ -2709,7 +3279,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
                 *status = tstatus;
                 *blank = NULL_UNDEFINED;
 
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "Error reading BLANK keyword value as an integer: %s", value);
                 ffpmsg(message);
             }
@@ -2722,7 +3292,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
 
             if (ffc2ii(value, pcount, status) > 0) /* convert to long */
             {
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "Error reading PCOUNT keyword value as an integer: %s", value);
                 ffpmsg(message);
             }
@@ -2735,7 +3305,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
 
             if (ffc2ii(value, gcount, status) > 0) /* convert to long */
             {
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "Error reading GCOUNT keyword value as an integer: %s", value);
                 ffpmsg(message);
             }
@@ -2752,7 +3322,7 @@ int ffgphd(fitsfile *fptr,  /* I - FITS file pointer                        */
                 *status = tstatus;
                 *extend = 0;
 
-                sprintf(message,
+                snprintf(message, FLEN_ERRMSG,
                 "Error reading EXTEND keyword value as a logical: %s", value);
                 ffpmsg(message);
             }
@@ -2883,16 +3453,16 @@ int ffgtkn(fitsfile *fptr,  /* I - FITS file pointer              */
 
         if (*status > 0)
         {
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
               "ffgtkn found unexpected keyword or value for keyword no. %d.",
               numkey);
             ffpmsg(message);
 
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
               " Expected positive integer keyword %s, but instead", name);
             ffpmsg(message);
 
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
               " found keyword %s with value %s", keyname, valuestring);
             ffpmsg(message);
         }
@@ -2937,16 +3507,16 @@ int ffgtknjj(fitsfile *fptr,  /* I - FITS file pointer              */
 
         if (*status > 0)
         {
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
               "ffgtknjj found unexpected keyword or value for keyword no. %d.",
               numkey);
             ffpmsg(message);
 
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
               " Expected positive integer keyword %s, but instead", name);
             ffpmsg(message);
 
-            sprintf(message,
+            snprintf(message, FLEN_ERRMSG,
               " found keyword %s with value %s", keyname, valuestring);
             ffpmsg(message);
         }
@@ -2985,16 +3555,16 @@ int fftkyn(fitsfile *fptr,  /* I - FITS file pointer              */
 
     if (*status > 0)
     {
-        sprintf(message,
+        snprintf(message, FLEN_ERRMSG,
           "fftkyn found unexpected keyword or value for keyword no. %d.",
           numkey);
         ffpmsg(message);
 
-        sprintf(message,
+        snprintf(message, FLEN_ERRMSG,
           " Expected keyword %s with value %s, but", name, value);
         ffpmsg(message);
 
-        sprintf(message,
+        snprintf(message, FLEN_ERRMSG,
           " found keyword %s with value %s", keyname, valuestring);
         ffpmsg(message);
     }
@@ -3071,7 +3641,9 @@ int ffhdr2str( fitsfile *fptr,  /* I - FITS file pointer                    */
     if (ffghsp(fptr, &totkeys, NULL, status) > 0)
         return(*status);
 
-    /* allocate memory for all the keywords (multiple of 2880 bytes) */
+    /* allocate memory for all the keywords */
+    /* (will reallocate it later to minimize the memory size) */
+    
     *header = (char *) calloc ( (totkeys + 1) * 80 + 1, 1);
     if (!(*header))
     {
@@ -3128,6 +3700,48 @@ int ffhdr2str( fitsfile *fptr,  /* I - FITS file pointer                    */
     *headptr = '\0';   /* terminate the header string */
     /* minimize the allocated memory */
     *header = (char *) realloc(*header, (*nkeys *80) + 1);  
+
+    return(*status);
+}
+/*--------------------------------------------------------------------------*/
+int ffcnvthdr2str( fitsfile *fptr,  /* I - FITS file pointer                    */
+            int exclude_comm,   /* I - if TRUE, exclude commentary keywords */
+            char **exclist,     /* I - list of excluded keyword names       */
+            int nexc,           /* I - number of names in exclist           */
+            char **header,      /* O - returned header string               */
+            int *nkeys,         /* O - returned number of 80-char keywords  */
+            int  *status)       /* IO - error status                        */
+/*
+  Same as ffhdr2str, except that if the input HDU is a tile compressed image
+  (stored in a binary table) then it will first convert that header back
+  to that of a normal uncompressed FITS image before concatenating the header
+  keyword records.
+*/
+{
+    fitsfile *tempfptr;
+    
+    if (*status > 0)
+        return(*status);
+
+    if (fits_is_compressed_image(fptr, status) )
+    {
+        /* this is a tile compressed image, so need to make an uncompressed */
+	/* copy of the image header in memory before concatenating the keywords */
+        if (fits_create_file(&tempfptr, "mem://", status) > 0) {
+	    return(*status);
+	}
+
+	if (fits_img_decompress_header(fptr, tempfptr, status) > 0) {
+	    fits_delete_file(tempfptr, status);
+	    return(*status);
+	}
+
+	ffhdr2str(tempfptr, exclude_comm, exclist, nexc, header, nkeys, status);
+	fits_close_file(tempfptr, status);
+
+    } else {
+        ffhdr2str(fptr, exclude_comm, exclist, nexc, header, nkeys, status);
+    }
 
     return(*status);
 }

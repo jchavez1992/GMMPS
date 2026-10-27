@@ -17,7 +17,6 @@
  */
 
 
-using namespace std;
 #include "QueryResult.h"
 #include "TcsCatalogObject.h"
 
@@ -63,7 +62,7 @@ protected:
     virtual int getObjFromTable(int row, TcsCatalogObject&);
 
     // print table title and other info
-    virtual void printTableTop(ostream& os, const char* title = NULL);
+    virtual void printTableTop(std::ostream& os, const char* title = NULL);
 
 public:
     // constructor: initialize empty table
@@ -95,7 +94,7 @@ public:
     TcsCatalogObject* getObj(int row) const;
 
     // print the given table row to the given stream
-    virtual int printRow(ostream& os, int row) const; 
+    virtual int printRow(std::ostream& os, int row) const; 
 
     // -- redefine these to deal with TCS columns --
 

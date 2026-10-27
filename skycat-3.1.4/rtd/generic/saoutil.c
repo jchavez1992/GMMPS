@@ -13,10 +13,11 @@ static char *errnote = " allocation failure\n";
  * Note:	If message is given, print it and exit on failure
  * Note:	If no message is given, return 0 on failure
  */
-char *calloc_errchk ( count, size, errmess )
-     int count;
-     unsigned int size;
-     char *errmess;
+char *calloc_errchk (
+     int count,
+     unsigned int size,
+     char *errmess
+)
 {
   char *space;
   /* char *calloc(); allan: gets error with Sun cc */

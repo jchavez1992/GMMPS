@@ -13,7 +13,6 @@
 static const char* const rcsId="@(#) $Id: TcsLocalCatalog.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdlib>

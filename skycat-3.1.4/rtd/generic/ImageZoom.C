@@ -100,7 +100,7 @@ void ImageZoom::zoom(unsigned char* data, int x, int y, int w, int h,
 	return;
 
     char pixval = color0;
-    register unsigned char* zoomData = xImage_->data();
+    unsigned char* zoomData = xImage_->data();
     int zs = zoomStep_ >> 1;
     int incr = width_ * (zoomFactor_ - 1);
     int xz = x - zs;

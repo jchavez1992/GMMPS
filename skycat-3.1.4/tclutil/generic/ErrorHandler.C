@@ -15,7 +15,7 @@ static const char* const rcsId="@(#) $Id: ErrorHandler.C,v 1.1.1.1 2009/03/31 14
 
 
 
-using namespace std;
+//using namespace std;
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -69,7 +69,7 @@ int ErrorHandler::error(XErrorEvent *errEventPtr)
     if (verbose_) {
 	char msg[80];
 	XGetErrorText(display_, errEventPtr->error_code, msg, sizeof(msg));
-	cout << "X Error: " << msg << endl;
+	std::cout << "X Error: " << msg << std::endl;
 	::error("X Error: ", msg);
     }
     return TCL_OK;

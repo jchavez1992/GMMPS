@@ -480,7 +480,7 @@ public:
     char* cameraPostCmd() {return cameraPostCmd_;}
 
     // Set state of image event (currently true/false)
-    int   imageEvent(int state) {imageEvent_ = state;}
+    int   imageEvent(int state) {imageEvent_ = state; return 0;}
 
     ImageData* image() {return image_;}
 };

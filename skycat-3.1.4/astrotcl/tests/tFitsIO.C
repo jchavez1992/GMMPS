@@ -18,7 +18,7 @@
 
 #define TEST(x) {if (!(x)){printf("%s: line %d: Test failed\n", __FILE__, __LINE__);  exit(1) ;}}
 
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
     // errors will be printed on stderr automatically
     set_error_handler(print_error);

@@ -54,7 +54,7 @@ public:
 	Tcl_Interp*,
 	int verbose,
 	int debug=0,
-	char* image = "RtdCamera");
+	char* image = (char *)"RtdCamera");
     
     // destructor 
     virtual ~RtdCamera();

@@ -226,6 +226,28 @@ cd ${GMMPS}
 echo "Tcl/Tk installation complete"
 echo " "
 
+# zlib (bundled): skycat's astrotcl (cfitsio 4.4 inside) and cfitsio 4.x both
+# need it, and some Linux systems lack the zlib development files.
+echo " "
+echo "################################################################### "
+echo "GMMPS Installer: Installing zlib ... "
+echo "################################################################### "
+echo " "
+
+# Build in zlib-1.3.2/build so configure's generated Makefile and zconf.h
+# stay out of the source tree.
+cd ${GMMPS}/zlib-1.3.2
+rm -rf build
+mkdir build
+cd build
+../configure --prefix=${GMMPS}
+make
+make install
+cd ${GMMPS}
+
+echo "zlib installation complete"
+echo " "
+
 echo "################################################################### "
 echo "GMMPS Installer: Installing Skycat ... "
 echo "################################################################### "
@@ -290,32 +312,7 @@ echo " "
 sleep 1
 
 ###############################################################################
-# 2a: Install zlib (bundled; cfitsio 4.x needs it and some Linux systems
-#     lack the zlib development files)
-###############################################################################
-
-echo " "
-echo "################################################################### "
-echo "GMMPS Installer: Installing zlib ... "
-echo "################################################################### "
-echo " "
-
-# Build in zlib-1.3.2/build so configure's generated Makefile and zconf.h
-# stay out of the source tree.
-cd ${GMMPS}/zlib-1.3.2
-rm -rf build
-mkdir build
-cd build
-../configure --prefix=${GMMPS}
-make
-make install
-cd ${GMMPS}
-
-echo "zlib installation complete"
-echo " "
-
-###############################################################################
-# 2b: Install CFITSIO
+# 2: Install CFITSIO
 ###############################################################################
 
 echo " "

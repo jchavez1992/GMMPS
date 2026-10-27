@@ -16,7 +16,6 @@
 static const char* const rcsId="@(#) $Id: XImageData.C,v 1.1.1.1 2009/03/31 14:11:52 cguirao Exp $";
 
 
-using namespace std;
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>

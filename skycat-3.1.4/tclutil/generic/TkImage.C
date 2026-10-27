@@ -20,7 +20,7 @@ static const char* const rcsId="@(#) $Id: TkImage.C,v 1.1.1.1 2009/03/31 14:11:5
 
 
 
-using namespace std;
+//using namespace std;
 #include <cstdlib>
 #include <cctype>
 #include <iostream>

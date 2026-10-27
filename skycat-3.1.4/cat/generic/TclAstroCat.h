@@ -17,7 +17,6 @@
  */
 
 
-using namespace std;
 #include "TclCommand.h"
 #include "AstroCatalog.h"
 
@@ -54,9 +53,9 @@ protected:
     virtual int appendListVal(const char* value);
 
     // convert tcl list cat entry to config file format
-    virtual int tclListToConfigStreamValue(const char* tclList, ostream& os);
-    virtual int tclListToConfigStreamLine(const char* tclList, ostream& os);
-    virtual int tclListToConfigStream(const char* tclList, ostream& os);
+    virtual int tclListToConfigStreamValue(const char* tclList, std::ostream& os);
+    virtual int tclListToConfigStreamLine(const char* tclList, std::ostream& os);
+    virtual int tclListToConfigStream(const char* tclList, std::ostream& os);
 
     // Return the catalog directory entry for the given name or path
     CatalogInfoEntry* lookupCatalogDirectoryEntry(const char* dirList);

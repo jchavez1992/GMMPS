@@ -64,7 +64,7 @@ void RtdPerformanceTool::timeStamp(char *evDesc)
     // Timestamp.
     if (timeIndex < RTD_NUMSHM * RTD_NUMTMSTMPS) {
         gettimeofday(&timeStamps[timeIndex], NULL);
-        sprintf(evDescs[timeIndex++], "%s", evDesc);
+        snprintf(evDescs[timeIndex++], 64, "%s", evDesc);
     }
     else {
 	fprintf(stderr, "Warning: too many timestamps produced\n");
@@ -89,7 +89,7 @@ void RtdPerformanceTool::timeStamp(const rtdIMAGE_INFO *imageInfo)
 
     // Timestamp
     if (timeIndex < RTD_NUMSHM * RTD_NUMTMSTMPS) {
-	sprintf(evDescs[timeIndex], "SEND");
+	snprintf(evDescs[timeIndex], 64, "SEND");
 	memcpy(&timeStamps[timeIndex++], (void *)&imageInfo->timeStamp, 
 	    sizeof(struct timeval));
     }
@@ -128,10 +128,10 @@ int RtdPerformanceTool::dumpPerformanceData(const rtdIMAGE_INFO *imageData)
     for (j = 0; j < timeIndex; j++) {
 	timeLines[j].timeStamp = timeStamps[j].tv_sec + 
 	    (timeStamps[j].tv_usec / 1000000.);
-	sprintf(timeLines[j].descr, "%s", evDescs[j]);
+	snprintf(timeLines[j].descr, 64, "%s", evDescs[j]);
     }
     // End the array with the END event.
-    sprintf(timeLines[timeIndex - 1].descr, "END");
+    snprintf(timeLines[timeIndex - 1].descr, 64, "END");
 
     // Now sort the resulting line array in order of increasing time.
     qsort(&timeLines[0], timeIndex, sizeof(struct fLine), 
@@ -154,7 +154,7 @@ int RtdPerformanceTool::dumpPerformanceData(const rtdIMAGE_INFO *imageData)
     fprintf(fStr, "\nImage width/pixels\t%d", imageData->xPixels);
     fprintf(fStr, "\nImage height/pixels\t%d", imageData->yPixels);
     fprintf(fStr, "\nImage bytes per pixel\t%d", imageData->bytePerPixel);
-    fprintf(fStr, "\nTotal image size\t%ld", imageData->xPixels * 
+    fprintf(fStr, "\nTotal image size\t%d", imageData->xPixels * 
 	imageData->yPixels * imageData->bytePerPixel);
     fprintf(fStr, "\nNumber of sent images\t%d", RTD_NUMSHM);
     fprintf(fStr, "\nNumber of received images\t%d", numReceived);

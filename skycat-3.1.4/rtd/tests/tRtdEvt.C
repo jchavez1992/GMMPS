@@ -25,7 +25,7 @@
 /*
  * constructor
  */
-tRtdEvt::tRtdEvt(char *id, rtdShm *rtdShm, char *data, opts *opt, int width, int height, int frameId)
+tRtdEvt::tRtdEvt(char *id, rtdShm *rtdShm, char *data, Opts *opt, int width, int height, int frameId)
 {
     id_         = id;
     rtdShm_     = rtdShm;

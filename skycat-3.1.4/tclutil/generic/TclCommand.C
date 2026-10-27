@@ -13,7 +13,7 @@ static const char* const rcsId="@(#) $Id: TclCommand.C,v 1.1.1.1 2009/03/31 14:1
 
 
 
-using namespace std;
+//using namespace std;
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
@@ -50,7 +50,7 @@ TclCommand::TclCommand(Tcl_Interp* interp, const char* cmdname, const char* inst
     // generate a name if necessary
     if (strcmp(instname, "#auto") == 0) {
 	instname_ = new char[strlen(cmdname_)+16];
-	sprintf(instname_, "%s%d", cmdname_, seq_++);
+	snprintf(instname_, strlen(instname_), "%s%d", cmdname_, seq_++);
     } else {
 	instname_ = new char[strlen(instname)+1];
 	strcpy(instname_, instname);
@@ -159,7 +159,7 @@ int TclCommand::deleteCmd(int, char**) {
 int TclCommand::set_result(int i) 
 {
     char buf[32];
-    sprintf(buf, "%d", i);
+    snprintf(buf, 32, "%d", i);
     Tcl_SetResult(interp_, buf, TCL_VOLATILE);
     return TCL_OK;
 }
@@ -171,7 +171,7 @@ int TclCommand::set_result(int i)
 int TclCommand::set_result(int i, int j) 
 {
     char buf[64];
-    sprintf(buf, "%d %d", i, j);
+    snprintf(buf, 64, "%d %d", i, j);
     Tcl_SetResult(interp_, buf, TCL_VOLATILE);
     return TCL_OK;
 }
@@ -183,7 +183,7 @@ int TclCommand::set_result(int i, int j)
 int TclCommand::set_result(double i, double j) 
 {
     char buf[64];
-    sprintf(buf, "%g %g", i, j);
+    snprintf(buf, 64, "%g %g", i, j);
     Tcl_SetResult(interp_, buf, TCL_VOLATILE);
     return TCL_OK;
 }
@@ -195,7 +195,7 @@ int TclCommand::set_result(double i, double j)
 int TclCommand::set_result(double d) 
 {
     char buf[80];
-    sprintf(buf, "%g", d);
+    snprintf(buf, 80, "%g", d);
     Tcl_SetResult(interp_, buf, TCL_VOLATILE);
     return TCL_OK;
 }
@@ -237,7 +237,7 @@ int TclCommand::append_result(const char* s)
 int TclCommand::append_element(int i) 
 {
     char buf[32];
-    sprintf(buf, "%d", i);
+    snprintf(buf, 32, "%d", i);
     Tcl_AppendElement(interp_, buf);
     return TCL_OK;
 }
@@ -249,7 +249,7 @@ int TclCommand::append_element(int i)
 int TclCommand::append_element(int i, int j) 
 {
     char buf[64];
-    sprintf(buf, "%d %d", i, j);
+    snprintf(buf, 64, "%d %d", i, j);
     Tcl_AppendElement(interp_, buf);
     return TCL_OK;
 }
@@ -261,7 +261,7 @@ int TclCommand::append_element(int i, int j)
 int TclCommand::append_element(double i, double j) 
 {
     char buf[64];
-    sprintf(buf, "%g %g", i, j);
+    snprintf(buf, 64, "%g %g", i, j);
     Tcl_AppendElement(interp_, buf);
     return TCL_OK;
 }
@@ -273,7 +273,7 @@ int TclCommand::append_element(double i, double j)
 int TclCommand::append_element(double d) 
 {
     char buf[80];
-    sprintf(buf, "%g", d);
+    snprintf(buf, 80, "%g", d);
     Tcl_AppendElement(interp_, buf);
     return TCL_OK;
 }
@@ -295,7 +295,7 @@ int TclCommand::append_element(const char* s)
 int TclCommand::error(const char* msg1, const char* msg2) 
 {
     // msg1 or msg2 might be the same as interp_->result...
-    ostringstream os;
+    std::ostringstream os;
     os << msg1 << msg2;
 
     Tcl_ResetResult(interp_);
@@ -309,7 +309,7 @@ int TclCommand::error(const char* msg1, const char* msg2)
 int TclCommand::more_error(const char* msg1, const char* msg2) 
 {
     // msg1 or msg2 might be the same as interp_->result...
-    ostringstream os;
+    std::ostringstream os;
     os << msg1 << msg2;
 
     Tcl_AppendResult(interp_, os.str().c_str(), (char *)NULL);

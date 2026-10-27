@@ -74,10 +74,10 @@ void formatHM(double val, char* buf)
     int min = (int)md;
     double sec = (md - min) * 60;
     if (min != 0.0) {
-	sprintf(buf, "%02d:%02.2f",  min*sign, sec);
+	snprintf(buf, 32, "%02d:%02.2f",  min*sign, sec);
     }
     else {
-	sprintf(buf, "%02.2f",  sec*sign);
+	snprintf(buf, 32, "%02.2f",  sec*sign);
     }
     // cout << "formatHM: " << val << " == " << buf << endl;
 }

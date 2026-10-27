@@ -46,7 +46,7 @@ The parameter mnemonics are:
 #define zeta	Euler_angles[2]
 
 /*============================================================================*/
-int tr_Euler (Euler_angles, R)   
+int tr_Euler (
 /*+++
 .PURPOSE  Compute the rotation matrix from Euler angles 
 .METHOD
@@ -57,8 +57,9 @@ $$ R = R_z(-z) \cdot R_y(\theta) \cdot R_z(-\zeta)$$
 \end{TeX}
 .RETURNS OK
 ---*/
-	double Euler_angles[3];	/* IN: Euler angles (z, theta, zeta) */
-	double R[3][3];  	/* OUT: rotation matrix */
+	double Euler_angles[3],	/* IN: Euler angles (z, theta, zeta) */
+	double R[3][3]  	/* OUT: rotation matrix */
+)
 
 { 	double w;
 
@@ -80,17 +81,73 @@ $$ R = R_z(-z) \cdot R_y(\theta) \cdot R_z(-\zeta)$$
   return(OK);
 }
 
+
 /*============================================================================*/
-int tr_oo( o , o2, R)
+int tr_uu(
+/*+++
+.PURPOSE  Rotates the unit vector u1 to u2, as
+\begin{TeX}
+\quad $\vec{u_2} = R \cdot  \vec{u_1}$ \quad (old to new frame)
+\end{TeX}
+.RETURNS OK
+---*/
+	double u1[3], 	/* IN: Unit vector */
+	double u2[3], 	/* OUT: Resulting unit vector after rotation */
+	double R[3][3]	/* IN: rotation matrix (e.g. created by tr_oR)*/
+)
+{
+ 	register int i,j;
+	register double val;
+	double u_stack[3];	/* allows same address for input/output      */
+
+
+  for (i=0; i<3; i++)
+  { 	val = 0.e0;
+	for (j=0; j<3; j++)	val += R[i][j]*u1[j];
+	u_stack[i] = val;
+  }
+  for (i=0; i<3; i++)		u2[i] = u_stack[i]; 	/* copies to output */
+  return(OK);
+}
+
+/*============================================================================*/
+int tr_uu1 (
+/*+++
+.PURPOSE  Rotates the unit vector u1 to u2, as
+\begin{TeX}
+\quad $\vec{u_2} = R^{-1} \cdot \vec{u_1}$ \quad (new to old frame).
+\end{TeX}
+.RETURNS OK
+---*/
+	double u1[3], 	/* IN: Unit vector */
+	double u2[3], 	/* OUT: Resulting unit vector after rotation */
+	double R[3][3]	/* IN: rotation matrix (e.g. created by tr_oR) */
+)
+{
+	register int i,j;
+	register double val;
+	double u_stack[3];	/* allows same address for input/output      */
+
+  for (i=0; i<3; i++)
+  { 	for (j=0, val = 0.0e0; j<3; j++)
+  		val += R[j][i]*u1[j];
+	u_stack[i] = val;
+  }
+  for (i=0; i<3; i++) 		u2[i] = u_stack[i];	/* copies to output */
+  return(OK);
+}
+/*============================================================================*/
+int tr_oo(
 /*+++
 .PURPOSE  Rotate polar coordinates,
            using a R rotation matrix (old to new frame)
 .METHOD	  Use unit vectors
 .RETURNS  OK    
 ---*/
-	double o[2];  	/* IN: Original angles */
-	double o2[2]; 	/* OUT: rotated angles  */
-	double R[3][3];	/* IN: Rotation matrix */
+	double o[2],  	/* IN: Original angles */
+	double o2[2], 	/* OUT: rotated angles  */
+	double R[3][3]	/* IN: Rotation matrix */
+)
 { 
 	double us[3];
 
@@ -100,16 +157,17 @@ int tr_oo( o , o2, R)
 }
 
 /*============================================================================*/
-int tr_oo1( o , o2 , R) 
+int tr_oo1(
 /*+++
 .PURPOSE   Rotate polar coordinates, using the inversed R matrix 
            (new to old frame).
 .METHOD	  Use unit vectors
 .RETURNS   Non-zero value
 ---*/
-	double o[2];  	/* IN: original angles */
-	double o2[2]; 	/* OUT: rotated angles  */
-	double R[3][3];	/* IN: rotation matrix */
+	double o[2],  	/* IN: original angles */
+	double o2[2], 	/* OUT: rotated angles  */
+	double R[3][3]	/* IN: rotation matrix */
+)
 { 
 	double us[3];
 
@@ -119,7 +177,7 @@ int tr_oo1( o , o2 , R)
 }
 
 /*============================================================================*/
-int tr_oR ( o , R ) 
+int tr_oR (
 /*+++
 .PURPOSE  Creates the rotation matrix R[3][3] defined as
 \begin{TeX}
@@ -134,8 +192,9 @@ $\vec{v}_{loc}$, $R$).
 \end{TeX}
 .RETURNS OK
 ---*/
-	double o[2]; 	/* IN: original angles */
-	double R[3][3];	/* OUT: rotation matrix */
+	double o[2], 	/* IN: original angles */
+	double R[3][3]	/* OUT: rotation matrix */
+)
 {
   R[2][2] =  cosd(dec);
   R[0][2] =  sind(dec);
@@ -150,13 +209,14 @@ $\vec{v}_{loc}$, $R$).
 }
 
 /*============================================================================*/
-int tr_ou (o , u)  
+int tr_ou (
 /*+++
 .PURPOSE  Transformation from polar coordinates to Unit vector
 .RETURNS  OK
 ---*/
-	double o[2]; 	/* IN: angles ra + dec in degrees */
-	double u[3]; 	/* OUT: dir cosines                */
+	double o[2], 	/* IN: angles ra + dec in degrees */
+	double u[3] 	/* OUT: dir cosines                */
+)
 
 { 	double cosdec;
 
@@ -169,13 +229,14 @@ int tr_ou (o , u)
 }  
 
 /*============================================================================*/
-int tr_uo (u,o)   
+int tr_uo (
 /*+++
 .PURPOSE Computes angles from direction cosines
 .RETURNS OK / NOK (x=y=z=0)
 ---*/
-	double u[3]; 	/* IN: Dir cosines */
-	double o[2]; 	/* OUT: Angles ra + dec in degrees */
+	double u[3], 	/* IN: Dir cosines */
+	double o[2] 	/* OUT: Angles ra + dec in degrees */
+)
 {
 	double r2;  		/* sqrt(x*x+y*y) */
 
@@ -193,7 +254,7 @@ int tr_uo (u,o)
 } 
 
 /*============================================================================*/
-int tr_uR ( u , R )   
+int tr_uR (
 /*+++
 .PURPOSE   Creates the rotation matrix R[3][3] with
 \begin{TeX}
@@ -210,8 +271,9 @@ int tr_uR ( u , R )
   the right ascension is assumed to be 0.
 \end{TeX}
 ---*/
-	double u[3]; 	/* IN: Original direction */
-	double R[3][3]; /* OUT: Rotation matrix    */
+	double u[3], 	/* IN: Original direction */
+	double R[3][3] /* OUT: Rotation matrix    */
+)
 {
   R[0][0] = x; R[0][1] = y; R[0][2] = z;
   R[2][2] = hypot ( x , y );
@@ -228,60 +290,7 @@ int tr_uR ( u , R )
 }
 
 /*============================================================================*/
-int tr_uu( u1 , u2 , R ) 
-/*+++
-.PURPOSE  Rotates the unit vector u1 to u2, as
-\begin{TeX}
-\quad $\vec{u_2} = R \cdot  \vec{u_1}$ \quad (old to new frame)
-\end{TeX}
-.RETURNS OK
----*/
-	double u1[3]; 	/* IN: Unit vector */
-	double u2[3]; 	/* OUT: Resulting unit vector after rotation */
-	double R[3][3];	/* IN: rotation matrix (e.g. created by tr_oR)*/
-{
- 	register int i,j;
-	register double val;
-	double u_stack[3];	/* allows same address for input/output      */
-
-
-  for (i=0; i<3; i++)
-  { 	val = 0.e0;
-	for (j=0; j<3; j++)	val += R[i][j]*u1[j];
-	u_stack[i] = val;
-  }
-  for (i=0; i<3; i++)		u2[i] = u_stack[i]; 	/* copies to output */
-  return(OK);
-}
-
-/*============================================================================*/
-int tr_uu1 ( u1 , u2 , R)   
-/*+++
-.PURPOSE  Rotates the unit vector u1 to u2, as
-\begin{TeX}
-\quad $\vec{u_2} = R^{-1} \cdot \vec{u_1}$ \quad (new to old frame).
-\end{TeX}
-.RETURNS OK
----*/
-	double u1[3]; 	/* IN: Unit vector */
-	double u2[3]; 	/* OUT: Resulting unit vector after rotation */
-	double R[3][3];	/* IN: rotation matrix (e.g. created by tr_oR) */
-{
-	register int i,j;
-	register double val;
-	double u_stack[3];	/* allows same address for input/output      */
-
-  for (i=0; i<3; i++)
-  { 	for (j=0, val = 0.0e0; j<3; j++)
-  		val += R[j][i]*u1[j];
-	u_stack[i] = val;
-  }
-  for (i=0; i<3; i++) 		u2[i] = u_stack[i];	/* copies to output */
-  return(OK);
-}
-
-/*============================================================================*/
-int tr_RR ( A , B , R)   
+int tr_RR (
 /*+++
 .PURPOSE  Product of orthogonal matrices
 \begin{TeX}
@@ -289,9 +298,10 @@ int tr_RR ( A , B , R)
 \end{TeX}
 .RETURNS OK
 ---*/
-	double A[3][3]; 	/* IN: First Matrix */
-	double B[3][3]; 	/* OUT: Result Matrix */
-	double R[3][3]; 	/* IN: Rotation Matrix	*/
+	double A[3][3], 	/* IN: First Matrix */
+	double B[3][3], 	/* OUT: Result Matrix */
+	double R[3][3] 	/* IN: Rotation Matrix	*/
+)
 {
 	register int i, j, k;
 	double	val;
@@ -310,7 +320,7 @@ int tr_RR ( A , B , R)
 }
 
 /*============================================================================*/
-int tr_RR1 ( A , B , R)   
+int tr_RR1 (
 /*+++
 .PURPOSE  Product of orthogonal matrices
 \begin{TeX}
@@ -318,9 +328,10 @@ int tr_RR1 ( A , B , R)
 \end{TeX}
 .RETURNS OK
 ---*/
-	double A[3][3]; 	/* IN: First Matrix */
-	double B[3][3]; 	/* OUT: Result Matrix */
-	double R[3][3]; 	/* IN: Rotation Matrix	*/
+	double A[3][3], 	/* IN: First Matrix */
+	double B[3][3], 	/* OUT: Result Matrix */
+	double R[3][3] 	/* IN: Rotation Matrix	*/
+)
 {
 	register int i, j, k;
 	double	val;
@@ -337,15 +348,3 @@ int tr_RR1 ( A , B , R)
 
   return(OK);
 }
-
-   
-                                                              
-
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-                                                               
-          

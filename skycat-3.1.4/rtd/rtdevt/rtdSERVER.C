@@ -219,7 +219,8 @@ rtdCLNT *rtdSERVER::Accept()
     reqClnt_++;  // for statistics
 
     // Create a new object for handling the request for this connection
-    client = clnt_[numClnt_++] = new rtdCLNT(Verbose(), numClnt_);
+    client = clnt_[numClnt_] = new rtdCLNT(Verbose(), numClnt_);
+    numClnt_++;
     if (client->Accept(socketFd_) == RTD_OK && numClnt_ < MAX_CLNT)
 	return client;
 
@@ -310,7 +311,7 @@ void rtdSERVER::ServStatusCmd(int socket)
 {
     char buf[4096], buf2[256];
 
-    sprintf(buf, "rtdServer info:\n"
+    snprintf(buf, 4096, "rtdServer info:\n"
 	    "rtdServer was started: %s"
 	    "Delay was set to: %d\n"
 	    "Total number of connections: %d\n"
@@ -320,7 +321,7 @@ void rtdSERVER::ServStatusCmd(int socket)
     for (int i=0; i < numClnt_; i++) {
 	if (socket == clnt_[i]->Socket())
 	    continue;
-	sprintf(buf2, "Entry: %d \tName: %s\tCamera: %s\t Type: %s\t\n",
+	snprintf(buf2, 256, "Entry: %d \tName: %s\tCamera: %s\t Type: %s\t\n",
 		i, clnt_[i]->ReqName(), clnt_[i]->CamName(), clnt_[i]->TypeName());
 	if (strlen(buf) + sizeof(buf2) + 1 < sizeof(buf))
 	    strcat(buf, buf2);

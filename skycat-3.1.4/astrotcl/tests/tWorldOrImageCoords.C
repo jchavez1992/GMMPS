@@ -24,7 +24,7 @@ static void print_coords(const ImageCoords& ic, const WorldCoords& wc)
 }
 
 
-main() 
+int main() 
 {
     // errors will be printed on stderr automatically
     set_error_handler(print_error);

@@ -51,7 +51,7 @@ protected:
     virtual int circularSearch(const TabTable& table, const AstroQuery& q, int maxRows);
 
     // print table title and othe info...
-    virtual void printTableTop(ostream& os, const char* title = NULL);
+    virtual void printTableTop(std::ostream& os, const char* title = NULL);
 
 public:
     // constructor: initialize empty table

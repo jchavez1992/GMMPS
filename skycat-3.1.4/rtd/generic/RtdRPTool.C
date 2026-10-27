@@ -416,6 +416,7 @@ int RtdRecorder::processFileEvent()
     if (fileHandler->fileFull() && !cycleMode_) {
 	stop(0, NULL);
     }
+    return TCL_OK;
 }
 
 /*
@@ -482,7 +483,7 @@ int RtdRecorder::record(int argc, char *argv[])
     }
 
     if (fileHandler->status() == TCL_ERROR) {
-	sprintf(msg, "Unable to open file %s", fileName);
+	snprintf(msg, 64, "Unable to open file %s", fileName);
 	return error(msg);
     }
 
@@ -725,12 +726,12 @@ int RtdPlayback::makeFileHandler(char *err)
 	return TCL_ERROR;
     }
     if (fileHandler->status() == TCL_ERROR) {
-	sprintf(err, "Unable to read file for playback");
+	snprintf(err, 64, "Unable to read file for playback");
 	return TCL_ERROR;
     }
     // Create the shared memory areas from the file information
     if (fileHandler->getShm(RTD_SHMBUFFS, &shmInfo_) == TCL_ERROR) {
-	sprintf(err, "Unable to allocate shared memory");
+	snprintf(err, 64, "Unable to allocate shared memory");
 	return TCL_ERROR;
     }
 
@@ -1200,7 +1201,7 @@ int RtdPlayback::hastime(int argc, char *argv[])
     }
 
     // Return the result.
-    sprintf(buf, "%d", fileHandler->hasTimeInfo());
+    snprintf(buf, 2, "%d", fileHandler->hasTimeInfo());
 
     return set_result(buf);
 }
