@@ -483,7 +483,8 @@ isGNU()
 # NB: use ANSI C prototype to weed out non-ANSI compilers.
 #
 cat>dummy.c<<EOF
-main(int argc, char* argv) { exit(0); }
+#include <stdlib.h>
+int main(int argc, char* argv[]) { exit(0); }
 EOF
 
 checkCompiler()
