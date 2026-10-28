@@ -133,7 +133,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <astroCatalog.h>
+#include <cat/astro_catalog.h>
 
 
 /*
